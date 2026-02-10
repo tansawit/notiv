@@ -1,0 +1,42 @@
+{
+  "name": "notiv-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit",
+    "lint": "eslint src --max-warnings=0",
+    "format": "prettier --write \"*.{md,json}\" \".github/workflows/*.yml\"",
+    "format:check": "prettier --check \"*.{md,json}\" \".github/workflows/*.yml\"",
+    "package": "rm -f notiv-extension-$npm_package_version.zip && cd dist && zip -r ../notiv-extension-$npm_package_version.zip .",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.1.0",
+    "lucide": "^0.563.0",
+    "oauth4webapi": "^3.8.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sonner": "^2.0.7"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.33",
+    "@types/chrome": "^0.0.287",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "@eslint/js": "^9.22.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
+    "jsdom": "^26.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.26.0",
+    "vite": "^6.1.0",
+    "vitest": "^3.2.4"
+  }
+}

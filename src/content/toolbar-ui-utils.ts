@@ -1,0 +1,100 @@
+import type { IconNode } from 'lucide';
+import { FONT_STACK_SERIF, UTILITY_STYLE_TOKENS } from '../shared/visual-tokens';
+
+function escapeHtmlAttr(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderIconSvg(iconNode: IconNode, viewBox = '0 0 24 24'): string {
+  const children = iconNode
+    .map(([tag, attrs]) => {
+      const serializedAttrs = Object.entries(attrs)
+        .map(([key, value]) => `${key}="${escapeHtmlAttr(String(value))}"`)
+        .join(' ');
+      return `<${tag}${serializedAttrs ? ` ${serializedAttrs}` : ''}></${tag}>`;
+    })
+    .join('');
+
+  return `<svg width="16" height="16" viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">${children}</svg>`;
+}
+
+export function createIcon(iconNode: IconNode, viewBox = '0 0 24 24'): HTMLSpanElement {
+  const icon = document.createElement('span');
+  icon.style.display = 'inline-grid';
+  icon.style.placeItems = 'center';
+  icon.style.width = '16px';
+  icon.style.height = '16px';
+  icon.innerHTML = renderIconSvg(iconNode, viewBox);
+  return icon;
+}
+
+export function setIcon(icon: HTMLSpanElement, iconNode: IconNode, viewBox = '0 0 24 24'): void {
+  icon.innerHTML = renderIconSvg(iconNode, viewBox);
+}
+
+export function truncateText(value: string, limit: number): string {
+  const text = value.trim();
+  if (text.length <= limit) {
+    return text;
+  }
+  return `${text.slice(0, limit - 1)}...`;
+}
+
+export function makeTextButton(label: string, subtle = false): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = label;
+  button.style.appearance = 'none';
+  button.style.boxShadow = 'none';
+  button.style.border = `1.5px solid ${UTILITY_STYLE_TOKENS.textButton.border}`;
+  button.style.borderRadius = '4px';
+  button.style.padding = '7px 10px';
+  button.style.background = subtle ? 'transparent' : UTILITY_STYLE_TOKENS.textButton.solidBackground;
+  button.style.color = subtle ? UTILITY_STYLE_TOKENS.textButton.subtleText : UTILITY_STYLE_TOKENS.textButton.solidText;
+  button.style.fontFamily = FONT_STACK_SERIF;
+  button.style.fontSize = '12px';
+  button.style.fontWeight = '520';
+  button.style.cursor = 'pointer';
+  button.style.transition = 'all 120ms ease';
+  button.addEventListener('mouseenter', () => {
+    if (button.disabled) {
+      return;
+    }
+    button.style.opacity = '0.9';
+  });
+  button.addEventListener('mouseleave', () => {
+    if (button.disabled) {
+      return;
+    }
+    button.style.opacity = '1';
+  });
+  return button;
+}
+
+export function setButtonDisabled(button: HTMLButtonElement, disabled: boolean): void {
+  button.disabled = disabled;
+  button.style.cursor = disabled ? 'not-allowed' : 'pointer';
+}
+
+export function makeSpinner(size = 12): HTMLSpanElement {
+  const spinner = document.createElement('span');
+  spinner.style.width = `${size}px`;
+  spinner.style.height = `${size}px`;
+  spinner.style.borderRadius = '999px';
+  spinner.style.border = `1.5px solid ${UTILITY_STYLE_TOKENS.spinner.track}`;
+  spinner.style.borderTopColor = UTILITY_STYLE_TOKENS.spinner.head;
+  spinner.style.display = 'inline-block';
+  spinner.style.animation = 'notiv-spin 780ms linear infinite';
+  return spinner;
+}
+
+export function makeSkeletonLine(width: string): HTMLDivElement {
+  const line = document.createElement('div');
+  line.style.width = width;
+  line.style.height = '10px';
+  line.style.borderRadius = '999px';
+  line.style.background = UTILITY_STYLE_TOKENS.skeletonGradient;
+  line.style.backgroundSize = '220% 100%';
+  line.style.animation = 'notiv-shimmer 1.15s ease infinite';
+  return line;
+}

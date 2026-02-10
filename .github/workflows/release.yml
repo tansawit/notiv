@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VITE_LINEAR_OAUTH_CLIENT_ID: ${{ secrets.LINEAR_OAUTH_CLIENT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate OAuth client ID
+        run: test -n "${VITE_LINEAR_OAUTH_CLIENT_ID}" || (echo "Missing LINEAR_OAUTH_CLIENT_ID secret." && exit 1)
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Format check
+        run: pnpm run format:check
+
+      - name: Type check
+        run: pnpm run check
+
+      - name: Unit tests
+        run: pnpm run test:run
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Package
+        run: pnpm run package
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: notiv-extension-*.zip
+          generate_release_notes: true

@@ -1,0 +1,7 @@
+dist
+coverage
+node_modules
+.idea
+.vscode
+pnpm-lock.yaml
+assets/icons

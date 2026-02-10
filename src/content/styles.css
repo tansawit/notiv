@@ -1,0 +1,520 @@
+:host {
+  all: initial;
+  --notiv-content-token-01: #111111;
+  --notiv-content-token-02: #ffffff;
+  --notiv-content-token-03: #111111;
+  --notiv-content-token-04: "Times New Roman", Times, serif;
+  --notiv-content-token-05: rgba(0, 0, 0, 0.18);
+  --notiv-content-token-06: rgba(17, 17, 17, 0.16);
+  --notiv-content-token-07: #111111;
+  --notiv-content-token-08: #111111;
+  --notiv-content-token-09: #111111;
+  --notiv-content-token-10: "SF Mono", "Monaco", "Inconsolata", "Fira Mono", monospace;
+  --notiv-content-token-11: #555555;
+  --notiv-content-token-12: rgba(17, 17, 17, 0.05);
+  --notiv-content-token-13: #111111;
+  --notiv-content-token-14: #ffffff;
+  --notiv-content-token-15: #111111;
+  --notiv-content-token-16: #111111;
+  --notiv-content-token-17: #f9f9f9;
+  --notiv-content-token-18: #111111;
+  --notiv-content-token-19: #ffffff;
+  --notiv-content-token-20: #000000;
+  --notiv-content-token-21: #c24545;
+  --notiv-content-token-22: rgba(194, 69, 69, 0.1);
+  --notiv-content-token-23: #a22a2a;
+  --notiv-content-token-24: #a83737;
+  --notiv-content-token-25: rgba(194, 69, 69, 0.16);
+  --notiv-content-token-26: #111111;
+  --notiv-content-token-27: #777777;
+  --notiv-content-token-28: #111111;
+  --notiv-content-token-29: #555555;
+  --notiv-content-token-30: #111111;
+  --notiv-content-token-31: #ffffff;
+  --notiv-content-token-32: #111111;
+  --notiv-content-token-33: #111111;
+  --notiv-content-token-34: #f9f9f9;
+  --notiv-content-token-35: rgba(17, 17, 17, 0.2);
+  --notiv-content-token-36: #111111;
+  --notiv-content-token-37: #ffffff;
+  --notiv-content-token-38: #111111;
+  --notiv-content-token-39: #ffffff;
+  --notiv-content-token-40: #111111;
+  --notiv-content-token-41: #555555;
+  --notiv-content-token-42: #c24545;
+  --notiv-content-token-43: rgba(194, 69, 69, 0.1);
+  --notiv-content-token-44: #f2f2f2;
+  --notiv-content-token-45: rgba(17, 17, 17, 0.98);
+  --notiv-content-token-46: #f2f2f2;
+  --notiv-content-token-47: rgba(0, 0, 0, 0.55);
+  --notiv-content-token-48: rgba(255, 255, 255, 0.22);
+  --notiv-content-token-49: #FFE600;
+  --notiv-content-token-50: #ffffff;
+  --notiv-content-token-51: rgba(255, 255, 255, 0.34);
+  --notiv-content-token-52: #d7d7d7;
+  --notiv-content-token-53: rgba(255, 255, 255, 0.08);
+  --notiv-content-token-54: #f2f2f2;
+  --notiv-content-token-55: rgba(28, 28, 28, 0.96);
+  --notiv-content-token-56: #ffffff;
+  --notiv-content-token-57: #FFE600;
+  --notiv-content-token-58: rgba(255, 230, 0, 0.14);
+  --notiv-content-token-59: #FFE600;
+  --notiv-content-token-60: #FFE600;
+  --notiv-content-token-61: #111111;
+  --notiv-content-token-62: #d97d7d;
+  --notiv-content-token-63: rgba(190, 70, 70, 0.28);
+  --notiv-content-token-64: #ffd6d6;
+  --notiv-content-token-65: #ff9b9b;
+  --notiv-content-token-66: rgba(190, 70, 70, 0.36);
+  --notiv-content-token-67: rgba(255, 255, 255, 0.4);
+  --notiv-content-token-68: #ffffff;
+  --notiv-content-token-69: #b5b5b5;
+  --notiv-content-token-70: #FFE600;
+  --notiv-content-token-71: #cfcfcf;
+  --notiv-content-token-72: #f2f2f2;
+  --notiv-content-token-73: rgba(28, 28, 28, 0.96);
+  --notiv-content-token-74: #ffffff;
+  --notiv-content-token-75: #FFE600;
+  --notiv-content-token-76: rgba(255, 230, 0, 0.14);
+  --notiv-content-token-77: rgba(255, 230, 0, 0.35);
+  --notiv-content-token-78: #f2f2f2;
+  --notiv-content-token-79: rgba(28, 28, 28, 0.96);
+  --notiv-content-token-80: #f2f2f2;
+  --notiv-content-token-81: rgba(12, 12, 12, 0.96);
+  --notiv-content-token-82: #ffffff;
+  --notiv-content-token-83: #d0d0d0;
+}
+
+.notiv-panel {
+  width: min(360px, calc(100vw - 20px));
+  border: 1.5px solid var(--notiv-content-token-01);
+  border-radius: 10px;
+  background: var(--notiv-content-token-02);
+  color: var(--notiv-content-token-03);
+  font-family: var(--notiv-content-token-04);
+  box-shadow: 3px 3px 0 var(--notiv-content-token-01), 0 8px 18px var(--notiv-content-token-05);
+  overflow: hidden;
+}
+
+.notiv-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--notiv-content-token-06);
+  background: var(--notiv-content-token-17);
+}
+
+.notiv-header-left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notiv-header-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--notiv-content-token-07);
+  flex: 0 0 auto;
+}
+
+.notiv-title {
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--notiv-content-token-08);
+  letter-spacing: 0;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.notiv-target-chip {
+  max-width: 146px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-family: var(--notiv-content-token-10);
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--notiv-content-token-11);
+  background: transparent;
+}
+
+.notiv-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notiv-icon-button {
+  appearance: none;
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--notiv-content-token-13);
+  border-radius: 9px;
+  background: var(--notiv-content-token-14);
+  color: var(--notiv-content-token-15);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 120ms ease;
+  padding: 0;
+}
+
+.notiv-icon-button-ghost {
+  border: none;
+  background: transparent;
+  color: var(--notiv-content-token-15);
+}
+
+.notiv-icon-button-ghost:hover:not(:disabled) {
+  border: none;
+  background: var(--notiv-content-token-12);
+}
+
+.notiv-icon-button:hover:not(:disabled):not(.notiv-icon-button-ghost) {
+  border-color: var(--notiv-content-token-16);
+  background: var(--notiv-content-token-17);
+}
+
+.notiv-icon-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.notiv-icon-button-primary {
+  border-color: var(--notiv-content-token-18);
+  background: var(--notiv-content-token-18);
+  color: var(--notiv-content-token-19);
+}
+
+.notiv-icon-button-primary:hover:not(:disabled) {
+  border-color: var(--notiv-content-token-20);
+  background: var(--notiv-content-token-20);
+}
+
+.notiv-icon-button-danger {
+  border-color: var(--notiv-content-token-21);
+  background: var(--notiv-content-token-22);
+  color: var(--notiv-content-token-23);
+}
+
+.notiv-icon-button-danger:hover:not(:disabled) {
+  border-color: var(--notiv-content-token-24);
+  background: var(--notiv-content-token-25);
+}
+
+.notiv-body {
+  display: grid;
+  gap: 8px;
+  padding: 9px 10px 10px;
+}
+
+.notiv-textarea {
+  width: 100%;
+  min-height: 92px;
+  max-height: 180px;
+  border: 0;
+  border-bottom: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--notiv-content-token-03);
+  font-family: var(--notiv-content-token-04);
+  font-size: 14px;
+  font-weight: 430;
+  line-height: 1.35;
+  padding: 6px 0;
+  resize: none;
+}
+
+.notiv-textarea::placeholder {
+  color: var(--notiv-content-token-27);
+}
+
+.notiv-textarea:focus {
+  outline: none;
+}
+
+.notiv-color-section {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.notiv-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.notiv-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.notiv-color-label {
+  font-family: var(--notiv-content-token-10);
+  font-size: 10px;
+  color: var(--notiv-content-token-29);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  display: none;
+}
+
+.notiv-color-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.notiv-color-chip {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+  transition: box-shadow 120ms ease;
+}
+
+.notiv-color-chip:hover:not(:disabled) .notiv-color-dot {
+  filter: brightness(1.08);
+}
+
+.notiv-color-chip:active:not(:disabled) .notiv-color-dot {
+  transform: scale(0.92);
+}
+
+.notiv-color-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.notiv-color-chip:focus-visible {
+  outline: 2px solid var(--notiv-content-token-35);
+  outline-offset: 1px;
+}
+
+.notiv-color-chip-active {
+  transform: none;
+}
+
+.notiv-color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  transition: filter 110ms ease, transform 80ms ease;
+}
+
+.notiv-inline-actions .notiv-icon-button:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.notiv-color-chip-active .notiv-color-dot {
+  border-color: var(--notiv-content-token-01);
+}
+
+.notiv-color-chip-text {
+  display: none;
+}
+
+.notiv-attachments-grid {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.notiv-attachment-card {
+  position: relative;
+  width: 56px;
+  height: 44px;
+  border: 1.5px solid var(--notiv-content-token-36);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--notiv-content-token-37);
+  flex: 0 0 auto;
+}
+
+.notiv-attachment-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.notiv-attachment-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--notiv-content-token-38);
+  border-radius: 4px;
+  background: var(--notiv-content-token-39);
+  color: var(--notiv-content-token-40);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.notiv-footer-note {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: var(--notiv-content-token-41);
+  font-family: var(--notiv-content-token-10);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.notiv-error {
+  border: 1.5px solid var(--notiv-content-token-42);
+  border-radius: 6px;
+  background: var(--notiv-content-token-43);
+  color: var(--notiv-content-token-23);
+  font-size: 12px;
+  font-weight: 450;
+  padding: 8px 10px;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-panel {
+  border-color: var(--notiv-content-token-44);
+  background: var(--notiv-content-token-45);
+  color: var(--notiv-content-token-46);
+  box-shadow: 3px 3px 0 var(--notiv-content-token-44), 0 10px 22px var(--notiv-content-token-47);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-header {
+  background: var(--notiv-content-token-55);
+  border-bottom-color: var(--notiv-content-token-48);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-header-dot {
+  background: var(--notiv-content-token-49);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-title {
+  color: var(--notiv-content-token-50);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-target-chip {
+  color: var(--notiv-content-token-52);
+  background: transparent;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button {
+  border-color: var(--notiv-content-token-54);
+  background: var(--notiv-content-token-55);
+  color: var(--notiv-content-token-56);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button-ghost {
+  border: none;
+  background: transparent;
+  color: var(--notiv-content-token-56);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button-ghost:hover:not(:disabled) {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button:hover:not(:disabled):not(.notiv-icon-button-ghost) {
+  border-color: var(--notiv-content-token-57);
+  background: var(--notiv-content-token-58);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button-primary {
+  border-color: var(--notiv-content-token-59);
+  background: var(--notiv-content-token-60);
+  color: var(--notiv-content-token-61);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button-primary:hover:not(:disabled) {
+  filter: brightness(1.03);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button-danger {
+  border-color: var(--notiv-content-token-62);
+  background: var(--notiv-content-token-63);
+  color: var(--notiv-content-token-64);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-icon-button-danger:hover:not(:disabled) {
+  border-color: var(--notiv-content-token-65);
+  background: var(--notiv-content-token-66);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-textarea {
+  color: var(--notiv-content-token-68);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-textarea::placeholder {
+  color: var(--notiv-content-token-69);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-textarea:focus {
+  border-bottom-color: transparent;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-color-label {
+  color: var(--notiv-content-token-71);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-color-chip {
+  border-color: transparent;
+  background: transparent;
+  color: transparent;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-color-chip:hover {
+  transform: none;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-color-chip-active .notiv-color-dot {
+  border-color: #ffffff;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-color-chip:focus-visible {
+  outline-color: var(--notiv-content-token-77);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-attachment-card {
+  border-color: var(--notiv-content-token-78);
+  background: var(--notiv-content-token-79);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-attachment-remove {
+  border-color: var(--notiv-content-token-80);
+  background: var(--notiv-content-token-81);
+  color: var(--notiv-content-token-82);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-footer-note {
+  color: var(--notiv-content-token-83);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-error {
+  border-color: var(--notiv-content-token-62);
+  background: var(--notiv-content-token-63);
+  color: var(--notiv-content-token-64);
+}

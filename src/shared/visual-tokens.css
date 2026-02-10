@@ -1,0 +1,47 @@
+:root {
+  --notiv-font-serif: "Times New Roman", Times, serif;
+  --notiv-font-mono: "SF Mono", "Monaco", "Inconsolata", "Fira Mono", monospace;
+
+  --notiv-paper: #ffffff;
+  --notiv-surface: #ffffff;
+  --notiv-ink: #111111;
+  --notiv-ink-muted: #555555;
+  --notiv-line: #111111;
+  --notiv-line-strong: #111111;
+  --notiv-accent: #111111;
+  --notiv-accent-ink: #ffffff;
+
+  --notiv-ok: #2f7d4c;
+  --notiv-ok-border: #111111;
+  --notiv-ok-bg: #f9f9f9;
+  --notiv-ok-bg-soft: rgba(17, 17, 17, 0.03);
+  --notiv-ok-border-soft: #111111;
+  --notiv-ok-border-connected: #111111;
+  --notiv-ok-bg-connected: rgba(47, 125, 76, 0.08);
+  --notiv-ok-text: #1f5e37;
+
+  --notiv-danger: #a12e34;
+  --notiv-danger-border: #111111;
+  --notiv-danger-bg-soft: rgba(161, 46, 52, 0.09);
+
+  --notiv-input-focus: #111111;
+  --notiv-input-placeholder: #777777;
+  --notiv-chip-hover-border: #111111;
+  --notiv-chip-active-border: #111111;
+  --notiv-chip-active-bg: rgba(17, 17, 17, 0.08);
+  --notiv-chip-active-text: #111111;
+  --notiv-token-border: #111111;
+  --notiv-token-bg: #f9f9f9;
+  --notiv-token-text: #555555;
+  --notiv-icon-muted: #555555;
+  --notiv-card-bg: #ffffff;
+  --notiv-status-pill-bg: rgba(17, 17, 17, 0.05);
+  --notiv-chip-bg: rgba(17, 17, 17, 0.05);
+  --notiv-chip-text: #555555;
+  --notiv-hover-border: #111111;
+  --notiv-select-arrow: #111111;
+
+  --notiv-popup-texture-dot: rgba(17, 17, 17, 0.045);
+  --notiv-popup-texture-top: rgba(255, 255, 255, 0.55);
+  --notiv-popup-texture-bottom: rgba(249, 249, 249, 0.85);
+}

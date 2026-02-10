@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Notiv",
+  "version": "0.1.0",
+  "description": "Visual feedback for staging review to Linear",
+  "icons": {
+    "16": "assets/icons/16.png",
+    "48": "assets/icons/48.png",
+    "128": "assets/icons/128.png",
+    "256": "assets/icons/256.png",
+    "512": "assets/icons/512.png"
+  },
+  "permissions": ["activeTab", "storage", "identity", "permissions", "scripting"],
+  "host_permissions": ["https://api.linear.app/*", "https://linear.app/*"],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://localhost/*", "http://127.0.0.1/*"],
+      "js": ["src/content/index.ts"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "assets/icons/16.png",
+      "48": "assets/icons/48.png",
+      "128": "assets/icons/128.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/options/index.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "activate": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F",
+        "mac": "Command+Shift+F"
+      },
+      "description": "Activate element picker"
+    }
+  }
+}
