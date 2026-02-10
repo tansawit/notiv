@@ -10,7 +10,7 @@
     "256": "assets/icons/256.png",
     "512": "assets/icons/512.png"
   },
-  "permissions": ["activeTab", "storage", "identity", "permissions", "scripting"],
+  "permissions": ["activeTab", "storage", "identity", "scripting"],
   "host_permissions": ["https://api.linear.app/*", "https://linear.app/*"],
   "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
   "background": {
