@@ -86,7 +86,7 @@ function Icon({
   path: string;
   filled?: boolean;
   size?: number;
-}): JSX.Element {
+}): React.JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
@@ -110,7 +110,7 @@ function AnnotationPanel({
   onDelete,
   onSubmit,
   onCancel
-}: AnnotatorProps): JSX.Element {
+}: AnnotatorProps): React.JSX.Element {
   const [comment, setComment] = useState(initialDraft?.comment ?? '');
   const [attachments, setAttachments] = useState<AnnotationAttachment[]>(initialDraft?.attachments ?? []);
   const [highlightColor, setHighlightColor] = useState<HighlightColor>(

@@ -93,7 +93,7 @@ async function saveCaptureRedactionEnabled(enabled: boolean): Promise<void> {
   await setLocalStorageItems({ [STORAGE_KEYS.captureRedactionEnabled]: enabled });
 }
 
-function SettingsApp(): JSX.Element {
+function SettingsApp(): React.JSX.Element {
   const {
     loading,
     authBusy,
