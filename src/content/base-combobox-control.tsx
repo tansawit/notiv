@@ -120,7 +120,6 @@ interface BaseComboboxProps {
   disabled: boolean;
   searchPlaceholder: string;
   palette: SubmitDropdownPalette;
-  closeSignal: number;
   portalContainer: HTMLDivElement;
   onBeforeOpen?: () => void;
   onSelect: (value: string) => void;
@@ -136,7 +135,6 @@ function BaseCombobox({
   disabled,
   searchPlaceholder,
   palette,
-  closeSignal,
   portalContainer,
   onBeforeOpen,
   onSelect,
@@ -169,10 +167,6 @@ function BaseCombobox({
     observer.observe(trigger);
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [closeSignal]);
 
   useEffect(() => {
     if (!open) {
@@ -413,7 +407,6 @@ interface BaseLabelSearchComboboxProps {
   disabled: boolean;
   searchPlaceholder: string;
   palette: SubmitDropdownPalette;
-  closeSignal: number;
   portalContainer: HTMLDivElement;
   onBeforeOpen?: () => void;
   onSelect: (value: string) => void;
@@ -427,7 +420,6 @@ function BaseLabelSearchCombobox({
   disabled,
   searchPlaceholder,
   palette,
-  closeSignal,
   portalContainer,
   onBeforeOpen,
   onSelect,
@@ -462,14 +454,6 @@ function BaseLabelSearchCombobox({
     observer.observe(trigger);
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    setOpen(false);
-    allowCloseRef.current = false;
-    if (inputRef.current) {
-      inputRef.current.value = '';
-    }
-  }, [closeSignal]);
 
   const requestClose = (): void => {
     allowCloseRef.current = true;
@@ -819,12 +803,12 @@ export function createBaseSubmitDropdownControl(config: {
     options = getOptions();
     reactRoot.render(
       <BaseCombobox
+        key={closeSignal}
         options={options}
         value={select.value}
         disabled={select.disabled}
         searchPlaceholder={searchPlaceholder}
         palette={getPalette()}
-        closeSignal={closeSignal}
         portalContainer={portalHost}
         onBeforeOpen={onBeforeOpen}
         onSelect={selectValue}
@@ -912,11 +896,11 @@ export function createBaseLabelSearchControl(config: {
     const options = getOptions();
     reactRoot.render(
       <BaseLabelSearchCombobox
+        key={closeSignal}
         options={options}
         disabled={isDisabled()}
         searchPlaceholder={searchPlaceholder}
         palette={getPalette()}
-        closeSignal={closeSignal}
         portalContainer={portalHost}
         onBeforeOpen={onBeforeOpen}
         onSelect={(value) => {

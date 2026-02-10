@@ -9,7 +9,7 @@ import { useLinearConnection } from '../shared/use-linear-connection';
 
 type PopupView = 'home' | 'settings';
 
-function PopupApp(): JSX.Element {
+function PopupApp(): React.JSX.Element {
   const [view, setView] = useState<PopupView>('home');
   const {
     loading,
