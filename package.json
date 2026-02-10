@@ -18,14 +18,14 @@
     "@base-ui/react": "^1.1.0",
     "lucide": "^0.563.0",
     "oauth4webapi": "^3.8.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.33",
     "@types/chrome": "^0.1.36",
-    "@types/react": "^18.3.18",
+    "@types/react": "^19.2.13",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^5.1.4",
     "@eslint/js": "^9.22.0",
