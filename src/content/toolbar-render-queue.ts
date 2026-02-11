@@ -4,6 +4,7 @@ import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highli
 import type { PanelPalette } from './toolbar-palette';
 import { createIcon, setButtonDisabled, truncateText } from './toolbar-ui-utils';
 import { FONT_STACK_MONO, FONT_STACK_SANS } from '../shared/visual-tokens';
+import { MOTION } from '../shared/motion-tokens';
 
 interface QueueNoteSummaryLike {
   id: string;
@@ -70,12 +71,14 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
   queueClearButton.style.color = palette.textMuted;
 
   queueList.textContent = '';
-  queueEmpty.style.display = queueItems.length === 0 ? 'block' : 'none';
-  queueEmpty.style.padding = '4px 0';
+  queueEmpty.style.display = queueItems.length === 0 ? 'flex' : 'none';
+  queueEmpty.className = 'notiv-queue-empty';
   queueEmpty.style.color = palette.textMuted;
   queueEmpty.style.fontFamily = FONT_STACK_MONO;
-  queueEmpty.style.fontSize = '11px';
-  queueEmpty.textContent = 'No notes yet';
+  queueEmpty.innerHTML = '';
+  if (queueItems.length === 0) {
+    queueEmpty.textContent = 'No notes yet';
+  }
 
   queueItems.forEach((note, index) => {
     const colorPreset = getHighlightColorPreset(resolveHighlightColor(note.highlightColor));
@@ -89,8 +92,10 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     row.style.border = '1.25px solid transparent';
     row.style.borderRadius = '6px';
     row.style.background = hovered ? palette.surfaceHoverBackground : 'transparent';
-    row.style.transition = 'background 80ms ease';
+    row.style.transition = 'background 80ms ease, opacity 120ms ease, transform 120ms ease';
     row.style.cursor = 'default';
+    row.style.opacity = '0';
+    row.style.transform = 'translateY(8px)';
     if (submitting) {
       row.style.opacity = '0.6';
       row.style.pointerEvents = 'none';
@@ -205,5 +210,12 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     row.appendChild(deleteButton);
 
     queueList.appendChild(row);
+
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        row.style.opacity = submitting ? '0.6' : '1';
+        row.style.transform = 'translateY(0)';
+      }, index * (MOTION.stagger.fast * 1000));
+    });
   });
 }

@@ -14,7 +14,7 @@ import { renderQueuePanelContent } from './toolbar-render-queue';
 import { renderSettingsPanelContent } from './toolbar-render-settings';
 import {
   setButtonDisabled,
-  setIcon
+  setEyeStrikeVisible
 } from './toolbar-ui-utils';
 import {
   createBaseLabelSearchControl,
@@ -40,11 +40,8 @@ import { createToolbarSubmitPanelElements } from './toolbar-submit-panel-factory
 import { createToolbarShellElements } from './toolbar-shell-factory';
 import { createToolbarQueuePanelElements } from './toolbar-queue-panel-factory';
 import { bindToolbarInteractions } from './toolbar-event-bindings';
-import {
-  Eye,
-  EyeOff
-} from 'lucide';
 import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
+import { MOTION } from '../shared/motion-tokens';
 
 export interface QueueNoteSummary {
   id: string;
@@ -197,6 +194,7 @@ export class FeedbackToolbar {
   private renderedPanel: PanelType = 'none';
   private submitLabelSelection = new Set<string>();
   private queueItems: QueueNoteSummary[] = [];
+  private previousQueueCount = 0;
   private queueHoveredId: string | null = null;
   private settingsState: ToolbarSettingsState = EMPTY_SETTINGS;
   private submitPreferences: SubmitPreferencesStorage = {};
@@ -821,7 +819,7 @@ export class FeedbackToolbar {
     }
   }
 
-  private syncToolbarShell(animate = true): void {
+  private syncToolbarShell(shouldAnimate = true): void {
     this.clearShellPhaseTimers();
     const expandedWidth = this.getExpandedShellWidth();
     const toolbarPalette = this.getToolbarModePalette();
@@ -847,33 +845,13 @@ export class FeedbackToolbar {
     this.collapsedButton.dataset.notivHoverFilter = this.colorMode === 'dark' ? 'brightness(1.1)' : 'brightness(0.88)';
     this.collapsedButton.dataset.notivPressedFilter = this.colorMode === 'dark' ? 'brightness(1.06)' : 'brightness(0.84)';
     this.collapsedButton.style.transition = this.getCollapsedContentTransition(shellMorphEasing);
-    this.expandedBar.style.transition = this.getShellTransition(shellMorphEasing);
     this.applyToolbarControlMode();
     this.applyPanelMode();
 
-    const applyShellState = (): void => {
-      if (this.expanded) {
-        this.expandedBar.style.width = `${expandedWidth}px`;
-        this.expandedBar.style.borderRadius = `${this.toolbarOuterRadiusPx}px`;
-        this.expandedBar.style.padding = `${this.toolbarInsetPx}px`;
-        this.expandedBar.style.cursor = 'grab';
-        this.expandedBar.style.background = toolbarPalette.shellBackground;
-        this.expandedBar.style.border = `1.25px solid ${toolbarPalette.shellBorder}`;
-        this.expandedBar.style.boxShadow = toolbarPalette.shellShadowExpanded;
-        return;
-      }
+    const targetWidth = this.expanded ? expandedWidth : this.collapsedShellWidth;
+    const targetPadding = this.expanded ? this.toolbarInsetPx : 0;
 
-      this.expandedBar.style.width = `${this.collapsedShellWidth}px`;
-      this.expandedBar.style.borderRadius = `${this.toolbarOuterRadiusPx}px`;
-      this.expandedBar.style.padding = '0';
-      this.expandedBar.style.cursor = 'pointer';
-      this.expandedBar.style.background = toolbarPalette.shellBackground;
-      this.expandedBar.style.border = `1.25px solid ${toolbarPalette.shellBorder}`;
-      this.expandedBar.style.boxShadow = toolbarPalette.shellShadow;
-      this.hidePanels();
-    };
-
-    if (this.expanded && animate) {
+    if (this.expanded && shouldAnimate) {
       const barRect = this.expandedBar.getBoundingClientRect();
       const spaceOnLeft = barRect.right - 20;
       const neededSpace = expandedWidth;
@@ -886,27 +864,53 @@ export class FeedbackToolbar {
       }
     }
 
-    if (!animate) {
+    if (!shouldAnimate) {
       const previousCollapsedTransition = this.collapsedButton.style.transition;
-      const previousExpandedTransition = this.expandedBar.style.transition;
       const previousControlsTransition = this.expandedControls.style.transition;
 
       this.collapsedButton.style.transition = 'none';
       this.expandedBar.style.transition = 'none';
       this.expandedControls.style.transition = 'none';
-      applyShellState();
+      this.expandedBar.style.width = `${targetWidth}px`;
+      this.expandedBar.style.borderRadius = `${this.toolbarOuterRadiusPx}px`;
+      this.expandedBar.style.padding = `${targetPadding}px`;
+      this.expandedBar.style.cursor = this.expanded ? 'grab' : 'pointer';
+      this.expandedBar.style.background = toolbarPalette.shellBackground;
+      this.expandedBar.style.border = `1.25px solid ${toolbarPalette.shellBorder}`;
+      this.expandedBar.style.boxShadow = this.expanded ? toolbarPalette.shellShadowExpanded : toolbarPalette.shellShadow;
+      if (!this.expanded) {
+        this.hidePanels();
+      }
       this.setCollapsedContentVisible(!this.expanded);
       this.setExpandedControlsVisible(this.expanded);
       this.expandedBar.style.pointerEvents = this.expanded ? 'auto' : 'none';
       this.syncMarkersUi();
       void this.expandedBar.getBoundingClientRect();
       this.collapsedButton.style.transition = previousCollapsedTransition;
-      this.expandedBar.style.transition = previousExpandedTransition;
       this.expandedControls.style.transition = previousControlsTransition;
       return;
     }
 
-    applyShellState();
+    const currentWidth = this.expandedBar.offsetWidth;
+    const currentPadding = parseFloat(getComputedStyle(this.expandedBar).padding) || 0;
+
+    this.expandedBar.style.transition = 'none';
+    this.expandedBar.style.width = `${currentWidth}px`;
+    this.expandedBar.style.padding = `${currentPadding}px`;
+    this.expandedBar.style.cursor = this.expanded ? 'grab' : 'pointer';
+    this.expandedBar.style.background = toolbarPalette.shellBackground;
+    this.expandedBar.style.border = `1.25px solid ${toolbarPalette.shellBorder}`;
+    this.expandedBar.style.boxShadow = this.expanded ? toolbarPalette.shellShadowExpanded : toolbarPalette.shellShadow;
+    if (!this.expanded) {
+      this.hidePanels();
+    }
+
+    void this.expandedBar.offsetWidth;
+
+    const morphTiming = `${MOTION.duration.morph * 1000}ms ${MOTION.easing.snap}`;
+    this.expandedBar.style.transition = `width ${morphTiming}, padding ${morphTiming}, box-shadow 200ms ease`;
+    this.expandedBar.style.width = `${targetWidth}px`;
+    this.expandedBar.style.padding = `${targetPadding}px`;
 
     if (this.expanded) {
       this.setCollapsedContentVisible(false);
@@ -955,7 +959,7 @@ export class FeedbackToolbar {
     this.markersButton.dataset.notivPressedShadow = 'none';
     this.markersButton.dataset.notivHoverFilter = visible ? 'none' : (this.colorMode === 'dark' ? 'brightness(1.1)' : 'brightness(0.9)');
     this.markersButton.dataset.notivPressedFilter = visible ? 'none' : (this.colorMode === 'dark' ? 'brightness(1.06)' : 'brightness(0.86)');
-    setIcon(this.markersIcon, visible ? Eye : EyeOff);
+    setEyeStrikeVisible(this.markersIcon, !visible);
   }
 
   private syncSettingsConnectionUi(): void {
@@ -997,10 +1001,38 @@ export class FeedbackToolbar {
     const count = this.queueItems.length;
     const value = count > 99 ? '99+' : String(count);
     const visible = count > 0;
-    this.queueBadge.textContent = value;
-    this.collapsedBadge.textContent = value;
+    const countChanged = count !== this.previousQueueCount && this.previousQueueCount > 0 && count > 0;
+
+    const animateBadge = (badge: HTMLSpanElement): void => {
+      if (!countChanged) {
+        badge.textContent = value;
+        return;
+      }
+      const direction = count > this.previousQueueCount ? 1 : -1;
+      badge.animate(
+        [
+          { transform: 'translateY(0)', opacity: 1 },
+          { transform: `translateY(${-8 * direction}px)`, opacity: 0 }
+        ],
+        { duration: 80, easing: 'ease-out' }
+      ).onfinish = () => {
+        badge.textContent = value;
+        badge.animate(
+          [
+            { transform: `translateY(${8 * direction}px)`, opacity: 0 },
+            { transform: 'translateY(0)', opacity: 1 }
+          ],
+          { duration: 80, easing: 'ease-out' }
+        );
+      };
+    };
+
+    animateBadge(this.queueBadge);
+    animateBadge(this.collapsedBadge);
+
     this.queueBadge.style.display = visible ? 'grid' : 'none';
     this.collapsedBadge.style.display = visible ? 'grid' : 'none';
+    this.previousQueueCount = count;
   }
 
   private syncSubmitState(): void {

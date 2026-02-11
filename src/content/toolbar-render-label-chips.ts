@@ -2,6 +2,7 @@ import type { LinearLabel } from '../shared/types';
 import type { PanelPalette } from './toolbar-palette';
 import { setButtonDisabled } from './toolbar-ui-utils';
 import { FONT_STACK_MONO, UTILITY_STYLE_TOKENS } from '../shared/visual-tokens';
+import { MOTION } from '../shared/motion-tokens';
 
 interface RenderSubmitLabelChipsInput {
   submitLabelsWrap: HTMLDivElement;
@@ -36,7 +37,7 @@ export function renderSubmitLabelChipsContent(input: RenderSubmitLabelChipsInput
     return;
   }
 
-  selectedLabels.forEach((label) => {
+  selectedLabels.forEach((label, index) => {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.style.appearance = 'none';
@@ -53,7 +54,9 @@ export function renderSubmitLabelChipsContent(input: RenderSubmitLabelChipsInput
     chip.style.cursor = 'pointer';
     chip.style.lineHeight = '1';
     chip.style.whiteSpace = 'nowrap';
-    chip.style.transition = 'border-color 80ms ease, background 80ms ease';
+    chip.style.transition = 'border-color 80ms ease, background 80ms ease, opacity 120ms ease, transform 120ms ease';
+    chip.style.opacity = '0';
+    chip.style.transform = 'translateY(4px) scale(0.95)';
 
     const colorDot = document.createElement('span');
     colorDot.style.width = '9px';
@@ -86,10 +89,16 @@ export function renderSubmitLabelChipsContent(input: RenderSubmitLabelChipsInput
     });
 
     setButtonDisabled(chip, submitting);
-    chip.style.opacity = submitting ? '0.55' : '1';
     chip.addEventListener('click', () => {
       onRemoveLabel(label.id);
     });
     submitLabelsWrap.appendChild(chip);
+
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        chip.style.opacity = submitting ? '0.55' : '1';
+        chip.style.transform = 'translateY(0) scale(1)';
+      }, index * (MOTION.stagger.fast * 1000));
+    });
   });
 }

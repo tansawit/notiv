@@ -457,8 +457,18 @@ export class DraftMarkers {
         from { opacity: 0; transform: translateX(-4px) scale(0.98); }
         to { opacity: 1; transform: none; }
       }
+      [data-notiv-draft-marker="true"] {
+        transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      [data-notiv-draft-marker="true"]:hover {
+        transform: translate(-12px, -14px) rotate(2deg);
+      }
+      [data-notiv-draft-pin="true"] {
+        transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 120ms ease;
+      }
       [data-notiv-draft-marker="true"]:hover [data-notiv-draft-pin="true"] {
-        transform: rotate(-45deg) scale(1.03);
+        transform: rotate(-45deg) scale(1.08);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
       [data-notiv-draft-marker="true"]:hover [data-notiv-note-bubble="true"] {
         opacity: 1 !important;

@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { BackgroundResponse } from '../shared/messages';
 import { maskAccessToken } from '../shared/linear-settings-client';
 import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
+import { MOTION } from '../shared/motion-tokens';
 
 function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.Element {
   return (
@@ -240,94 +242,137 @@ function PopupApp(): React.JSX.Element {
     return <div className="popup-shell"><div className="muted">Loading...</div></div>;
   }
 
-  if (view === 'home') {
-    return (
-      <div className="popup-shell">
-        <section className="popup-panel popup-panel-flat">
-          <div className="popup-header-flat">
-            <h1 className="popup-title">Notiv</h1>
-            <div className="popup-header-actions">
-              <button className="button-ghost" onClick={() => setView('settings')}>
-                Settings
-              </button>
+  const viewVariants = {
+    initial: (direction: number) => ({ opacity: 0, x: direction * 10 }),
+    animate: { opacity: 1, x: 0 },
+    exit: (direction: number) => ({ opacity: 0, x: direction * -10 }),
+  };
+
+  const homeView = (
+    <motion.div
+      key="home"
+      custom={-1}
+      variants={viewVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: MOTION.duration.normal }}
+    >
+      <section className="popup-panel popup-panel-flat">
+        <div className="popup-header-flat">
+          <h1 className="popup-title">Notiv</h1>
+          <div className="popup-header-actions">
+            <motion.button
+              className="button-ghost"
+              onClick={() => setView('settings')}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            >
+              Settings
+            </motion.button>
+          </div>
+        </div>
+        <div className="popup-content">
+          <div className="status-row">
+            <span className={`status-dot ${unifiedStatus.ready ? 'ready' : !connected ? 'offline' : 'pending'}`} />
+            <div className="status-identity">
+              <span className="status-primary">
+                {unifiedStatus.ready
+                  ? (resources.viewerName ?? 'Connected')
+                  : !connected
+                    ? 'Not connected'
+                    : !currentSiteTarget
+                      ? 'No webpage'
+                      : 'Site access needed'}
+              </span>
+              <span className="status-secondary">
+                {unifiedStatus.ready
+                  ? (resources.organizationName ?? 'Ready to annotate')
+                  : !connected
+                    ? 'Connect Linear to start'
+                    : !currentSiteTarget
+                      ? 'Open a webpage to annotate'
+                      : currentSiteTarget.label}
+              </span>
             </div>
           </div>
-          <div className="popup-content">
-            <div className="status-row">
-              <span className={`status-dot ${unifiedStatus.ready ? 'ready' : !connected ? 'offline' : 'pending'}`} />
-              <div className="status-identity">
-                <span className="status-primary">
-                  {unifiedStatus.ready
-                    ? (resources.viewerName ?? 'Connected')
-                    : !connected
-                      ? 'Not connected'
-                      : !currentSiteTarget
-                        ? 'No webpage'
-                        : 'Site access needed'}
-                </span>
-                <span className="status-secondary">
-                  {unifiedStatus.ready
-                    ? (resources.organizationName ?? 'Ready to annotate')
-                    : !connected
-                      ? 'Connect Linear to start'
-                      : !currentSiteTarget
-                        ? 'Open a webpage to annotate'
-                        : currentSiteTarget.label}
-                </span>
-              </div>
-            </div>
-            <div className="popup-actions">
-              {unifiedStatus.ready ? (
-                <button
-                  className="button"
-                  onClick={() => void activatePicker()}
-                >
-                  Start Annotating
-                </button>
-              ) : unifiedStatus.actionType === 'connect' ? (
-                <button
-                  className="button"
-                  onClick={() => void connectWithOAuth()}
-                  disabled={authBusy}
-                >
-                  {authBusy ? 'Connecting...' : 'Connect Linear'}
-                </button>
-              ) : unifiedStatus.actionType === 'grant' ? (
-                <button
-                  className="button"
-                  onClick={() => void toggleCurrentSitePermission()}
-                  disabled={sitePermissionsBusy}
-                >
-                  {sitePermissionsBusy ? 'Granting...' : 'Grant Access'}
-                </button>
-              ) : null}
-            </div>
+          <div className="popup-actions">
+            {unifiedStatus.ready ? (
+              <motion.button
+                className="button"
+                onClick={() => void activatePicker()}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96, y: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
+                Start Annotating
+              </motion.button>
+            ) : unifiedStatus.actionType === 'connect' ? (
+              <motion.button
+                className="button"
+                onClick={() => void connectWithOAuth()}
+                disabled={authBusy}
+                whileHover={{ scale: authBusy ? 1 : 1.02 }}
+                whileTap={{ scale: authBusy ? 1 : 0.96, y: authBusy ? 0 : 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
+                {authBusy ? 'Connecting...' : 'Connect Linear'}
+              </motion.button>
+            ) : unifiedStatus.actionType === 'grant' ? (
+              <motion.button
+                className="button"
+                onClick={() => void toggleCurrentSitePermission()}
+                disabled={sitePermissionsBusy}
+                whileHover={{ scale: sitePermissionsBusy ? 1 : 1.02 }}
+                whileTap={{ scale: sitePermissionsBusy ? 1 : 0.96, y: sitePermissionsBusy ? 0 : 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
+                {sitePermissionsBusy ? 'Granting...' : 'Grant Access'}
+              </motion.button>
+            ) : null}
           </div>
-        </section>
+        </div>
+      </section>
+      {error ? <div className="error">{error}</div> : null}
+    </motion.div>
+  );
 
-        {error ? <div className="error">{error}</div> : null}
-      </div>
-    );
-  }
-
-  return (
-    <div className="popup-shell">
+  const settingsView = (
+    <motion.div
+      key="settings"
+      custom={1}
+      variants={viewVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: MOTION.duration.normal }}
+    >
       <section className="popup-panel popup-panel-flat">
         <div className="popup-header-flat">
           <div className="popup-header-left-flat">
-            <button
+            <motion.button
               className="icon-button-ghost-small"
               onClick={() => setView('home')}
               aria-label="Back"
               title="Back"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
               <Icon path="M15 18l-6-6 6-6" size={14} />
-            </button>
+            </motion.button>
             <h1 className="popup-title">Settings</h1>
           </div>
-          <button className="button-ghost" onClick={() => void openMainSettingsPage()}>
+          <motion.button
+            className="button-ghost"
+            onClick={() => void openMainSettingsPage()}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          >
             Open
-          </button>
+          </motion.button>
         </div>
 
         <div className="popup-content settings-content">
@@ -345,17 +390,38 @@ function PopupApp(): React.JSX.Element {
               </div>
             </div>
             <div className="popup-actions">
-              <button className="button" disabled={authBusy} onClick={() => void connectWithOAuth()}>
+              <motion.button
+                className="button"
+                disabled={authBusy}
+                onClick={() => void connectWithOAuth()}
+                whileHover={{ scale: authBusy ? 1 : 1.02 }}
+                whileTap={{ scale: authBusy ? 1 : 0.96 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
                 {authBusy ? 'Working...' : connected ? 'Reconnect' : 'Connect'}
-              </button>
+              </motion.button>
               {connected ? (
                 <>
-                  <button className="button" disabled={authBusy || loadingResources} onClick={() => void refreshResources()}>
+                  <motion.button
+                    className="button"
+                    disabled={authBusy || loadingResources}
+                    onClick={() => void refreshResources()}
+                    whileHover={{ scale: (authBusy || loadingResources) ? 1 : 1.02 }}
+                    whileTap={{ scale: (authBusy || loadingResources) ? 1 : 0.96 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  >
                     {loadingResources ? '...' : 'Refresh'}
-                  </button>
-                  <button className="button" disabled={authBusy} onClick={() => void disconnect()}>
+                  </motion.button>
+                  <motion.button
+                    className="button"
+                    disabled={authBusy}
+                    onClick={() => void disconnect()}
+                    whileHover={{ scale: authBusy ? 1 : 1.02 }}
+                    whileTap={{ scale: authBusy ? 1 : 0.96 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  >
                     Disconnect
-                  </button>
+                  </motion.button>
                 </>
               ) : null}
             </div>
@@ -383,13 +449,16 @@ function PopupApp(): React.JSX.Element {
               </div>
             </div>
             <div className="popup-actions">
-              <button
+              <motion.button
                 className="button"
                 disabled={sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget}
                 onClick={() => void toggleCurrentSitePermission()}
+                whileHover={{ scale: (sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget) ? 1 : 1.02 }}
+                whileTap={{ scale: (sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget) ? 1 : 0.96 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               >
                 {sitePermissionsBusy ? 'Working...' : currentSiteGranted ? 'Revoke' : 'Grant'}
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -409,27 +478,44 @@ function PopupApp(): React.JSX.Element {
                       autoFocus
                     />
                     <div className="popup-actions">
-                      <button className="button" disabled={authBusy} onClick={() => void saveToken()}>
+                      <motion.button
+                        className="button"
+                        disabled={authBusy}
+                        onClick={() => void saveToken()}
+                        whileHover={{ scale: authBusy ? 1 : 1.02 }}
+                        whileTap={{ scale: authBusy ? 1 : 0.96 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      >
                         Save
-                      </button>
+                      </motion.button>
                       {settings.accessToken ? (
-                        <button className="button" disabled={authBusy} onClick={() => { setTokenEditing(false); setTokenDraft(settings.accessToken); }}>
+                        <motion.button
+                          className="button"
+                          disabled={authBusy}
+                          onClick={() => { setTokenEditing(false); setTokenDraft(settings.accessToken); }}
+                          whileHover={{ scale: authBusy ? 1 : 1.02 }}
+                          whileTap={{ scale: authBusy ? 1 : 0.96 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        >
                           Cancel
-                        </button>
+                        </motion.button>
                       ) : null}
                     </div>
                   </>
                 ) : (
                   <div className="settings-row-inline">
                     <code className="token-display">{maskAccessToken(settings.accessToken)}</code>
-                    <button
+                    <motion.button
                       className="icon-button-ghost-small"
                       onClick={() => { setTokenEditing(true); setTokenDraft(settings.accessToken); }}
                       aria-label="Edit API token"
                       title="Edit"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     >
                       <Icon path="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z" size={12} />
-                    </button>
+                    </motion.button>
                   </div>
                 )}
               </div>
@@ -440,6 +526,14 @@ function PopupApp(): React.JSX.Element {
 
       {notice ? <div className="notice">{notice}</div> : null}
       {error ? <div className="error">{error}</div> : null}
+    </motion.div>
+  );
+
+  return (
+    <div className="popup-shell">
+      <AnimatePresence mode="wait" custom={view === 'home' ? -1 : 1}>
+        {view === 'home' ? homeView : settingsView}
+      </AnimatePresence>
     </div>
   );
 }

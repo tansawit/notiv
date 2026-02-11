@@ -1,6 +1,6 @@
-import { ChevronRight, Eye, PenLine, Send, Settings } from 'lucide';
+import { ChevronRight, PenLine, Send, Settings } from 'lucide';
 import type { ToolbarControlPalette, ToolbarModePalette } from './toolbar-palette';
-import { createIcon } from './toolbar-ui-utils';
+import { createIcon, createEyeToggleIcon } from './toolbar-ui-utils';
 import { FONT_STACK_MONO } from '../shared/visual-tokens';
 
 interface CreateToolbarShellInput {
@@ -176,7 +176,7 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
     `transform ${controlsTransformDurationMs}ms ${toolbarContainerEasing}`
   ].join(', ');
 
-  const markersIcon = createIcon(Eye);
+  const markersIcon = createEyeToggleIcon();
   const markersButton = makeIconButton('Toggle markers', markersIcon);
   const queueButton = makeIconButton('Open notes', createIcon(Send));
   const settingsButton = makeIconButton('Open settings', createIcon(Settings));

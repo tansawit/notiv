@@ -32,6 +32,27 @@ export function setIcon(icon: HTMLSpanElement, iconNode: IconNode, viewBox = '0 
   icon.innerHTML = renderIconSvg(iconNode, viewBox);
 }
 
+export function createEyeToggleIcon(): HTMLSpanElement {
+  const icon = document.createElement('span');
+  icon.style.display = 'inline-grid';
+  icon.style.placeItems = 'center';
+  icon.style.width = '16px';
+  icon.style.height = '16px';
+  icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">
+    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path>
+    <circle cx="12" cy="12" r="3"></circle>
+    <line class="notiv-eye-strike" x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-dasharray="24" stroke-dashoffset="24" style="transition: stroke-dashoffset 150ms ease-out"></line>
+  </svg>`;
+  return icon;
+}
+
+export function setEyeStrikeVisible(icon: HTMLSpanElement, visible: boolean): void {
+  const strike = icon.querySelector('.notiv-eye-strike') as SVGLineElement | null;
+  if (strike) {
+    strike.setAttribute('stroke-dashoffset', visible ? '0' : '24');
+  }
+}
+
 export function truncateText(value: string, limit: number): string {
   const text = value.trim();
   if (text.length <= limit) {
