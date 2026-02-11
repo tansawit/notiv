@@ -964,37 +964,32 @@ export class FeedbackToolbar {
       hasCredentials && (this.settingsState.loading || this.settingsState.loadingResources || this.settingsState.savingToken);
     const tokens = getVisualModeTokens(this.colorMode);
     const badgeTokens = tokens.settingsConnectionBadge;
+    const applyConnectionBadge = (background: string): void => {
+      this.settingsConnectionBadge.style.background = background;
+      this.settingsConnectionBadge.style.boxShadow = 'none';
+      this.settingsConnectionBadge.style.border = `1px solid ${badgeTokens.border}`;
+    };
 
     if (!hasCredentials) {
-      this.settingsConnectionBadge.style.background = badgeTokens.idle;
-      this.settingsConnectionBadge.style.boxShadow = `0 0 0 1px ${badgeTokens.ring}`;
-      this.settingsConnectionBadge.style.border = `1px solid ${badgeTokens.border}`;
+      applyConnectionBadge(badgeTokens.idle);
       return;
     }
 
     if (hasError) {
-      this.settingsConnectionBadge.style.background = badgeTokens.error.background;
-      this.settingsConnectionBadge.style.boxShadow = badgeTokens.error.shadow;
-      this.settingsConnectionBadge.style.border = `1px solid ${badgeTokens.border}`;
+      applyConnectionBadge(badgeTokens.error.background);
       return;
     }
 
     if (connecting) {
-      this.settingsConnectionBadge.style.background = badgeTokens.connecting.background;
-      this.settingsConnectionBadge.style.boxShadow = badgeTokens.connecting.shadow;
-      this.settingsConnectionBadge.style.border = `1px solid ${badgeTokens.border}`;
+      applyConnectionBadge(badgeTokens.connecting.background);
       return;
     }
 
     if (this.settingsState.connected) {
-      this.settingsConnectionBadge.style.background = badgeTokens.connected.background;
-      this.settingsConnectionBadge.style.boxShadow = badgeTokens.connected.shadow;
-      this.settingsConnectionBadge.style.border = `1px solid ${badgeTokens.border}`;
+      applyConnectionBadge(badgeTokens.connected.background);
       return;
     }
-    this.settingsConnectionBadge.style.background = badgeTokens.idle;
-    this.settingsConnectionBadge.style.boxShadow = `0 0 0 1px ${badgeTokens.ring}`;
-    this.settingsConnectionBadge.style.border = `1px solid ${badgeTokens.border}`;
+    applyConnectionBadge(badgeTokens.idle);
   }
 
   private syncQueueBadge(): void {
@@ -1325,10 +1320,10 @@ export class FeedbackToolbar {
     });
 
     this.separator.style.background = palette.separator;
-    this.collapsedBadge.style.border = `1.25px solid ${palette.badgeBorder}`;
+    this.collapsedBadge.style.border = `1px solid ${palette.badgeBorder}`;
     this.collapsedBadge.style.background = palette.collapsedBadgeBackground;
     this.collapsedBadge.style.color = palette.collapsedBadgeColor;
-    this.queueBadge.style.border = `1.25px solid ${palette.badgeBorder}`;
+    this.queueBadge.style.border = `1px solid ${palette.badgeBorder}`;
     this.queueBadge.style.background = palette.queueBadgeBackground;
     this.queueBadge.style.color = palette.queueBadgeColor;
   }

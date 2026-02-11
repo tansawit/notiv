@@ -124,20 +124,21 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
 
   const collapsedBadge = document.createElement('span');
   collapsedBadge.style.position = 'absolute';
-  collapsedBadge.style.top = '-5px';
-  collapsedBadge.style.right = '-5px';
-  collapsedBadge.style.minWidth = '16px';
-  collapsedBadge.style.height = '16px';
+  collapsedBadge.style.top = '1px';
+  collapsedBadge.style.right = '1px';
+  collapsedBadge.style.minWidth = '14px';
+  collapsedBadge.style.height = '14px';
   collapsedBadge.style.borderRadius = '999px';
-  collapsedBadge.style.padding = '0 3px';
-  collapsedBadge.style.border = `1.25px solid ${controlPalette.badgeBorder}`;
+  collapsedBadge.style.padding = '0 2px';
+  collapsedBadge.style.border = `1px solid ${controlPalette.badgeBorder}`;
   collapsedBadge.style.background = controlPalette.collapsedBadgeBackground;
   collapsedBadge.style.color = controlPalette.collapsedBadgeColor;
   collapsedBadge.style.display = 'none';
   collapsedBadge.style.placeItems = 'center';
   collapsedBadge.style.fontFamily = FONT_STACK_MONO;
-  collapsedBadge.style.fontSize = '10px';
+  collapsedBadge.style.fontSize = '9px';
   collapsedBadge.style.fontWeight = '700';
+  collapsedBadge.style.lineHeight = '1';
   collapsedButton.appendChild(collapsedBadge);
 
   const expandedBar = document.createElement('div');
@@ -184,11 +185,13 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   const settingsConnectionBadge = document.createElement('span');
   settingsConnectionBadge.setAttribute('aria-hidden', 'true');
   settingsConnectionBadge.style.position = 'absolute';
-  settingsConnectionBadge.style.top = '5px';
-  settingsConnectionBadge.style.right = '5px';
-  settingsConnectionBadge.style.width = '7px';
-  settingsConnectionBadge.style.height = '7px';
+  settingsConnectionBadge.style.top = '1px';
+  settingsConnectionBadge.style.right = '1px';
+  settingsConnectionBadge.style.width = '14px';
+  settingsConnectionBadge.style.height = '14px';
   settingsConnectionBadge.style.borderRadius = '999px';
+  settingsConnectionBadge.style.display = 'grid';
+  settingsConnectionBadge.style.placeItems = 'center';
   settingsConnectionBadge.style.transition = 'background 160ms ease, box-shadow 160ms ease, border-color 160ms ease';
   settingsConnectionBadge.style.pointerEvents = 'none';
   settingsButton.appendChild(settingsConnectionBadge);
@@ -209,20 +212,21 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
 
   const queueBadge = document.createElement('span');
   queueBadge.style.position = 'absolute';
-  queueBadge.style.top = '-4px';
-  queueBadge.style.right = '-4px';
-  queueBadge.style.minWidth = '16px';
-  queueBadge.style.height = '16px';
+  queueBadge.style.top = '1px';
+  queueBadge.style.right = '1px';
+  queueBadge.style.minWidth = '14px';
+  queueBadge.style.height = '14px';
   queueBadge.style.borderRadius = '999px';
-  queueBadge.style.padding = '0 3px';
-  queueBadge.style.border = `1.25px solid ${controlPalette.badgeBorder}`;
+  queueBadge.style.padding = '0 2px';
+  queueBadge.style.border = `1px solid ${controlPalette.badgeBorder}`;
   queueBadge.style.background = controlPalette.queueBadgeBackground;
   queueBadge.style.color = controlPalette.queueBadgeColor;
   queueBadge.style.display = 'none';
   queueBadge.style.placeItems = 'center';
   queueBadge.style.fontFamily = FONT_STACK_MONO;
-  queueBadge.style.fontSize = '10px';
+  queueBadge.style.fontSize = '9px';
   queueBadge.style.fontWeight = '700';
+  queueBadge.style.lineHeight = '1';
   queueButton.style.position = 'relative';
   queueButton.appendChild(queueBadge);
 

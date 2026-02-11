@@ -1,11 +1,10 @@
-import { ChevronLeft } from 'lucide';
 import type {
   SubmitDropdownControl,
   SubmitDropdownOption,
   SubmitLabelSearchControl
 } from './base-combobox-control';
 import type { NotivThemeMode, PanelPalette } from './toolbar-palette';
-import { createIcon, makeTextButton } from './toolbar-ui-utils';
+import { makeTextButton } from './toolbar-ui-utils';
 import {
   FONT_STACK_MONO,
   FONT_STACK_SERIF,
@@ -51,6 +50,34 @@ export interface ToolbarSubmitPanelElements {
   closeTransientSubmitMenus: () => void;
 }
 
+function createBackChevronIcon(): HTMLSpanElement {
+  const icon = document.createElement('span');
+  icon.style.display = 'inline-grid';
+  icon.style.placeItems = 'center';
+  icon.style.width = '14px';
+  icon.style.height = '14px';
+  icon.style.pointerEvents = 'none';
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '14');
+  svg.setAttribute('height', '14');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M15 18l-6-6 6-6');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  path.setAttribute('fill', 'none');
+  svg.appendChild(path);
+  icon.appendChild(svg);
+
+  return icon;
+}
+
 export function createToolbarSubmitPanelElements(
   input: CreateToolbarSubmitPanelInput
 ): ToolbarSubmitPanelElements {
@@ -77,15 +104,18 @@ export function createToolbarSubmitPanelElements(
     submitHeading.style.gap = '6px';
     submitHeading.style.marginBottom = '8px';
 
-    const submitBackIcon = createIcon(ChevronLeft);
-    submitBackIcon.style.width = '14px';
-    submitBackIcon.style.height = '14px';
-    submitBackIcon.style.pointerEvents = 'none';
+    const submitBackIcon = createBackChevronIcon();
     const submitBackButton = makeIconButton('Back to notes', submitBackIcon);
     submitBackButton.setAttribute('data-submit-back', 'true');
-    submitBackButton.style.width = '24px';
-    submitBackButton.style.height = '24px';
-    submitBackButton.style.borderRadius = '6px';
+    submitBackButton.style.width = '22px';
+    submitBackButton.style.height = '22px';
+    submitBackButton.style.minWidth = '22px';
+    submitBackButton.style.minHeight = '22px';
+    submitBackButton.style.padding = '0';
+    submitBackButton.style.borderRadius = '5px';
+    submitBackButton.style.display = 'inline-flex';
+    submitBackButton.style.alignItems = 'center';
+    submitBackButton.style.justifyContent = 'center';
     submitBackButton.style.border = `1.25px solid ${panelPalette.iconButtonBorder}`;
     submitBackButton.style.background = panelPalette.iconButtonBackground;
     submitBackButton.style.color = panelPalette.iconButtonColor;

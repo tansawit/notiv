@@ -86,15 +86,6 @@ body {
   justify-content: center;
 }
 
-.popup-header-back-chevron {
-  width: 5px;
-  height: 5px;
-  border-left: 1.4px solid currentColor;
-  border-bottom: 1.4px solid currentColor;
-  transform: rotate(45deg);
-  margin-left: 1px;
-}
-
 .popup-header-logo {
   width: 20px;
   height: 20px;
@@ -374,6 +365,9 @@ body {
   font-weight: 520;
   line-height: 1;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition:
     border-color 120ms ease,
     background-color 120ms ease,

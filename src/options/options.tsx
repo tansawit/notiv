@@ -5,6 +5,21 @@ import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-sto
 import { STORAGE_KEYS } from '../shared/constants';
 import { useLinearConnection } from '../shared/use-linear-connection';
 
+function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d={path}
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
 const REQUIRED_ORIGINS = new Set(['https://api.linear.app/*', 'https://linear.app/*']);
 
 function isConfigurableSiteOrigin(originPattern: string): boolean {
@@ -216,7 +231,7 @@ function SettingsApp(): React.JSX.Element {
                 aria-label="Edit API token"
                 title="Edit API token"
               >
-                ✎
+                <Icon path="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z" size={15} />
               </button>
             </div>
           )

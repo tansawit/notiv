@@ -92,7 +92,7 @@ function Icon({
       <path
         d={path}
         stroke="currentColor"
-        strokeWidth={filled ? 2 : 1.8}
+        strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill={filled ? 'currentColor' : 'none'}
