@@ -21,8 +21,6 @@ export class Highlighter {
     this.bringToFrontOnShow = options.bringToFrontOnShow ?? false;
 
     const defaultHighlight = getHighlightColorPreset(DEFAULT_HIGHLIGHT_COLOR);
-    const visualTokens = getVisualModeTokens(getNotivThemeMode());
-
     this.overlay = document.createElement('div');
     this.overlay.setAttribute('data-notiv-ui', 'true');
     this.overlay.style.position = 'fixed';
@@ -45,9 +43,6 @@ export class Highlighter {
     this.tooltip.style.maxWidth = '340px';
     this.tooltip.style.padding = '4px 9px';
     this.tooltip.style.borderRadius = '6px';
-    this.tooltip.style.background = visualTokens.floatingTooltip.background;
-    this.tooltip.style.color = visualTokens.floatingTooltip.color;
-    this.tooltip.style.border = `1.5px solid ${visualTokens.floatingTooltip.border}`;
     this.tooltip.style.fontFamily = FONT_STACK_SERIF;
     this.tooltip.style.fontSize = '12px';
     this.tooltip.style.fontWeight = '550';
@@ -59,13 +54,23 @@ export class Highlighter {
     this.tooltip.style.pointerEvents = 'none';
     this.tooltip.style.zIndex = String(tooltipZIndex);
     this.tooltip.style.display = 'none';
-    this.tooltip.style.boxShadow = visualTokens.floatingTooltip.shadow;
+    this.applyTooltipTheme();
 
     document.documentElement.appendChild(this.overlay);
     document.documentElement.appendChild(this.tooltip);
   }
 
+  private applyTooltipTheme(): void {
+    const visualTokens = getVisualModeTokens(getNotivThemeMode());
+    this.tooltip.style.background = visualTokens.floatingTooltip.background;
+    this.tooltip.style.color = visualTokens.floatingTooltip.color;
+    this.tooltip.style.border = `1.25px solid ${visualTokens.floatingTooltip.border}`;
+    this.tooltip.style.boxShadow = visualTokens.floatingTooltip.shadow;
+  }
+
   show(rect: BoundingBox, label?: string, pointer?: { x: number; y: number }): void {
+    this.applyTooltipTheme();
+
     if (this.bringToFrontOnShow) {
       this.overlay.remove();
       this.tooltip.remove();

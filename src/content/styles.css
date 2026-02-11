@@ -1,65 +1,65 @@
 :host {
   all: initial;
   --notiv-content-token-01: #111111;
-  --notiv-content-token-02: #ffffff;
+  --notiv-content-token-02: #fdfbf7;
   --notiv-content-token-03: #111111;
-  --notiv-content-token-04: "Times New Roman", Times, serif;
-  --notiv-content-token-05: rgba(0, 0, 0, 0.18);
+  --notiv-content-token-04: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --notiv-content-token-05: rgba(0, 0, 0, 0.12);
   --notiv-content-token-06: rgba(17, 17, 17, 0.16);
   --notiv-content-token-07: #111111;
   --notiv-content-token-08: #111111;
   --notiv-content-token-09: #111111;
-  --notiv-content-token-10: "SF Mono", "Monaco", "Inconsolata", "Fira Mono", monospace;
-  --notiv-content-token-11: #555555;
+  --notiv-content-token-10: "JetBrains Mono", "SF Mono", monospace;
+  --notiv-content-token-11: #444444;
   --notiv-content-token-12: rgba(17, 17, 17, 0.05);
   --notiv-content-token-13: #111111;
   --notiv-content-token-14: #ffffff;
   --notiv-content-token-15: #111111;
   --notiv-content-token-16: #111111;
-  --notiv-content-token-17: #f9f9f9;
+  --notiv-content-token-17: #ffffff;
   --notiv-content-token-18: #111111;
   --notiv-content-token-19: #ffffff;
   --notiv-content-token-20: #000000;
-  --notiv-content-token-21: #c24545;
-  --notiv-content-token-22: rgba(194, 69, 69, 0.1);
-  --notiv-content-token-23: #a22a2a;
-  --notiv-content-token-24: #a83737;
-  --notiv-content-token-25: rgba(194, 69, 69, 0.16);
+  --notiv-content-token-21: #c62828;
+  --notiv-content-token-22: rgba(198, 40, 40, 0.1);
+  --notiv-content-token-23: #9d1f1f;
+  --notiv-content-token-24: #a72525;
+  --notiv-content-token-25: rgba(198, 40, 40, 0.16);
   --notiv-content-token-26: #111111;
-  --notiv-content-token-27: #777777;
+  --notiv-content-token-27: #888888;
   --notiv-content-token-28: #111111;
-  --notiv-content-token-29: #555555;
+  --notiv-content-token-29: #444444;
   --notiv-content-token-30: #111111;
   --notiv-content-token-31: #ffffff;
   --notiv-content-token-32: #111111;
   --notiv-content-token-33: #111111;
-  --notiv-content-token-34: #f9f9f9;
+  --notiv-content-token-34: #ffffff;
   --notiv-content-token-35: rgba(17, 17, 17, 0.2);
   --notiv-content-token-36: #111111;
   --notiv-content-token-37: #ffffff;
   --notiv-content-token-38: #111111;
   --notiv-content-token-39: #ffffff;
   --notiv-content-token-40: #111111;
-  --notiv-content-token-41: #555555;
-  --notiv-content-token-42: #c24545;
-  --notiv-content-token-43: rgba(194, 69, 69, 0.1);
-  --notiv-content-token-44: #f2f2f2;
-  --notiv-content-token-45: rgba(17, 17, 17, 0.98);
-  --notiv-content-token-46: #f2f2f2;
-  --notiv-content-token-47: rgba(0, 0, 0, 0.55);
-  --notiv-content-token-48: rgba(255, 255, 255, 0.22);
-  --notiv-content-token-49: #FFE600;
+  --notiv-content-token-41: #444444;
+  --notiv-content-token-42: #c62828;
+  --notiv-content-token-43: rgba(198, 40, 40, 0.1);
+  --notiv-content-token-44: #d4d4d4;
+  --notiv-content-token-45: rgba(24, 24, 24, 0.96);
+  --notiv-content-token-46: #efefef;
+  --notiv-content-token-47: rgba(0, 0, 0, 0.42);
+  --notiv-content-token-48: rgba(255, 255, 255, 0.16);
+  --notiv-content-token-49: #d7d7d7;
   --notiv-content-token-50: #ffffff;
-  --notiv-content-token-51: rgba(255, 255, 255, 0.34);
-  --notiv-content-token-52: #d7d7d7;
+  --notiv-content-token-51: rgba(255, 255, 255, 0.24);
+  --notiv-content-token-52: #bdbdbd;
   --notiv-content-token-53: rgba(255, 255, 255, 0.08);
-  --notiv-content-token-54: #f2f2f2;
-  --notiv-content-token-55: rgba(28, 28, 28, 0.96);
-  --notiv-content-token-56: #ffffff;
-  --notiv-content-token-57: #FFE600;
-  --notiv-content-token-58: rgba(255, 230, 0, 0.14);
-  --notiv-content-token-59: #FFE600;
-  --notiv-content-token-60: #FFE600;
+  --notiv-content-token-54: #cdcdcd;
+  --notiv-content-token-55: rgba(34, 34, 34, 0.94);
+  --notiv-content-token-56: #efefef;
+  --notiv-content-token-57: #d7d7d7;
+  --notiv-content-token-58: rgba(255, 255, 255, 0.08);
+  --notiv-content-token-59: #d7d7d7;
+  --notiv-content-token-60: #d7d7d7;
   --notiv-content-token-61: #111111;
   --notiv-content-token-62: #d97d7d;
   --notiv-content-token-63: rgba(190, 70, 70, 0.28);
@@ -68,31 +68,33 @@
   --notiv-content-token-66: rgba(190, 70, 70, 0.36);
   --notiv-content-token-67: rgba(255, 255, 255, 0.4);
   --notiv-content-token-68: #ffffff;
-  --notiv-content-token-69: #b5b5b5;
-  --notiv-content-token-70: #FFE600;
-  --notiv-content-token-71: #cfcfcf;
-  --notiv-content-token-72: #f2f2f2;
-  --notiv-content-token-73: rgba(28, 28, 28, 0.96);
-  --notiv-content-token-74: #ffffff;
-  --notiv-content-token-75: #FFE600;
-  --notiv-content-token-76: rgba(255, 230, 0, 0.14);
-  --notiv-content-token-77: rgba(255, 230, 0, 0.35);
-  --notiv-content-token-78: #f2f2f2;
-  --notiv-content-token-79: rgba(28, 28, 28, 0.96);
-  --notiv-content-token-80: #f2f2f2;
-  --notiv-content-token-81: rgba(12, 12, 12, 0.96);
-  --notiv-content-token-82: #ffffff;
-  --notiv-content-token-83: #d0d0d0;
+  --notiv-content-token-69: #a8a8a8;
+  --notiv-content-token-70: #d7d7d7;
+  --notiv-content-token-71: #bdbdbd;
+  --notiv-content-token-72: #cdcdcd;
+  --notiv-content-token-73: rgba(34, 34, 34, 0.94);
+  --notiv-content-token-74: #efefef;
+  --notiv-content-token-75: #d7d7d7;
+  --notiv-content-token-76: rgba(255, 255, 255, 0.14);
+  --notiv-content-token-77: rgba(255, 255, 255, 0.35);
+  --notiv-content-token-78: #cdcdcd;
+  --notiv-content-token-79: rgba(34, 34, 34, 0.94);
+  --notiv-content-token-80: #cdcdcd;
+  --notiv-content-token-81: rgba(24, 24, 24, 0.94);
+  --notiv-content-token-82: #efefef;
+  --notiv-content-token-83: #bdbdbd;
 }
 
 .notiv-panel {
   width: min(360px, calc(100vw - 20px));
-  border: 1.5px solid var(--notiv-content-token-01);
-  border-radius: 10px;
+  border: 1.25px solid var(--notiv-content-token-01);
+  border-radius: 12px;
   background: var(--notiv-content-token-02);
   color: var(--notiv-content-token-03);
   font-family: var(--notiv-content-token-04);
-  box-shadow: 3px 3px 0 var(--notiv-content-token-01), 0 8px 18px var(--notiv-content-token-05);
+  box-shadow: 0 4px 12px var(--notiv-content-token-05), 0 1px 2px rgba(0, 0, 0, 0.05);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
+  background-size: 12px 12px;
   overflow: hidden;
 }
 
@@ -155,14 +157,15 @@
   appearance: none;
   width: 34px;
   height: 34px;
-  border: 1.5px solid var(--notiv-content-token-13);
-  border-radius: 9px;
+  border: 1.25px solid var(--notiv-content-token-13);
+  border-radius: 6px;
   background: var(--notiv-content-token-14);
   color: var(--notiv-content-token-15);
   display: inline-grid;
   place-items: center;
   cursor: pointer;
-  transition: all 120ms ease;
+  transform: scale(1);
+  transition: transform 90ms ease, color 120ms ease, background-color 120ms ease, border-color 120ms ease, filter 120ms ease;
   padding: 0;
 }
 
@@ -178,8 +181,11 @@
 }
 
 .notiv-icon-button:hover:not(:disabled):not(.notiv-icon-button-ghost) {
-  border-color: var(--notiv-content-token-16);
-  background: var(--notiv-content-token-17);
+  filter: brightness(0.92);
+}
+
+.notiv-icon-button:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .notiv-icon-button:disabled {
@@ -194,19 +200,19 @@
 }
 
 .notiv-icon-button-primary:hover:not(:disabled) {
-  border-color: var(--notiv-content-token-20);
-  background: var(--notiv-content-token-20);
+  filter: brightness(0.92);
 }
 
 .notiv-icon-button-danger {
-  border-color: var(--notiv-content-token-21);
-  background: var(--notiv-content-token-22);
+  border-color: transparent;
+  background: transparent;
   color: var(--notiv-content-token-23);
 }
 
 .notiv-icon-button-danger:hover:not(:disabled) {
   border-color: var(--notiv-content-token-24);
   background: var(--notiv-content-token-25);
+  filter: none;
 }
 
 .notiv-body {
@@ -281,7 +287,7 @@
   appearance: none;
   width: 24px;
   height: 24px;
-  border: 1.5px solid transparent;
+  border: 1.25px solid transparent;
   border-radius: 999px;
   padding: 0;
   display: inline-grid;
@@ -346,7 +352,7 @@
   position: relative;
   width: 56px;
   height: 44px;
-  border: 1.5px solid var(--notiv-content-token-36);
+  border: 1.25px solid var(--notiv-content-token-36);
   border-radius: 6px;
   overflow: hidden;
   background: var(--notiv-content-token-37);
@@ -365,7 +371,7 @@
   right: 3px;
   width: 16px;
   height: 16px;
-  border: 1.5px solid var(--notiv-content-token-38);
+  border: 1.25px solid var(--notiv-content-token-38);
   border-radius: 4px;
   background: var(--notiv-content-token-39);
   color: var(--notiv-content-token-40);
@@ -387,7 +393,7 @@
 }
 
 .notiv-error {
-  border: 1.5px solid var(--notiv-content-token-42);
+  border: 1.25px solid var(--notiv-content-token-42);
   border-radius: 6px;
   background: var(--notiv-content-token-43);
   color: var(--notiv-content-token-23);
@@ -400,7 +406,7 @@
   border-color: var(--notiv-content-token-44);
   background: var(--notiv-content-token-45);
   color: var(--notiv-content-token-46);
-  box-shadow: 3px 3px 0 var(--notiv-content-token-44), 0 10px 22px var(--notiv-content-token-47);
+  box-shadow: 0 8px 18px var(--notiv-content-token-47), 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-header {
@@ -439,8 +445,7 @@
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button:hover:not(:disabled):not(.notiv-icon-button-ghost) {
-  border-color: var(--notiv-content-token-57);
-  background: var(--notiv-content-token-58);
+  filter: brightness(1.1);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-primary {
@@ -450,18 +455,19 @@
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-primary:hover:not(:disabled) {
-  filter: brightness(1.03);
+  filter: brightness(1.1);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-danger {
-  border-color: var(--notiv-content-token-62);
-  background: var(--notiv-content-token-63);
+  border-color: transparent;
+  background: transparent;
   color: var(--notiv-content-token-64);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-danger:hover:not(:disabled) {
   border-color: var(--notiv-content-token-65);
   background: var(--notiv-content-token-66);
+  filter: none;
 }
 
 :host([data-notiv-theme="dark"]) .notiv-textarea {

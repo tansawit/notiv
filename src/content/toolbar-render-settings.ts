@@ -56,7 +56,7 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
   );
   headingContext.style.width = '30px';
   headingContext.style.height = '30px';
-  headingContext.style.border = `1.5px solid ${palette.iconButtonBorder}`;
+  headingContext.style.border = `1.25px solid ${palette.iconButtonBorder}`;
   headingContext.style.borderRadius = '6px';
   headingContext.style.background = palette.iconButtonBackground;
   headingContext.style.color = palette.iconButtonColor;
@@ -70,7 +70,7 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
 
   if (settingsState.loading) {
     const loadingCard = document.createElement('div');
-    loadingCard.style.border = `1.5px solid ${palette.surfaceBorder}`;
+    loadingCard.style.border = `1.25px solid ${palette.surfaceBorder}`;
     loadingCard.style.borderRadius = '6px';
     loadingCard.style.padding = '8px';
     loadingCard.style.display = 'grid';
@@ -106,7 +106,7 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
   const visualTokens = getVisualModeTokens(colorMode);
 
   const card = document.createElement('div');
-  card.style.border = `1.5px solid ${palette.surfaceBorder}`;
+  card.style.border = `1.25px solid ${palette.surfaceBorder}`;
   card.style.borderRadius = '6px';
   card.style.padding = '8px';
   card.style.display = 'grid';
@@ -156,7 +156,7 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
       ? visualTokens.statusPill.connected
       : visualTokens.statusPill.offline;
   statusPill.textContent = hasError ? 'Error' : connected ? 'Connected' : 'Offline';
-  statusPill.style.border = `1.5px solid ${statusTone.border}`;
+  statusPill.style.border = `1.25px solid ${statusTone.border}`;
   statusPill.style.borderRadius = '999px';
   statusPill.style.padding = '2px 7px';
   statusPill.style.fontSize = '9px';
@@ -185,46 +185,52 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
     card.appendChild(tokenHelp);
   }
 
-  const tokenLabel = document.createElement('div');
-  tokenLabel.textContent = 'Authentication';
-  tokenLabel.style.color = palette.textSecondary;
-  tokenLabel.style.fontFamily = FONT_STACK_MONO;
-  tokenLabel.style.fontSize = '9px';
-  tokenLabel.style.textTransform = 'uppercase';
-  tokenLabel.style.letterSpacing = '0.03em';
-  card.appendChild(tokenLabel);
+  const shouldShowAuthDetails = !connected || hasError || !hasToken;
+  if (shouldShowAuthDetails) {
+    const tokenLabel = document.createElement('div');
+    tokenLabel.textContent = 'Authentication';
+    tokenLabel.style.color = palette.textSecondary;
+    tokenLabel.style.fontFamily = FONT_STACK_MONO;
+    tokenLabel.style.fontSize = '9px';
+    tokenLabel.style.textTransform = 'uppercase';
+    tokenLabel.style.letterSpacing = '0.03em';
+    card.appendChild(tokenLabel);
 
-  const authSummary = document.createElement('div');
-  authSummary.textContent = connected
-    ? 'Authenticated in extension settings.'
-    : 'Not authenticated. Connect from extension settings.';
-  authSummary.style.border = `1px dashed ${palette.inputBorder}`;
-  authSummary.style.borderRadius = '6px';
-  authSummary.style.padding = '8px 9px';
-  authSummary.style.fontFamily = FONT_STACK_MONO;
-  authSummary.style.fontSize = '10px';
-  authSummary.style.lineHeight = '1.35';
-  authSummary.style.color = palette.textSecondary;
-  authSummary.style.background = palette.inputBackground;
-  card.appendChild(authSummary);
+    const authSummary = document.createElement('div');
+    authSummary.textContent = connected
+      ? 'Authenticated in extension settings.'
+      : 'Not authenticated. Connect from extension settings.';
+    authSummary.style.border = `1px dashed ${palette.inputBorder}`;
+    authSummary.style.borderRadius = '6px';
+    authSummary.style.padding = '8px 9px';
+    authSummary.style.fontFamily = FONT_STACK_MONO;
+    authSummary.style.fontSize = '10px';
+    authSummary.style.lineHeight = '1.35';
+    authSummary.style.color = palette.textSecondary;
+    authSummary.style.background = palette.inputBackground;
+    authSummary.style.flex = '1 1 180px';
 
-  const settingsActionRow = document.createElement('div');
-  settingsActionRow.style.display = 'flex';
-  settingsActionRow.style.justifyContent = 'flex-end';
-  settingsActionRow.style.alignItems = 'center';
-  settingsActionRow.style.gap = '6px';
+    card.appendChild(authSummary);
+  }
+
+  settingsPanel.appendChild(card);
+
+  const actionRow = document.createElement('div');
+  actionRow.style.display = 'flex';
+  actionRow.style.justifyContent = 'flex-end';
+  actionRow.style.paddingTop = '2px';
 
   const openSettingsButton = makeTextButton('Open settings');
   openSettingsButton.style.padding = '7px 10px';
-  openSettingsButton.style.height = '28px';
+  openSettingsButton.style.height = '30px';
   openSettingsButton.style.fontSize = '11px';
+  openSettingsButton.style.whiteSpace = 'nowrap';
   openSettingsButton.style.borderColor = visualTokens.primaryAction.border;
   openSettingsButton.style.background = visualTokens.primaryAction.background;
   openSettingsButton.style.color = visualTokens.primaryAction.color;
   openSettingsButton.addEventListener('click', () => onOpenSettingsPage());
-  settingsActionRow.appendChild(openSettingsButton);
-  card.appendChild(settingsActionRow);
-  settingsPanel.appendChild(card);
+  actionRow.appendChild(openSettingsButton);
+  settingsPanel.appendChild(actionRow);
 
   if (settingsState.notice || settingsState.error) {
     const message = document.createElement('div');
@@ -236,11 +242,11 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
     message.style.lineHeight = '1.35';
     const tone = settingsState.error ? visualTokens.message.error : visualTokens.message.notice;
     if (settingsState.error) {
-      message.style.border = `1.5px solid ${tone.border}`;
+      message.style.border = `1.25px solid ${tone.border}`;
       message.style.background = tone.background;
       message.style.color = tone.color;
     } else {
-      message.style.border = `1.5px solid ${tone.border}`;
+      message.style.border = `1.25px solid ${tone.border}`;
       message.style.background = tone.background;
       message.style.color = tone.color;
     }

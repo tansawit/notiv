@@ -460,6 +460,12 @@ export class FeedbackToolbar {
     }
   }
 
+  clearSubmitInputs(): void {
+    this.submitTitleInput.value = '';
+    this.submitDescriptionInput.value = '';
+    this.syncSubmitState();
+  }
+
   setQueueItems(items: QueueNoteSummary[]): void {
     this.queueItems = items;
     if (this.queueHoveredId && !items.some((item) => item.id === this.queueHoveredId)) {
@@ -591,8 +597,8 @@ export class FeedbackToolbar {
     button.style.appearance = 'none';
     button.style.width = `${this.toolbarInnerButtonSize}px`;
     button.style.height = `${this.toolbarInnerButtonSize}px`;
-    button.style.border = `1.5px solid ${controlPalette.buttonBorder}`;
-    button.style.borderRadius = '8px';
+    button.style.border = `1.25px solid ${controlPalette.buttonBorder}`;
+    button.style.borderRadius = '6px';
     button.style.background = controlPalette.buttonBackground;
     button.style.color = controlPalette.buttonColor;
     button.style.boxShadow = 'none';
@@ -605,26 +611,78 @@ export class FeedbackToolbar {
       'color 120ms ease',
       'background-color 120ms ease',
       'border-color 120ms ease',
+      'box-shadow 120ms ease',
       'filter 120ms ease'
     ].join(', ');
+    button.dataset.notivRestBackground = controlPalette.buttonBackground;
+    button.dataset.notivRestBorder = controlPalette.buttonBorder;
+    button.dataset.notivRestColor = controlPalette.buttonColor;
+    button.dataset.notivRestShadow = 'none';
+    button.dataset.notivHoverBackground = controlPalette.buttonHoverBackground;
+    button.dataset.notivHoverBorder = controlPalette.buttonHoverBorder;
+    button.dataset.notivHoverColor = controlPalette.buttonHoverColor;
+    button.dataset.notivHoverShadow = `inset 0 0 0 1px ${controlPalette.buttonHoverBorder}`;
+    button.dataset.notivPressedBackground = controlPalette.buttonPressedBackground;
+    button.dataset.notivPressedBorder = controlPalette.buttonHoverBorder;
+    button.dataset.notivPressedColor = controlPalette.buttonHoverColor;
+    button.dataset.notivPressedShadow = `inset 0 0 0 1px ${controlPalette.buttonHoverBorder}`;
 
     let hovered = false;
     let pressed = false;
     const applyInteractionState = (): void => {
+      const restBackground = button.dataset.notivRestBackground ?? controlPalette.buttonBackground;
+      const restBorder = button.dataset.notivRestBorder ?? controlPalette.buttonBorder;
+      const restColor = button.dataset.notivRestColor ?? controlPalette.buttonColor;
+      const restShadow = button.dataset.notivRestShadow ?? 'none';
+      const hoverBackground = button.dataset.notivHoverBackground ?? restBackground;
+      const hoverBorder = button.dataset.notivHoverBorder ?? restBorder;
+      const hoverColor = button.dataset.notivHoverColor ?? restColor;
+      const hoverShadow = button.dataset.notivHoverShadow ?? restShadow;
+      const pressedBackground = button.dataset.notivPressedBackground ?? hoverBackground;
+      const pressedBorder = button.dataset.notivPressedBorder ?? hoverBorder;
+      const pressedColor = button.dataset.notivPressedColor ?? hoverColor;
+      const pressedShadow = button.dataset.notivPressedShadow ?? hoverShadow;
+      const hoverFilter =
+        button.dataset.notivHoverFilter
+        ?? (this.colorMode === 'dark' ? 'brightness(1.1)' : 'brightness(0.92)');
+      const pressedFilter =
+        button.dataset.notivPressedFilter
+        ?? (this.colorMode === 'dark' ? 'brightness(1.06)' : 'brightness(0.88)');
+
       if (button.disabled) {
         hovered = false;
         pressed = false;
         button.style.transform = 'scale(1)';
+        button.style.background = restBackground;
+        button.style.borderColor = restBorder;
+        button.style.color = restColor;
+        button.style.boxShadow = restShadow;
         button.style.filter = 'none';
         return;
       }
       if (pressed) {
-        button.style.transform = 'scale(0.97)';
-        button.style.filter = 'brightness(0.92)';
+        button.style.transform = 'scale(0.96)';
+        button.style.background = pressedBackground;
+        button.style.borderColor = pressedBorder;
+        button.style.color = pressedColor;
+        button.style.boxShadow = pressedShadow;
+        button.style.filter = pressedFilter;
         return;
       }
       button.style.transform = 'scale(1)';
-      button.style.filter = hovered ? 'brightness(1.08)' : 'none';
+      if (hovered) {
+        button.style.background = hoverBackground;
+        button.style.borderColor = hoverBorder;
+        button.style.color = hoverColor;
+        button.style.boxShadow = hoverShadow;
+        button.style.filter = hoverFilter;
+        return;
+      }
+      button.style.background = restBackground;
+      button.style.borderColor = restBorder;
+      button.style.color = restColor;
+      button.style.boxShadow = restShadow;
+      button.style.filter = 'none';
     };
 
     button.addEventListener('pointerenter', () => {
@@ -658,6 +716,7 @@ export class FeedbackToolbar {
     });
 
     button.appendChild(icon);
+    applyInteractionState();
     return button;
   }
 
@@ -668,11 +727,13 @@ export class FeedbackToolbar {
     panel.style.display = 'none';
     panel.style.width = '332px';
     panel.style.maxWidth = 'min(332px, calc(100vw - 20px))';
-    panel.style.border = `1.5px solid ${palette.shellBorder}`;
-    panel.style.borderRadius = '8px';
+    panel.style.border = `1.25px solid ${palette.shellBorder}`;
+    panel.style.borderRadius = '12px';
     panel.style.background = palette.shellBackground;
     panel.style.padding = '10px';
     panel.style.boxShadow = palette.shellShadow;
+    panel.style.backgroundImage = 'radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0)';
+    panel.style.backgroundSize = '12px 12px';
     panel.style.display = 'none';
 
     const heading = document.createElement('div');
@@ -766,6 +827,24 @@ export class FeedbackToolbar {
     const shellMorphEasing = this.expanded ? this.shellMorphExpandEasing : this.shellMorphCollapseEasing;
     this.frame.style.width = `${expandedWidth}px`;
     this.collapsedButton.style.color = toolbarPalette.iconColor;
+    this.collapsedButton.dataset.notivRestBackground = 'transparent';
+    this.collapsedButton.dataset.notivRestBorder = 'transparent';
+    this.collapsedButton.dataset.notivRestColor = toolbarPalette.iconColor;
+    this.collapsedButton.dataset.notivRestShadow = 'none';
+    this.collapsedButton.dataset.notivHoverBackground = this.colorMode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(17, 17, 17, 0.06)';
+    this.collapsedButton.dataset.notivHoverBorder = 'transparent';
+    this.collapsedButton.dataset.notivHoverColor = toolbarPalette.iconColor;
+    this.collapsedButton.dataset.notivHoverShadow = 'none';
+    this.collapsedButton.dataset.notivPressedBackground = this.colorMode === 'dark'
+      ? 'rgba(255, 255, 255, 0.12)'
+      : 'rgba(17, 17, 17, 0.1)';
+    this.collapsedButton.dataset.notivPressedBorder = 'transparent';
+    this.collapsedButton.dataset.notivPressedColor = toolbarPalette.iconColor;
+    this.collapsedButton.dataset.notivPressedShadow = 'none';
+    this.collapsedButton.dataset.notivHoverFilter = this.colorMode === 'dark' ? 'brightness(1.1)' : 'brightness(0.88)';
+    this.collapsedButton.dataset.notivPressedFilter = this.colorMode === 'dark' ? 'brightness(1.06)' : 'brightness(0.84)';
     this.collapsedButton.style.transition = this.getCollapsedContentTransition(shellMorphEasing);
     this.expandedBar.style.transition = this.getShellTransition(shellMorphEasing);
     this.applyToolbarControlMode();
@@ -778,7 +857,7 @@ export class FeedbackToolbar {
         this.expandedBar.style.padding = `${this.toolbarInsetPx}px`;
         this.expandedBar.style.cursor = 'grab';
         this.expandedBar.style.background = toolbarPalette.shellBackground;
-        this.expandedBar.style.border = `1.5px solid ${toolbarPalette.shellBorder}`;
+        this.expandedBar.style.border = `1.25px solid ${toolbarPalette.shellBorder}`;
         this.expandedBar.style.boxShadow = toolbarPalette.shellShadowExpanded;
         return;
       }
@@ -788,7 +867,7 @@ export class FeedbackToolbar {
       this.expandedBar.style.padding = '0';
       this.expandedBar.style.cursor = 'pointer';
       this.expandedBar.style.background = toolbarPalette.shellBackground;
-      this.expandedBar.style.border = `1.5px solid ${toolbarPalette.shellBorder}`;
+      this.expandedBar.style.border = `1.25px solid ${toolbarPalette.shellBorder}`;
       this.expandedBar.style.boxShadow = toolbarPalette.shellShadow;
       this.hidePanels();
     };
@@ -851,12 +930,30 @@ export class FeedbackToolbar {
   private syncMarkersUi(): void {
     const controlPalette = this.getToolbarControlPalette();
     const visible = this.settingsState.markersVisible;
+    const activeHoverBackground = this.colorMode === 'dark' ? '#efefef' : '#2a2a2a';
+    const activePressedBackground = this.colorMode === 'dark' ? '#c8c8c8' : '#3a3a3a';
     this.markersButton.title = visible ? 'Hide markers' : 'Show markers';
     this.markersButton.setAttribute('aria-label', visible ? 'Hide markers' : 'Show markers');
     this.markersButton.style.borderColor = 'transparent';
     this.markersButton.style.border = 'none';
     this.markersButton.style.background = visible ? controlPalette.activeBackground : 'transparent';
     this.markersButton.style.color = visible ? controlPalette.activeColor : controlPalette.buttonColor;
+    this.markersButton.dataset.notivRestBackground = visible ? controlPalette.activeBackground : 'transparent';
+    this.markersButton.dataset.notivRestBorder = 'transparent';
+    this.markersButton.dataset.notivRestColor = visible ? controlPalette.activeColor : controlPalette.buttonColor;
+    this.markersButton.dataset.notivRestShadow = 'none';
+    this.markersButton.dataset.notivHoverBackground = visible
+      ? activeHoverBackground
+      : controlPalette.buttonHoverBackground;
+    this.markersButton.dataset.notivHoverBorder = 'transparent';
+    this.markersButton.dataset.notivHoverColor = visible ? controlPalette.activeColor : controlPalette.buttonHoverColor;
+    this.markersButton.dataset.notivHoverShadow = 'none';
+    this.markersButton.dataset.notivPressedBackground = visible ? activePressedBackground : controlPalette.buttonPressedBackground;
+    this.markersButton.dataset.notivPressedBorder = 'transparent';
+    this.markersButton.dataset.notivPressedColor = visible ? controlPalette.activeColor : controlPalette.buttonHoverColor;
+    this.markersButton.dataset.notivPressedShadow = 'none';
+    this.markersButton.dataset.notivHoverFilter = visible ? 'none' : (this.colorMode === 'dark' ? 'brightness(1.1)' : 'brightness(0.9)');
+    this.markersButton.dataset.notivPressedFilter = visible ? 'none' : (this.colorMode === 'dark' ? 'brightness(1.06)' : 'brightness(0.86)');
     setIcon(this.markersIcon, visible ? Eye : EyeOff);
   }
 
@@ -1210,71 +1307,28 @@ export class FeedbackToolbar {
       button.style.borderColor = 'transparent';
       button.style.borderRadius = `${controlRadiusPx}px`;
       button.style.color = palette.buttonColor;
+      button.style.boxShadow = 'none';
+      button.dataset.notivRestBackground = 'transparent';
+      button.dataset.notivRestBorder = 'transparent';
+      button.dataset.notivRestColor = palette.buttonColor;
+      button.dataset.notivRestShadow = 'none';
+      button.dataset.notivHoverBackground = palette.buttonHoverBackground;
+      button.dataset.notivHoverBorder = 'transparent';
+      button.dataset.notivHoverColor = palette.buttonHoverColor;
+      button.dataset.notivHoverShadow = 'none';
+      button.dataset.notivPressedBackground = palette.buttonPressedBackground;
+      button.dataset.notivPressedBorder = 'transparent';
+      button.dataset.notivPressedColor = palette.buttonHoverColor;
+      button.dataset.notivPressedShadow = 'none';
+      button.dataset.notivHoverFilter = this.colorMode === 'dark' ? 'brightness(1.1)' : 'brightness(0.9)';
+      button.dataset.notivPressedFilter = this.colorMode === 'dark' ? 'brightness(1.06)' : 'brightness(0.86)';
     });
 
-    this.queueButton.onpointerenter = () => {
-      if (this.queueButton.disabled) {
-        return;
-      }
-      this.queueButton.style.background = palette.buttonBackground;
-    };
-    this.queueButton.onpointerleave = () => {
-      this.queueButton.style.background = 'transparent';
-    };
-    this.queueButton.onblur = () => {
-      this.queueButton.style.background = 'transparent';
-    };
-
-    this.settingsButton.onpointerenter = () => {
-      if (this.settingsButton.disabled) {
-        return;
-      }
-      this.settingsButton.style.background = palette.buttonBackground;
-    };
-    this.settingsButton.onpointerleave = () => {
-      this.settingsButton.style.background = 'transparent';
-    };
-    this.settingsButton.onblur = () => {
-      this.settingsButton.style.background = 'transparent';
-    };
-
-    this.collapseButton.onpointerenter = () => {
-      if (this.collapseButton.disabled) {
-        return;
-      }
-      this.collapseButton.style.background = palette.buttonBackground;
-    };
-    this.collapseButton.onpointerleave = () => {
-      this.collapseButton.style.background = 'transparent';
-    };
-    this.collapseButton.onblur = () => {
-      this.collapseButton.style.background = 'transparent';
-    };
-
-    this.markersButton.onpointerenter = () => {
-      if (this.markersButton.disabled) {
-        return;
-      }
-      if (this.settingsState.markersVisible) {
-        this.markersButton.style.filter = 'brightness(0.95)';
-        return;
-      }
-      this.markersButton.style.background = palette.buttonBackground;
-    };
-    this.markersButton.onpointerleave = () => {
-      this.markersButton.style.filter = 'none';
-      this.syncMarkersUi();
-    };
-    this.markersButton.onblur = () => {
-      this.markersButton.style.filter = 'none';
-      this.syncMarkersUi();
-    };
-
     this.separator.style.background = palette.separator;
-    this.collapsedBadge.style.border = `1.5px solid ${palette.badgeBorder}`;
+    this.collapsedBadge.style.border = `1.25px solid ${palette.badgeBorder}`;
     this.collapsedBadge.style.background = palette.collapsedBadgeBackground;
     this.collapsedBadge.style.color = palette.collapsedBadgeColor;
-    this.queueBadge.style.border = `1.5px solid ${palette.badgeBorder}`;
+    this.queueBadge.style.border = `1.25px solid ${palette.badgeBorder}`;
     this.queueBadge.style.background = palette.queueBadgeBackground;
     this.queueBadge.style.color = palette.queueBadgeColor;
   }

@@ -40,7 +40,7 @@ export function createLinearAuthTooltipController(): LinearAuthTooltipController
     tooltip.style.borderRadius = '6px';
     tooltip.style.background = visualTokens.floatingTooltip.background;
     tooltip.style.color = visualTokens.floatingTooltip.color;
-    tooltip.style.border = `1.5px solid ${visualTokens.floatingTooltip.border}`;
+    tooltip.style.border = `1.25px solid ${visualTokens.floatingTooltip.border}`;
     tooltip.style.fontFamily = FONT_STACK_SERIF;
     tooltip.style.fontSize = '12px';
     tooltip.style.fontWeight = '520';

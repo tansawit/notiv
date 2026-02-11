@@ -105,7 +105,7 @@ export function buildIssueDescription(annotation: Annotation, overallDescription
       : []),
     '',
     '---',
-    '*Created via Notiv Extension*'
+    '*Created via Notiv*'
   ].join('\n');
 }
 
@@ -123,16 +123,23 @@ export function buildGroupedIssueDescription(
   const userAgent = first.environment?.userAgent ?? 'Unknown';
   const resolution = first.environment?.resolution ?? 'Unknown';
   const captured = new Date(first.timestamp).toISOString();
-  const markerLines = annotations.map((annotation, index) => {
-    const content = annotation.comment.trim().replace(/\s+/g, ' ');
-    const componentName =
-      annotation.elementLabel?.trim() ||
-      annotation.componentName?.trim() ||
-      annotation.reactComponents?.[0] ||
-      annotation.element;
-    const componentLine = componentName.replace(/\|/g, '\\|').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-    return `${index + 1}. ${content || 'Untitled note'}\n   - Component: ${componentLine}`;
-  });
+  const markerRows = annotations
+    .map((annotation, index) => {
+      const note = annotation.comment.trim().replace(/\s+/g, ' ') || 'Untitled note';
+      const componentName =
+        annotation.elementLabel?.trim() ||
+        annotation.componentName?.trim() ||
+        annotation.reactComponents?.[0] ||
+        annotation.element;
+      const component = componentName.replace(/\s+/g, ' ').trim() || 'Unknown';
+      return {
+        id: index + 1,
+        component,
+        note
+      };
+    })
+    .sort((left, right) => left.id - right.id)
+    .map((entry) => `| ${entry.id} | ${escapeTableValue(entry.component)} | ${escapeTableValue(entry.note)} |`);
 
   const screenshotMarkdown = resolveInlineImageMarkdown('Session screenshot with markers', groupedScreenshot);
 
@@ -144,7 +151,9 @@ export function buildGroupedIssueDescription(
     screenshotMarkdown ?? '*Screenshot omitted due inline payload limits.*',
     '',
     '## Marker Comments',
-    ...markerLines,
+    '| ID | Component | Note |',
+    '| --- | --- | --- |',
+    ...markerRows,
     '',
     '## Context',
     '| Property | Value |',
@@ -159,7 +168,7 @@ export function buildGroupedIssueDescription(
     `| Marker Count | ${annotations.length} |`,
     '',
     '---',
-    '*Created via Notiv Extension*'
+    '*Created via Notiv*'
   ].join('\n');
 }
 

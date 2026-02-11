@@ -224,7 +224,7 @@ function SettingsApp(): React.JSX.Element {
 
         <div className="actions">
           <button className="button primary" disabled={authBusy} onClick={() => void connectWithOAuth()}>
-            {authBusy ? 'Working...' : 'Connect with OAuth'}
+            {authBusy ? 'Working...' : connected ? 'Reconnect OAuth' : 'Connect with OAuth'}
           </button>
           {allowPatFallback && tokenEditing ? (
             <>

@@ -5,8 +5,10 @@
   --popup-surface: var(--notiv-surface);
   --popup-ink: var(--notiv-ink);
   --popup-muted: var(--notiv-ink-muted);
+  --popup-muted-soft: var(--notiv-ink-tertiary);
   --popup-line: var(--notiv-line);
   --popup-line-strong: var(--notiv-line-strong);
+  --popup-line-soft: var(--notiv-border-light);
   --popup-ok: var(--notiv-ok-text);
   --popup-ok-bg: var(--notiv-ok-bg-connected);
   --popup-danger: var(--notiv-danger);
@@ -27,10 +29,9 @@ body {
   color: var(--popup-ink);
   background-color: var(--popup-paper);
   background-image:
-    linear-gradient(115deg, rgba(255, 230, 0, 0.06) 0 26%, transparent 26% 100%),
-    radial-gradient(var(--notiv-popup-texture-dot) 0.65px, transparent 0.65px),
+    radial-gradient(var(--notiv-popup-texture-dot) 1px, transparent 0),
     linear-gradient(180deg, var(--notiv-popup-texture-top), var(--notiv-popup-texture-bottom));
-  background-size: 100% 100%, 3px 3px, 100% 100%;
+  background-size: 12px 12px, 100% 100%;
 }
 
 .popup-shell {
@@ -44,10 +45,12 @@ body {
 }
 
 .popup-panel {
-  border: 1.5px solid var(--popup-line);
-  border-radius: 10px;
+  border: 1.25px solid var(--popup-line);
+  border-radius: 12px;
   background: var(--popup-surface);
-  box-shadow: 3px 3px 0 var(--popup-line), 0 8px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
+  background-size: 12px 12px;
   overflow: hidden;
 }
 
@@ -57,8 +60,8 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.16);
-  background: #f9f9f9;
+  border-bottom: 1px solid var(--popup-line-soft);
+  background: #ffffff;
 }
 
 .popup-header-left {
@@ -127,13 +130,13 @@ body {
 
 .button {
   appearance: none;
-  border: 1.5px solid var(--popup-line-strong);
-  border-radius: 9px;
+  border: 1.25px solid var(--popup-line-strong);
+  border-radius: 6px;
   background: #ffffff;
   color: var(--popup-ink);
   font-family: var(--notiv-font-serif);
   font-size: 14px;
-  font-weight: 520;
+  font-weight: 500;
   letter-spacing: 0;
   line-height: 1;
   min-height: 34px;
@@ -149,9 +152,9 @@ body {
 
 .button:hover:not(:disabled) {
   border-color: var(--popup-line-strong);
-  background: #f1f1f1;
+  background: #f5f5f5;
   color: var(--popup-ink);
-  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.24);
+  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.18);
 }
 
 .button.primary {
@@ -164,7 +167,7 @@ body {
   border-color: #1a1a1a;
   background: #1a1a1a;
   color: #ffffff;
-  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.3);
+  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.18);
 }
 
 .button:active:not(:disabled) {
@@ -187,14 +190,14 @@ body {
 }
 
 .status-pill {
-  border: 1.5px solid var(--popup-line);
+  border: 1.25px solid var(--popup-line);
   border-radius: 999px;
   padding: 4px 10px;
   font-family: var(--notiv-font-mono);
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--popup-muted);
+  color: var(--popup-muted-soft);
   background: rgba(17, 17, 17, 0.05);
   flex: 0 0 auto;
 }
@@ -216,14 +219,13 @@ body {
 }
 
 .settings-connection-block,
-.settings-token-block {
+.settings-token-block,
+.settings-site-block {
   display: grid;
   gap: 9px;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(249, 249, 249, 0.92)),
-    rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--popup-line-soft);
+  border-radius: 6px;
+  background: #ffffff;
   padding: 9px;
 }
 
@@ -233,47 +235,30 @@ body {
   font-size: 10px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--popup-muted);
-}
-
-.settings-state {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 550;
-  line-height: 0.98;
-  letter-spacing: -0.01em;
-}
-
-.settings-state.connected {
-  color: var(--popup-ink);
-}
-
-.settings-state.disconnected {
-  color: #2f2f2f;
+  color: var(--popup-muted-soft);
 }
 
 .settings-meta {
   font-size: 10px;
 }
 
+.settings-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .button-compact {
   min-height: 30px;
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 12px;
 }
 
-.settings-main-action-row {
+.settings-connection-actions {
   display: grid;
-}
-
-.settings-main-action {
-  width: 100%;
-}
-
-.settings-secondary-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -291,11 +276,49 @@ body {
   flex: 1 1 120px;
 }
 
+.settings-site-current-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-status-pill {
+  border: 1px solid var(--popup-line);
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.04);
+  color: var(--popup-muted-soft);
+  font-family: var(--notiv-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 6px 10px;
+  flex: 0 0 auto;
+}
+
+.site-status-pill.granted {
+  border-color: var(--notiv-ok-border-connected);
+  background: var(--popup-ok-bg);
+  color: var(--popup-ok);
+}
+
+.settings-site-quick {
+  flex: 1;
+}
+
+.settings-site-refresh {
+  flex: 0 0 auto;
+}
+
+.settings-site-open-full {
+  width: 100%;
+}
+
 .status-line {
   margin: 0;
-  font-size: 22px;
-  font-weight: 560;
-  line-height: 1.05;
+  font-size: 16px;
+  font-weight: 540;
+  line-height: 1.2;
 }
 
 .status-line.connected {
@@ -303,7 +326,19 @@ body {
 }
 
 .status-line.disconnected {
-  color: #2e2e2e;
+  color: var(--popup-muted);
+}
+
+.home-warning {
+  border: 1.25px solid var(--notiv-danger-border);
+  border-radius: 6px;
+  background: var(--notiv-danger-bg-soft);
+  color: var(--popup-danger);
+  padding: 8px 10px;
+  font-family: var(--notiv-font-mono);
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
 }
 
 .token-row {
@@ -315,9 +350,9 @@ body {
 .token-badge {
   flex: 1;
   min-width: 0;
-  border: 1px dashed var(--popup-line);
+  border: 1px dashed var(--popup-line-soft);
   border-radius: 6px;
-  background: var(--notiv-token-bg);
+  background: #ffffff;
   padding: 9px 11px;
   font-family: var(--notiv-font-mono);
   font-size: 12px;
@@ -331,8 +366,8 @@ body {
 .icon-button {
   width: 34px;
   height: 34px;
-  border: 1.5px solid var(--popup-line);
-  border-radius: 9px;
+  border: 1.25px solid var(--popup-line-soft);
+  border-radius: 6px;
   background: #ffffff;
   color: var(--notiv-icon-muted);
   font-size: 15px;
@@ -349,9 +384,9 @@ body {
 
 .icon-button:hover:not(:disabled) {
   border-color: var(--popup-line-strong);
-  background: #f1f1f1;
+  background: #f5f5f5;
   color: var(--popup-ink);
-  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.24);
+  box-shadow: 0 1px 0 rgba(17, 17, 17, 0.18);
 }
 
 .icon-button:active:not(:disabled) {
@@ -367,7 +402,7 @@ body {
 
 .meta-line {
   margin: 0;
-  color: var(--popup-muted);
+  color: var(--popup-muted-soft);
   font-family: var(--notiv-font-mono);
   font-size: 10px;
   line-height: 1.35;
@@ -375,7 +410,7 @@ body {
 }
 
 .notice {
-  border: 1.5px solid var(--notiv-ok-border);
+  border: 1.25px solid var(--notiv-ok-border);
   border-radius: 6px;
   background: var(--notiv-ok-bg-soft);
   color: var(--popup-ok);
@@ -385,13 +420,22 @@ body {
 }
 
 .error {
-  border: 1.5px solid var(--notiv-danger-border);
+  border: 1.25px solid var(--notiv-danger-border);
   border-radius: 6px;
   background: var(--notiv-danger-bg-soft);
   color: var(--popup-danger);
   padding: 8px 10px;
   font-size: 12px;
   font-weight: 450;
+}
+
+.error-with-action {
+  display: grid;
+  gap: 8px;
+}
+
+.error-action {
+  width: 100%;
 }
 
 .muted {
@@ -402,29 +446,29 @@ body {
 .label {
   display: grid;
   gap: 6px;
-  font-size: 10px;
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--popup-muted);
+  color: var(--popup-muted-soft);
   font-family: var(--notiv-font-mono);
 }
 
 .input {
   width: 100%;
-  border: 0;
-  border-bottom: 1px solid var(--popup-line);
-  border-radius: 0;
-  background: transparent;
+  border: 1px solid var(--popup-line-soft);
+  border-radius: 4px;
+  background: #ffffff;
   color: var(--popup-ink);
   font-family: var(--notiv-font-serif);
-  font-size: 16px;
-  line-height: 1.2;
-  padding: 8px 0 6px;
+  font-size: 13px;
+  line-height: 1.3;
+  padding: 8px 10px;
 }
 
 .input:focus {
   outline: none;
-  border-bottom-color: var(--popup-line-strong);
+  border-color: var(--popup-line-strong);
+  box-shadow: 0 0 0 1px var(--popup-line-strong);
 }
 
 .input::placeholder {

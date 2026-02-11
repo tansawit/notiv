@@ -43,7 +43,7 @@ export function renderSubmitLabelChipsContent(input: RenderSubmitLabelChipsInput
     chip.style.display = 'inline-flex';
     chip.style.alignItems = 'center';
     chip.style.gap = '7px';
-    chip.style.border = `1.5px solid ${hexToRgba(label.color, 0.42)}`;
+    chip.style.border = `1.25px solid ${hexToRgba(label.color, 0.42)}`;
     chip.style.borderRadius = '4px';
     chip.style.padding = '4px 8px 4px 7px';
     chip.style.background = hexToRgba(label.color, 0.16);

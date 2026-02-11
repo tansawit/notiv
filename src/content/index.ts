@@ -377,6 +377,12 @@ async function ensureSettingsLoaded(force = false): Promise<void> {
     settingsState.tokenDraft = normalized.accessToken;
     settingsState.tokenEditing = !normalized.accessToken.trim();
     settingsState.markersVisible = markersVisible;
+    if (pickerActive) {
+      settingsState.markersVisible = true;
+      void saveMarkersVisible(true).catch(() => {
+        // Marker visibility state will reconcile on next successful storage read.
+      });
+    }
     settingsState.error = undefined;
 
     await loadResources();
@@ -431,6 +437,14 @@ function setPickerActive(active: boolean): void {
   pickerActive = active;
 
   if (active) {
+    if (!settingsState.markersVisible) {
+      settingsState.markersVisible = true;
+      publishSettingsState();
+      syncDraftMarkerVisibility();
+      void saveMarkersVisible(true).catch(() => {
+        // Marker visibility state will reconcile on next successful storage read.
+      });
+    }
     setHoveredDraftId(null);
     detector.start();
     refreshFocusedComponentHighlight();
@@ -516,6 +530,7 @@ async function submitDrafts(payload: ToolbarSubmitPayload): Promise<void> {
     const issue = (response.data as { identifier?: string; url?: string } | undefined) ?? {};
 
     setDrafts([]);
+    toolbar.clearSubmitInputs();
     dismissToast(submittingToastId);
     showTicketCreatedToast(issue);
   } catch (error) {

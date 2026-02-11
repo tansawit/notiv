@@ -94,9 +94,11 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   const collapsedButton = makeIconButton('Expand toolbar', createIcon(PenLine));
   collapsedButton.style.width = `${collapsedShellWidth}px`;
   collapsedButton.style.height = `${collapsedShellWidth}px`;
+  collapsedButton.style.borderRadius = `${toolbarOuterRadiusPx}px`;
   collapsedButton.style.border = 'none';
   collapsedButton.style.background = 'transparent';
   collapsedButton.style.color = toolbarPalette.iconColor;
+  collapsedButton.style.boxShadow = 'none';
   collapsedButton.style.position = 'absolute';
   collapsedButton.style.top = '0';
   collapsedButton.style.right = '0';
@@ -107,6 +109,18 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   collapsedButton.style.pointerEvents = 'auto';
   collapsedButton.style.transition = getCollapsedContentTransition(shellMorphCollapseEasing);
   collapsedButton.style.visibility = 'visible';
+  collapsedButton.dataset.notivRestBackground = 'transparent';
+  collapsedButton.dataset.notivRestBorder = 'transparent';
+  collapsedButton.dataset.notivRestColor = toolbarPalette.iconColor;
+  collapsedButton.dataset.notivRestShadow = 'none';
+  collapsedButton.dataset.notivHoverBackground = 'transparent';
+  collapsedButton.dataset.notivHoverBorder = 'transparent';
+  collapsedButton.dataset.notivHoverColor = toolbarPalette.iconColor;
+  collapsedButton.dataset.notivHoverShadow = 'none';
+  collapsedButton.dataset.notivPressedBackground = 'transparent';
+  collapsedButton.dataset.notivPressedBorder = 'transparent';
+  collapsedButton.dataset.notivPressedColor = toolbarPalette.iconColor;
+  collapsedButton.dataset.notivPressedShadow = 'none';
 
   const collapsedBadge = document.createElement('span');
   collapsedBadge.style.position = 'absolute';
@@ -116,7 +130,7 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   collapsedBadge.style.height = '16px';
   collapsedBadge.style.borderRadius = '999px';
   collapsedBadge.style.padding = '0 3px';
-  collapsedBadge.style.border = `1.5px solid ${controlPalette.badgeBorder}`;
+  collapsedBadge.style.border = `1.25px solid ${controlPalette.badgeBorder}`;
   collapsedBadge.style.background = controlPalette.collapsedBadgeBackground;
   collapsedBadge.style.color = controlPalette.collapsedBadgeColor;
   collapsedBadge.style.display = 'none';
@@ -131,7 +145,7 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   expandedBar.style.alignItems = 'center';
   expandedBar.style.justifyContent = 'center';
   expandedBar.style.padding = '0';
-  expandedBar.style.border = `1.5px solid ${toolbarPalette.shellBorder}`;
+  expandedBar.style.border = `1.25px solid ${toolbarPalette.shellBorder}`;
   expandedBar.style.borderRadius = `${toolbarOuterRadiusPx}px`;
   expandedBar.style.background = toolbarPalette.shellBackground;
   expandedBar.style.boxShadow = toolbarPalette.shellShadow;
@@ -201,7 +215,7 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   queueBadge.style.height = '16px';
   queueBadge.style.borderRadius = '999px';
   queueBadge.style.padding = '0 3px';
-  queueBadge.style.border = `1.5px solid ${controlPalette.badgeBorder}`;
+  queueBadge.style.border = `1.25px solid ${controlPalette.badgeBorder}`;
   queueBadge.style.background = controlPalette.queueBadgeBackground;
   queueBadge.style.color = controlPalette.queueBadgeColor;
   queueBadge.style.display = 'none';

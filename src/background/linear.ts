@@ -74,6 +74,11 @@ function assertAccessToken(token: string | undefined): string {
   return normalized;
 }
 
+function toAuthorizationHeader(token: string): string {
+  const normalized = token.trim();
+  return normalized.toLowerCase().startsWith('bearer ') ? normalized : `Bearer ${normalized}`;
+}
+
 function shouldAttemptRefresh(settings: LinearSettings): boolean {
   if (!settings.refreshToken?.trim()) {
     return false;
@@ -97,7 +102,7 @@ async function linearGraphQL<T>(token: string, query: string, variables: Record<
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: token
+      Authorization: toAuthorizationHeader(token)
     },
     body: JSON.stringify({ query, variables })
   });
@@ -143,25 +148,30 @@ async function exchangeOAuthToken(input: {
   refreshToken?: string;
   redirectUrl: string;
 }): Promise<LinearOAuthResult> {
-  const body: Record<string, unknown> = {
-    grant_type: input.grantType,
-    client_id: input.clientId,
-    redirect_uri: input.redirectUrl
-  };
+  const body = new URLSearchParams();
+  body.set('grant_type', input.grantType);
+  body.set('client_id', input.clientId);
+  body.set('redirect_uri', input.redirectUrl);
 
   if (input.grantType === 'authorization_code') {
-    body.code = input.code;
-    body.code_verifier = input.codeVerifier;
+    if (!input.code?.trim() || !input.codeVerifier?.trim()) {
+      throw new Error('Missing OAuth authorization code or PKCE verifier.');
+    }
+    body.set('code', input.code);
+    body.set('code_verifier', input.codeVerifier);
   } else {
-    body.refresh_token = input.refreshToken;
+    if (!input.refreshToken?.trim()) {
+      throw new Error('Missing refresh token.');
+    }
+    body.set('refresh_token', input.refreshToken);
   }
 
   const response = await fetch(LINEAR_OAUTH_TOKEN_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: JSON.stringify(body)
+    body: body.toString()
   });
 
   const payload = (await response.json().catch(() => ({}))) as {

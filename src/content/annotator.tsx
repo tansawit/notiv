@@ -298,7 +298,7 @@ function AnnotationPanel({
               disabled={busy || attachmentBusy || attachmentLimitReached}
               onClick={() => fileInputRef.current?.click()}
             >
-              <Icon path="M8 12.5l7-7a3 3 0 1 1 4.2 4.3l-8.8 8.8a5 5 0 1 1-7.1-7.1l8.5-8.5" />
+              <Icon path="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM7 16l3.3-3.8a1 1 0 0 1 1.5 0l2.3 2.6 1.3-1.5a1 1 0 0 1 1.5 0L19 16M15.5 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
             </button>
             <button
               className="notiv-icon-button notiv-icon-button-primary"

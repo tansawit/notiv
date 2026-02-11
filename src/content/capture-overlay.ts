@@ -6,8 +6,7 @@ import {
 } from '../shared/highlight-colors';
 import { getLocalStorageItems } from '../shared/chrome-storage';
 import { STORAGE_KEYS } from '../shared/constants';
-import { FONT_STACK_MONO, FONT_STACK_SERIF, getVisualModeTokens } from '../shared/visual-tokens';
-import { getNotivThemeMode } from './theme-mode';
+import { FONT_STACK_MONO } from '../shared/visual-tokens';
 
 interface CaptureMarker {
   x: number;
@@ -17,7 +16,7 @@ interface CaptureMarker {
   color?: HighlightColor;
 }
 
-let hiddenUiNodes: Array<{ node: HTMLElement; visibility: string }> = [];
+let hiddenUiNodes: Array<{ node: HTMLElement; visibility: string; display: string; opacity: string }> = [];
 let captureHighlightOverlay: HTMLDivElement | null = null;
 let captureCommentOverlay: HTMLDivElement | null = null;
 let captureRedactionOverlay: HTMLDivElement | null = null;
@@ -178,14 +177,6 @@ function renderCaptureRedactions(): void {
   overlay.style.display = overlay.childElementCount > 0 ? 'block' : 'none';
 }
 
-function truncateCaptureComment(text: string, maxLength = 72): string {
-  const clean = text.replace(/\s+/g, ' ').trim();
-  if (clean.length <= maxLength) {
-    return clean;
-  }
-  return `${clean.slice(0, maxLength - 1)}...`;
-}
-
 export async function prepareCaptureUi(input: {
   boundingBox?: BoundingBox;
   marker?: CaptureMarker;
@@ -200,13 +191,21 @@ export async function prepareCaptureUi(input: {
   nodes.forEach((node) => {
     if (
       node.dataset.notivCaptureHighlight === 'true' ||
-      node.dataset.notivCaptureComment === 'true'
+      node.dataset.notivCaptureComment === 'true' ||
+      node.dataset.notivCaptureRedaction === 'true'
     ) {
       return;
     }
 
-    hiddenUiNodes.push({ node, visibility: node.style.visibility });
+    hiddenUiNodes.push({
+      node,
+      visibility: node.style.visibility,
+      display: node.style.display,
+      opacity: node.style.opacity
+    });
+    node.style.opacity = '0';
     node.style.visibility = 'hidden';
+    node.style.display = 'none';
   });
 
   const fallbackHighlight = input.boundingBox ?? input.fallbackBoundingBox;
@@ -248,8 +247,6 @@ export async function prepareCaptureUi(input: {
   if (markers.length > 0) {
     const markerLayer = ensureCaptureCommentOverlay();
     markerLayer.textContent = '';
-    const darkMode = getNotivThemeMode() === 'dark';
-    const markerTokens = getVisualModeTokens(darkMode ? 'dark' : 'light').markerBubble;
     markers.forEach((marker, index) => {
       const colorPreset = getHighlightColorPreset(resolveHighlightColor(marker.color));
       const markerX = Math.round(marker.x);
@@ -259,47 +256,27 @@ export async function prepareCaptureUi(input: {
       pin.style.position = 'absolute';
       pin.style.left = `${markerX}px`;
       pin.style.top = `${markerY}px`;
-      pin.style.transform = 'translate(-12px, -12px)';
+      pin.style.transform = 'translate(-12px, -12px) rotate(-45deg)';
       pin.style.width = '24px';
       pin.style.height = '24px';
-      pin.style.borderRadius = '4px';
-      pin.style.border = `1.5px solid ${colorPreset.border}`;
+      pin.style.borderRadius = '50% 50% 50% 0';
+      pin.style.border = `1.25px solid ${colorPreset.border}`;
       pin.style.background = colorPreset.pinFill;
       pin.style.color = colorPreset.pinText;
       pin.style.display = 'grid';
       pin.style.placeItems = 'center';
-      pin.style.fontFamily = FONT_STACK_MONO;
-      pin.style.fontSize = '11px';
-      pin.style.fontWeight = '700';
       pin.style.boxShadow = `0 4px 10px ${colorPreset.fill}`;
-      pin.textContent = String(marker.index ?? index + 1);
+      const pinLabel = document.createElement('span');
+      pinLabel.textContent = String(marker.index ?? index + 1);
+      pinLabel.style.display = 'inline-block';
+      pinLabel.style.transform = 'rotate(45deg)';
+      pinLabel.style.fontFamily = FONT_STACK_MONO;
+      pinLabel.style.fontSize = '11px';
+      pinLabel.style.fontWeight = '700';
+      pinLabel.style.lineHeight = '1';
+      pinLabel.style.pointerEvents = 'none';
+      pin.appendChild(pinLabel);
       markerLayer.appendChild(pin);
-
-      const text = truncateCaptureComment(marker.text ?? '');
-      if (text) {
-        const bubble = document.createElement('div');
-        const openLeft = markerX > window.innerWidth - 300;
-        bubble.style.position = 'absolute';
-        bubble.style.top = `${Math.max(8, markerY - 12)}px`;
-        bubble.style.left = `${openLeft ? markerX - 30 : markerX + 30}px`;
-        bubble.style.transform = openLeft ? 'translateX(-100%)' : 'none';
-        bubble.style.minWidth = '140px';
-        bubble.style.maxWidth = '240px';
-        bubble.style.padding = '6px 9px';
-        bubble.style.borderRadius = '6px';
-        bubble.style.border = `1.5px solid ${colorPreset.border}`;
-        bubble.style.background = markerTokens.background;
-        bubble.style.color = markerTokens.text;
-        bubble.style.fontFamily = FONT_STACK_SERIF;
-        bubble.style.fontSize = '12px';
-        bubble.style.fontWeight = '520';
-        bubble.style.lineHeight = '1.25';
-        bubble.style.boxShadow = `0 6px 14px ${markerTokens.shadowBase}, 0 0 0 2px ${colorPreset.fill}`;
-        bubble.style.whiteSpace = 'normal';
-        bubble.style.wordBreak = 'break-word';
-        bubble.textContent = text;
-        markerLayer.appendChild(bubble);
-      }
     });
     markerLayer.style.display = 'block';
     markerLayer.getBoundingClientRect();
@@ -322,8 +299,10 @@ export async function prepareCaptureUi(input: {
 }
 
 export function restoreCaptureUi(): void {
-  hiddenUiNodes.forEach(({ node, visibility }) => {
+  hiddenUiNodes.forEach(({ node, visibility, display, opacity }) => {
+    node.style.opacity = opacity;
     node.style.visibility = visibility;
+    node.style.display = display;
   });
   hiddenUiNodes = [];
 

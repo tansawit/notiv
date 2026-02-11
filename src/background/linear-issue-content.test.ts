@@ -118,8 +118,9 @@ describe('buildGroupedIssueDescription', () => {
     );
 
     expect(body).toContain('## Marker Comments');
-    expect(body).toContain('1. Spacing is off');
-    expect(body).toContain('2. Color contrast too low');
+    expect(body).toContain('| ID | Component | Note |');
+    expect(body).toContain('| 1 | Header title | Spacing is off |');
+    expect(body).toContain('| 2 | Subtitle | Color contrast too low |');
     expect(body).toContain('| Marker Count | 2 |');
     expect(body).toContain('| User Agent | Mozilla/5.0 Test UA |');
     expect(body).toContain('Release candidate review notes');

@@ -21,7 +21,7 @@ interface ApplyPanelModeInput {
 
 function stylePrimaryActionButton(button: HTMLButtonElement, darkMode: boolean): void {
   const tokens = getVisualModeTokens(darkMode ? 'dark' : 'light');
-  button.style.border = `1.5px solid ${tokens.primaryAction.border}`;
+  button.style.border = `1.25px solid ${tokens.primaryAction.border}`;
   button.style.background = tokens.primaryAction.background;
   button.style.color = tokens.primaryAction.color;
 }
@@ -45,7 +45,7 @@ export function applyPanelModeStyles(input: ApplyPanelModeInput): void {
   } = input;
 
   [submitPanel, queuePanel, settingsPanel].forEach((panel) => {
-    panel.style.border = `1.5px solid ${palette.shellBorder}`;
+    panel.style.border = `1.25px solid ${palette.shellBorder}`;
     panel.style.background = palette.shellBackground;
     panel.style.boxShadow = palette.shellShadow;
     const heading = panel.firstElementChild;
@@ -60,21 +60,21 @@ export function applyPanelModeStyles(input: ApplyPanelModeInput): void {
   const descriptionFocused = document.activeElement === submitDescriptionInput;
   const tokens = getVisualModeTokens(darkMode ? 'dark' : 'light');
   const focusColor = tokens.inputFocusBorder;
-  submitTitleInput.style.border = 'none';
-  submitTitleInput.style.borderBottom = `1.5px solid ${titleFocused ? focusColor : palette.inputBorder}`;
-  submitTitleInput.style.background = 'transparent';
+  submitTitleInput.style.border = `1px solid ${titleFocused ? focusColor : palette.inputBorder}`;
+  submitTitleInput.style.background = palette.inputBackground;
   submitTitleInput.style.color = palette.inputText;
   submitTitleInput.style.caretColor = palette.inputText;
+  submitTitleInput.style.boxShadow = titleFocused ? `0 0 0 1px ${focusColor}` : 'none';
 
-  submitDescriptionInput.style.border = 'none';
-  submitDescriptionInput.style.borderBottom = `1.5px solid ${descriptionFocused ? focusColor : palette.inputBorder}`;
-  submitDescriptionInput.style.background = 'transparent';
+  submitDescriptionInput.style.border = `1px solid ${descriptionFocused ? focusColor : palette.inputBorder}`;
+  submitDescriptionInput.style.background = palette.inputBackground;
   submitDescriptionInput.style.color = palette.inputText;
   submitDescriptionInput.style.caretColor = palette.inputText;
+  submitDescriptionInput.style.boxShadow = descriptionFocused ? `0 0 0 1px ${focusColor}` : 'none';
 
   const submitBackButton = submitPanel.querySelector<HTMLButtonElement>('[data-submit-back="true"]');
   if (submitBackButton) {
-    submitBackButton.style.border = `1.5px solid ${palette.iconButtonBorder}`;
+    submitBackButton.style.border = `1.25px solid ${palette.iconButtonBorder}`;
     submitBackButton.style.background = palette.iconButtonBackground;
     submitBackButton.style.color = palette.iconButtonColor;
   }

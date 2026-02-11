@@ -22,6 +22,15 @@ interface DraftMarkerCallbacks {
   onHover: (id: string | null) => void;
 }
 
+type BubblePlacementDirection = 'right' | 'left' | 'top' | 'bottom';
+
+interface BubblePlacement {
+  direction: BubblePlacementDirection;
+  left: number;
+  top: number;
+  width: number;
+}
+
 function truncate(value: string, limit: number): string {
   const text = value.trim();
   if (text.length <= limit) {
@@ -38,6 +47,12 @@ export class DraftMarkers {
   private visibilityTimer: number | null = null;
   private queueHoverId: string | null = null;
   private markerClickBehavior: MarkerClickBehavior = 'edit';
+  private readonly bubbleViewportPadding = 10;
+  private readonly bubbleMinWidth = 220;
+  private readonly bubbleCompactMinWidth = 170;
+  private readonly bubbleMaxWidth = 420;
+  private readonly bubbleHorizontalOffset = 34;
+  private readonly bubbleVerticalOffset = 18;
   private readonly systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
   private readonly themeChangeHandler = (): void => {
     if (!this.visible) {
@@ -127,6 +142,117 @@ export class DraftMarkers {
     this.render();
   };
 
+  private resolveBubblePlacement(params: {
+    bubble: HTMLDivElement;
+    anchorX: number;
+    anchorY: number;
+    preferredWidth: number;
+  }): BubblePlacement {
+    const { bubble, anchorX, anchorY, preferredWidth } = params;
+    const viewportLeft = this.bubbleViewportPadding;
+    const viewportTop = this.bubbleViewportPadding;
+    const viewportRight = window.innerWidth - this.bubbleViewportPadding;
+    const viewportBottom = window.innerHeight - this.bubbleViewportPadding;
+    const viewportWidth = Math.max(this.bubbleCompactMinWidth, viewportRight - viewportLeft);
+    const horizontalPreferred = Math.min(
+      this.bubbleMaxWidth,
+      Math.max(this.bubbleMinWidth, preferredWidth)
+    );
+    const resolveSideWidth = (availableWidth: number): number => {
+      if (availableWidth >= this.bubbleMinWidth) {
+        return Math.min(horizontalPreferred, availableWidth);
+      }
+      if (availableWidth >= this.bubbleCompactMinWidth) {
+        return availableWidth;
+      }
+      return Math.max(this.bubbleCompactMinWidth, Math.min(horizontalPreferred, viewportWidth));
+    };
+
+    const rightWidth = resolveSideWidth(viewportRight - (anchorX + this.bubbleHorizontalOffset));
+    const leftWidth = resolveSideWidth(anchorX - this.bubbleHorizontalOffset - viewportLeft);
+    const centeredWidth = Math.min(horizontalPreferred, viewportWidth);
+
+    const measuredHeights = new Map<number, number>();
+    const measureHeight = (width: number): number => {
+      const roundedWidth = Math.max(this.bubbleCompactMinWidth, Math.round(width));
+      const cached = measuredHeights.get(roundedWidth);
+      if (cached) {
+        return cached;
+      }
+      bubble.style.width = `${roundedWidth}px`;
+      bubble.style.maxWidth = `${roundedWidth}px`;
+      const height = Math.max(44, Math.round(bubble.offsetHeight || 44));
+      measuredHeights.set(roundedWidth, height);
+      return height;
+    };
+
+    const overflowAmount = (left: number, top: number, width: number, height: number): number => {
+      const overflowLeft = Math.max(0, viewportLeft - left);
+      const overflowRight = Math.max(0, left + width - viewportRight);
+      const overflowTop = Math.max(0, viewportTop - top);
+      const overflowBottom = Math.max(0, top + height - viewportBottom);
+      return overflowLeft + overflowRight + overflowTop + overflowBottom;
+    };
+
+    const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+    const directions: BubblePlacementDirection[] = ['right', 'left', 'top', 'bottom'];
+    const preferencePenalty: Record<BubblePlacementDirection, number> = {
+      right: 0,
+      left: 4,
+      top: 8,
+      bottom: 10
+    };
+
+    const candidates = directions.map((direction) => {
+      const width =
+        direction === 'right'
+          ? rightWidth
+          : direction === 'left'
+            ? leftWidth
+            : centeredWidth;
+      const height = measureHeight(width);
+
+      const rawLeft =
+        direction === 'right'
+          ? anchorX + this.bubbleHorizontalOffset
+          : direction === 'left'
+            ? anchorX - this.bubbleHorizontalOffset - width
+            : anchorX - width / 2;
+      const rawTop =
+        direction === 'top'
+          ? anchorY - this.bubbleVerticalOffset - height
+          : direction === 'bottom'
+            ? anchorY + this.bubbleVerticalOffset
+            : anchorY - height / 2;
+
+      const minLeft = viewportLeft;
+      const maxLeft = Math.max(minLeft, viewportRight - width);
+      const minTop = viewportTop;
+      const maxTop = Math.max(minTop, viewportBottom - height);
+      const left = clamp(rawLeft, minLeft, maxLeft);
+      const top = clamp(rawTop, minTop, maxTop);
+      const overflow = overflowAmount(rawLeft, rawTop, width, height);
+      const shiftDistance = Math.abs(left - rawLeft) + Math.abs(top - rawTop);
+
+      return {
+        direction,
+        left,
+        top,
+        width,
+        score: overflow * 100 + shiftDistance * 2 + preferencePenalty[direction]
+      };
+    });
+
+    candidates.sort((a, b) => a.score - b.score);
+    const best = candidates[0];
+    return {
+      direction: best.direction,
+      left: best.left,
+      top: best.top,
+      width: best.width
+    };
+  }
+
   private render(): void {
     this.container.textContent = '';
 
@@ -149,15 +275,13 @@ export class DraftMarkers {
       const bubbleVisible = hoveredFromQueue;
       const anchorX = Math.round(note.fixed ? note.anchorX : note.anchorX - window.scrollX);
       const anchorY = Math.round(note.fixed ? note.anchorY : note.anchorY - window.scrollY);
-      const rightOffset = 34;
       const sidePadding = 10;
-      const spaceRight = window.innerWidth - (anchorX + rightOffset) - sidePadding;
-      const spaceLeft = anchorX - rightOffset - sidePadding;
+      const spaceRight = window.innerWidth - (anchorX + this.bubbleHorizontalOffset) - sidePadding;
+      const spaceLeft = anchorX - this.bubbleHorizontalOffset - sidePadding;
       const maxPreferred = Math.max(spaceLeft, spaceRight);
-      const bubbleWidth = Math.min(420, Math.max(220, maxPreferred));
-      const openLeft = spaceRight < 240 && spaceLeft > spaceRight;
-      const nearTop = anchorY < 70;
-      const nearBottom = anchorY > window.innerHeight - 70;
+      const preferredWidth = Math.min(this.bubbleMaxWidth, Math.max(this.bubbleMinWidth, maxPreferred));
+      const markerRootX = anchorX - 12;
+      const markerRootY = anchorY - 12;
 
       const marker = document.createElement('div');
       marker.style.position = 'absolute';
@@ -200,20 +324,28 @@ export class DraftMarkers {
       pin.setAttribute('data-notiv-draft-pin', 'true');
       pin.style.width = '24px';
       pin.style.height = '24px';
-      pin.style.borderRadius = '4px';
-      pin.style.border = `1.5px solid ${colorPreset.border}`;
+      pin.style.borderRadius = '50% 50% 50% 0';
+      pin.style.border = `1.25px solid ${colorPreset.border}`;
       pin.style.background = colorPreset.pinFill;
       pin.style.color = colorPreset.pinText;
       pin.style.display = 'grid';
       pin.style.placeItems = 'center';
-      pin.style.fontFamily = FONT_STACK_MONO;
-      pin.style.fontSize = '11px';
-      pin.style.fontWeight = '700';
+      pin.style.transform = 'rotate(-45deg)';
+      pin.style.transformOrigin = '50% 50%';
       pin.style.cursor = 'pointer';
       pin.style.boxShadow = hoveredFromQueue
         ? `0 0 0 3px ${colorPreset.fill}, 0 6px 14px ${markerTokens.pinHoverShadow}`
         : `0 4px 10px ${colorPreset.fill}`;
-      pin.textContent = String(index + 1);
+      const pinLabel = document.createElement('span');
+      pinLabel.textContent = String(index + 1);
+      pinLabel.style.display = 'inline-block';
+      pinLabel.style.transform = 'rotate(45deg)';
+      pinLabel.style.fontFamily = FONT_STACK_MONO;
+      pinLabel.style.fontSize = '11px';
+      pinLabel.style.fontWeight = '700';
+      pinLabel.style.lineHeight = '1';
+      pinLabel.style.pointerEvents = 'none';
+      pin.appendChild(pinLabel);
       pin.addEventListener('pointerdown', (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -223,32 +355,15 @@ export class DraftMarkers {
       const bubble = document.createElement('div');
       bubble.setAttribute('data-notiv-note-bubble', 'true');
       bubble.style.position = 'absolute';
-      if (openLeft) {
-        bubble.style.left = 'auto';
-        bubble.style.right = `${rightOffset}px`;
-      } else {
-        bubble.style.left = `${rightOffset}px`;
-        bubble.style.right = 'auto';
-      }
-
-      if (nearTop) {
-        bubble.style.top = '0';
-        bubble.style.bottom = 'auto';
-        bubble.style.transform = 'none';
-      } else if (nearBottom) {
-        bubble.style.top = 'auto';
-        bubble.style.bottom = '0';
-        bubble.style.transform = 'none';
-      } else {
-        bubble.style.top = '50%';
-        bubble.style.bottom = 'auto';
-        bubble.style.transform = 'translateY(-50%)';
-      }
-
-      bubble.style.width = `${bubbleWidth}px`;
-      bubble.style.maxWidth = `${bubbleWidth}px`;
+      bubble.style.left = '0';
+      bubble.style.top = '0';
+      bubble.style.right = 'auto';
+      bubble.style.bottom = 'auto';
+      bubble.style.transform = 'none';
+      bubble.style.width = `${preferredWidth}px`;
+      bubble.style.maxWidth = `${preferredWidth}px`;
       bubble.style.padding = '8px 9px 8px';
-      bubble.style.border = `1.5px solid ${colorPreset.border}`;
+      bubble.style.border = `1.25px solid ${colorPreset.border}`;
       bubble.style.borderRadius = '6px';
       bubble.style.background = markerTokens.background;
       bubble.style.boxShadow = hoveredFromQueue
@@ -308,6 +423,17 @@ export class DraftMarkers {
       marker.appendChild(pin);
       marker.appendChild(bubble);
       this.container.appendChild(marker);
+
+      const placement = this.resolveBubblePlacement({
+        bubble,
+        anchorX,
+        anchorY,
+        preferredWidth
+      });
+      bubble.style.width = `${Math.round(placement.width)}px`;
+      bubble.style.maxWidth = `${Math.round(placement.width)}px`;
+      bubble.style.left = `${Math.round(placement.left - markerRootX)}px`;
+      bubble.style.top = `${Math.round(placement.top - markerRootY)}px`;
     });
     this.animateOnRender = false;
   }
@@ -332,7 +458,7 @@ export class DraftMarkers {
         to { opacity: 1; transform: none; }
       }
       [data-notiv-draft-marker="true"]:hover [data-notiv-draft-pin="true"] {
-        transform: scale(1.03);
+        transform: rotate(-45deg) scale(1.03);
       }
       [data-notiv-draft-marker="true"]:hover [data-notiv-note-bubble="true"] {
         opacity: 1 !important;

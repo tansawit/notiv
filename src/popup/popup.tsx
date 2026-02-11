@@ -9,8 +9,94 @@ import { useLinearConnection } from '../shared/use-linear-connection';
 
 type PopupView = 'home' | 'settings';
 
+interface SitePermissionTarget {
+  pattern: string;
+  label: string;
+}
+
+function resolveSitePermissionTarget(urlValue: string | undefined): SitePermissionTarget | null {
+  if (!urlValue) {
+    return null;
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(urlValue);
+  } catch {
+    return null;
+  }
+
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    return null;
+  }
+
+  if (!parsed.hostname) {
+    return null;
+  }
+
+  return {
+    pattern: `${parsed.protocol}//${parsed.hostname}/*`,
+    label: parsed.origin
+  };
+}
+
+function getActiveTab(): Promise<chrome.tabs.Tab | null> {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve(tabs[0] ?? null);
+    });
+  });
+}
+
+function containsOriginPermission(origin: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    chrome.permissions.contains({ origins: [origin] }, (granted) => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve(Boolean(granted));
+    });
+  });
+}
+
+function requestOriginPermission(origin: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    chrome.permissions.request({ origins: [origin] }, (granted) => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve(Boolean(granted));
+    });
+  });
+}
+
+function removeOriginPermission(origin: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    chrome.permissions.remove({ origins: [origin] }, (removed) => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve(Boolean(removed));
+    });
+  });
+}
+
 function PopupApp(): React.JSX.Element {
   const [view, setView] = useState<PopupView>('home');
+  const [sitePermissionsLoading, setSitePermissionsLoading] = useState(true);
+  const [sitePermissionsBusy, setSitePermissionsBusy] = useState(false);
+  const [currentSiteTarget, setCurrentSiteTarget] = useState<SitePermissionTarget | null>(null);
+  const [currentSiteGranted, setCurrentSiteGranted] = useState(false);
   const {
     loading,
     authBusy,
@@ -41,7 +127,106 @@ function PopupApp(): React.JSX.Element {
     return `Connected as ${viewer} to ${org}`;
   }, [connected, resources.viewerName, resources.organizationName]);
 
-  const homeLead = connected ? 'Ready to annotate this page.' : 'Connect Linear to start collecting notes.';
+  const canAnnotateOnCurrentSite = connected && Boolean(currentSiteTarget) && currentSiteGranted;
+  const siteStatusLabel = sitePermissionsLoading
+    ? 'Checking'
+    : currentSiteTarget
+      ? currentSiteGranted
+        ? 'Granted'
+        : 'Not granted'
+      : 'Unavailable';
+  const homeLead = !connected
+    ? 'Connect Linear to start collecting notes.'
+    : canAnnotateOnCurrentSite
+      ? 'Ready to annotate this page.'
+      : 'Annotation unavailable for this page.';
+  const homeWarning = connected && !canAnnotateOnCurrentSite
+    ? sitePermissionsLoading
+      ? 'Checking site access for this page.'
+      : currentSiteTarget
+        ? `Site access for ${currentSiteTarget.label}: not granted`
+        : 'Open a regular http/https page to annotate.'
+    : null;
+  const isSiteAccessError = Boolean(error && error.toLowerCase().includes('site access was not granted'));
+  const openSiteAccessSettings = (): void => setView('settings');
+
+  const openMainSettingsPage = async (): Promise<void> => {
+    const response = await sendRuntimeMessage<BackgroundResponse>({ type: 'openSettingsPage' });
+    if (!response.ok) {
+      throw new Error(response.error);
+    }
+    window.close();
+  };
+
+  const refreshCurrentSitePermission = React.useCallback(async (): Promise<void> => {
+    setSitePermissionsLoading(true);
+    try {
+      const tab = await getActiveTab();
+      const target = resolveSitePermissionTarget(tab?.url);
+      setCurrentSiteTarget(target);
+      if (!target) {
+        setCurrentSiteGranted(false);
+        return;
+      }
+      setCurrentSiteGranted(await containsOriginPermission(target.pattern));
+    } catch (permissionError) {
+      setFeedback(
+        null,
+        permissionError instanceof Error ? permissionError.message : 'Could not load site permissions.'
+      );
+    } finally {
+      setSitePermissionsLoading(false);
+    }
+  }, [setFeedback]);
+
+  React.useEffect(() => {
+    void refreshCurrentSitePermission();
+  }, [refreshCurrentSitePermission]);
+
+  const toggleCurrentSitePermission = async (): Promise<void> => {
+    if (!currentSiteTarget) {
+      setFeedback(null, 'Current tab is not a regular http/https page.');
+      return;
+    }
+
+    const target = currentSiteTarget;
+    const shouldRevoke = currentSiteGranted;
+    setSitePermissionsBusy(true);
+    setFeedback(null, null);
+    try {
+      if (shouldRevoke) {
+        await removeOriginPermission(target.pattern);
+      } else {
+        const granted = await requestOriginPermission(target.pattern);
+        if (!granted) {
+          setFeedback(null, `Permission request was denied for ${target.label}.`);
+          return;
+        }
+      }
+      await refreshCurrentSitePermission();
+      setFeedback(
+        shouldRevoke
+          ? `Removed site access for ${target.label}.`
+          : `Site access granted for ${target.label}.`,
+        null
+      );
+    } catch (permissionError) {
+      setFeedback(
+        null,
+        permissionError instanceof Error ? permissionError.message : 'Could not update site access.'
+      );
+    } finally {
+      setSitePermissionsBusy(false);
+    }
+  };
+
+  const handleSiteAccessErrorAction = async (): Promise<void> => {
+    if (currentSiteTarget && !currentSiteGranted) {
+      await toggleCurrentSitePermission();
+      return;
+    }
+    openSiteAccessSettings();
+  };
 
   const activatePicker = async (): Promise<void> => {
     setFeedback(null, null);
@@ -52,7 +237,13 @@ function PopupApp(): React.JSX.Element {
       }
       window.close();
     } catch (activateError) {
-      setFeedback(null, activateError instanceof Error ? activateError.message : 'Could not activate picker.');
+      const message =
+        activateError instanceof Error ? activateError.message : 'Could not activate picker.';
+      setFeedback(null, message);
+      if (message.toLowerCase().includes('site access was not granted')) {
+        setView('settings');
+        void refreshCurrentSitePermission();
+      }
     }
   };
 
@@ -80,8 +271,9 @@ function PopupApp(): React.JSX.Element {
             </span>
           </div>
           <div className="popup-body">
-            <p className={`status-line ${connected ? 'connected' : 'disconnected'}`}>{homeLead}</p>
+            <p className={`status-line ${canAnnotateOnCurrentSite ? 'connected' : 'disconnected'}`}>{homeLead}</p>
             {statusText ? <p className="meta-line">{statusText}</p> : null}
+            {homeWarning ? <div className="home-warning">{homeWarning}</div> : null}
             <div className="row row-actions">
               <button className="button" onClick={() => setView('settings')}>
                 Settings
@@ -89,8 +281,18 @@ function PopupApp(): React.JSX.Element {
               <button
                 className="button primary"
                 onClick={() => void activatePicker()}
-                disabled={!connected}
-                title={!connected ? 'Connect Linear to activate picker' : 'Activate picker'}
+                disabled={!connected || !currentSiteGranted || !currentSiteTarget || sitePermissionsLoading}
+                title={
+                  !connected
+                    ? 'Connect Linear to activate picker'
+                    : sitePermissionsLoading
+                      ? 'Checking site access'
+                      : !currentSiteTarget
+                        ? 'Open a regular http/https page to annotate'
+                        : !currentSiteGranted
+                          ? 'Grant site access to activate picker'
+                          : 'Activate picker'
+                }
               >
                 Activate
               </button>
@@ -123,29 +325,24 @@ function PopupApp(): React.JSX.Element {
               alt=""
               aria-hidden="true"
             />
-            <h1 className="popup-title">Linear Settings</h1>
+            <h1 className="popup-title">Settings</h1>
           </div>
-          <span className={`status-pill ${connected ? 'connected' : ''}`}>
-            {connected ? 'Connected' : 'Not Connected'}
-          </span>
         </div>
 
         <div className="popup-body popup-settings-body">
           <section className="settings-connection-block">
-            <p className="settings-kicker">Workspace connection</p>
-
-            <p className={`settings-state ${connected ? 'connected' : 'disconnected'}`}>
-              {connected ? 'Linear is connected' : 'Connect Linear to continue'}
-            </p>
+            <div className="settings-section-head">
+              <p className="settings-kicker">Linear</p>
+              <span className={`status-pill ${connected ? 'connected' : ''}`}>
+                {connected ? 'Connected' : 'Not connected'}
+              </span>
+            </div>
             {statusText ? <p className="meta-line settings-meta">{statusText}</p> : null}
 
-            <div className="settings-main-action-row">
-              <button className="button primary settings-main-action" disabled={authBusy} onClick={() => void connectWithOAuth()}>
-                {authBusy ? 'Working...' : connected ? 'Reconnect OAuth' : 'Connect with OAuth'}
+            <div className="settings-connection-actions">
+              <button className="button primary settings-secondary-action" disabled={authBusy} onClick={() => void connectWithOAuth()}>
+                {authBusy ? 'Working...' : connected ? 'Reconnect' : 'Connect with OAuth'}
               </button>
-            </div>
-
-            <div className="settings-secondary-actions">
               <button
                 className="button settings-secondary-action"
                 disabled={authBusy || loadingResources || !connected}
@@ -213,11 +410,55 @@ function PopupApp(): React.JSX.Element {
               ) : null}
             </section>
           ) : null}
+
+          <section className="settings-site-block">
+            <div className="settings-section-head">
+              <p className="settings-kicker">Site access</p>
+              <span className={`site-status-pill ${currentSiteTarget && currentSiteGranted ? 'granted' : ''}`}>
+                {siteStatusLabel}
+              </span>
+            </div>
+            <p className="meta-line settings-meta">
+              {sitePermissionsLoading
+                ? 'Checking current site...'
+                : currentSiteTarget
+                  ? `Current site: ${currentSiteTarget.label}`
+                  : 'Current tab is not a regular http/https page.'}
+            </p>
+            <div className="settings-site-current-row">
+              <button
+                className={`button settings-site-quick ${currentSiteGranted ? '' : 'primary'}`}
+                disabled={sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget}
+                onClick={() => void toggleCurrentSitePermission()}
+              >
+                {sitePermissionsBusy
+                  ? 'Working...'
+                  : currentSiteGranted
+                    ? 'Revoke'
+                    : 'Grant'}
+              </button>
+              <button className="button settings-site-refresh" disabled={sitePermissionsLoading || sitePermissionsBusy} onClick={() => void refreshCurrentSitePermission()}>
+                Refresh
+              </button>
+            </div>
+            <button className="button settings-site-open-full" onClick={() => void openMainSettingsPage()}>
+              Open full site access settings
+            </button>
+          </section>
         </div>
       </section>
 
       {notice ? <div className="notice">{notice}</div> : null}
-      {error ? <div className="error">{error}</div> : null}
+      {error ? (
+        <div className={`error ${isSiteAccessError ? 'error-with-action' : ''}`}>
+          <div>{error}</div>
+          {isSiteAccessError ? (
+            <button className="button button-compact error-action" onClick={() => void handleSiteAccessErrorAction()}>
+              {currentSiteTarget && !currentSiteGranted ? 'Grant' : 'Open site access'}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

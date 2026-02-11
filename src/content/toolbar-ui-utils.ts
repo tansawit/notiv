@@ -46,8 +46,8 @@ export function makeTextButton(label: string, subtle = false): HTMLButtonElement
   button.textContent = label;
   button.style.appearance = 'none';
   button.style.boxShadow = 'none';
-  button.style.border = `1.5px solid ${UTILITY_STYLE_TOKENS.textButton.border}`;
-  button.style.borderRadius = '4px';
+  button.style.border = `1.25px solid ${UTILITY_STYLE_TOKENS.textButton.border}`;
+  button.style.borderRadius = '6px';
   button.style.padding = '7px 10px';
   button.style.background = subtle ? 'transparent' : UTILITY_STYLE_TOKENS.textButton.solidBackground;
   button.style.color = subtle ? UTILITY_STYLE_TOKENS.textButton.subtleText : UTILITY_STYLE_TOKENS.textButton.solidText;
@@ -55,18 +55,41 @@ export function makeTextButton(label: string, subtle = false): HTMLButtonElement
   button.style.fontSize = '12px';
   button.style.fontWeight = '520';
   button.style.cursor = 'pointer';
-  button.style.transition = 'all 120ms ease';
+  button.style.transform = 'scale(1)';
+  button.style.transition = 'transform 90ms ease, opacity 120ms ease, filter 120ms ease';
+  const resolveMode = (): 'light' | 'dark' =>
+    document.documentElement.getAttribute('data-notiv-theme') === 'dark' ? 'dark' : 'light';
+  const resolveHoverFilter = (): string => (resolveMode() === 'dark' ? 'brightness(1.1)' : 'brightness(0.92)');
+  const resolvePressedFilter = (): string => (resolveMode() === 'dark' ? 'brightness(1.06)' : 'brightness(0.88)');
   button.addEventListener('mouseenter', () => {
     if (button.disabled) {
       return;
     }
-    button.style.opacity = '0.9';
+    button.style.opacity = '1';
+    button.style.filter = resolveHoverFilter();
   });
   button.addEventListener('mouseleave', () => {
+    button.style.transform = 'scale(1)';
+    button.style.opacity = '1';
+    button.style.filter = 'none';
+  });
+  button.addEventListener('pointerdown', (event) => {
+    if (button.disabled || event.button !== 0) {
+      return;
+    }
+    button.style.transform = 'scale(0.97)';
+    button.style.filter = resolvePressedFilter();
+  });
+  button.addEventListener('pointerup', () => {
     if (button.disabled) {
       return;
     }
-    button.style.opacity = '1';
+    button.style.transform = 'scale(1)';
+    button.style.filter = resolveHoverFilter();
+  });
+  button.addEventListener('pointercancel', () => {
+    button.style.transform = 'scale(1)';
+    button.style.filter = 'none';
   });
   return button;
 }
@@ -81,7 +104,7 @@ export function makeSpinner(size = 12): HTMLSpanElement {
   spinner.style.width = `${size}px`;
   spinner.style.height = `${size}px`;
   spinner.style.borderRadius = '999px';
-  spinner.style.border = `1.5px solid ${UTILITY_STYLE_TOKENS.spinner.track}`;
+  spinner.style.border = `1.25px solid ${UTILITY_STYLE_TOKENS.spinner.track}`;
   spinner.style.borderTopColor = UTILITY_STYLE_TOKENS.spinner.head;
   spinner.style.display = 'inline-block';
   spinner.style.animation = 'notiv-spin 780ms linear infinite';

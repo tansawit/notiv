@@ -59,7 +59,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
   setButtonDisabled(queueSubmitButton, queueItems.length === 0 || submitting);
   const visualTokens = getVisualModeTokens(darkMode ? 'dark' : 'light');
   queueSubmitButton.style.opacity = queueItems.length === 0 || submitting ? '0.55' : '1';
-  queueSubmitButton.style.border = `1.5px solid ${visualTokens.primaryAction.border}`;
+  queueSubmitButton.style.border = `1.25px solid ${visualTokens.primaryAction.border}`;
   queueSubmitButton.style.background = visualTokens.primaryAction.background;
   queueSubmitButton.style.color = visualTokens.primaryAction.color;
   queueSubmitButton.textContent = submitting
@@ -94,7 +94,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     row.style.gap = '9px';
     row.style.alignItems = 'start';
     row.style.padding = '8px 8px';
-    row.style.border = hovered ? `1.5px solid ${palette.surfaceHoverBorder}` : `1.5px solid ${palette.surfaceBorder}`;
+    row.style.border = hovered ? `1.25px solid ${palette.surfaceHoverBorder}` : `1.25px solid ${palette.surfaceBorder}`;
     row.style.borderRadius = '6px';
     row.style.background = hovered ? palette.surfaceHoverBackground : palette.surfaceBackground;
     row.style.transition = 'border-color 120ms ease, background 120ms ease, box-shadow 120ms ease';
@@ -106,7 +106,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     indexChip.style.width = '18px';
     indexChip.style.height = '18px';
     indexChip.style.borderRadius = '4px';
-    indexChip.style.border = `1.5px solid ${colorPreset.border}`;
+    indexChip.style.border = `1.25px solid ${colorPreset.border}`;
     indexChip.style.display = 'grid';
     indexChip.style.placeItems = 'center';
     indexChip.style.fontFamily = FONT_STACK_MONO;
@@ -116,10 +116,10 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     indexChip.style.transition = 'all 120ms ease';
 
     const applyHoveredState = (value: boolean): void => {
-      row.style.border = value ? `1.5px solid ${palette.surfaceHoverBorder}` : `1.5px solid ${palette.surfaceBorder}`;
+      row.style.border = value ? `1.25px solid ${palette.surfaceHoverBorder}` : `1.25px solid ${palette.surfaceBorder}`;
       row.style.background = value ? palette.surfaceHoverBackground : palette.surfaceBackground;
       row.style.boxShadow = value ? palette.surfaceHoverShadow : 'none';
-      indexChip.style.border = `1.5px solid ${colorPreset.border}`;
+      indexChip.style.border = `1.25px solid ${colorPreset.border}`;
       indexChip.style.color = colorPreset.pinText;
       indexChip.style.background = value ? colorPreset.pinFill : colorPreset.fill;
     };
@@ -154,9 +154,15 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     body.appendChild(comment);
     body.appendChild(target);
 
-    const deleteButton = makeIconButton('Delete note', createIcon(Trash2));
+    const deleteIcon = createIcon(Trash2);
+    deleteIcon.style.width = '15px';
+    deleteIcon.style.height = '15px';
+    deleteIcon.style.transform = 'translateY(-0.5px)';
+    const deleteButton = makeIconButton('Delete note', deleteIcon);
     deleteButton.style.width = '26px';
     deleteButton.style.height = '26px';
+    deleteButton.style.padding = '0';
+    deleteButton.style.lineHeight = '1';
     deleteButton.style.borderColor = palette.iconButtonBorder;
     deleteButton.style.background = palette.iconButtonBackground;
     deleteButton.style.color = palette.iconButtonColor;

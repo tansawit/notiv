@@ -80,22 +80,6 @@ function ensureToasterMounted(): void {
   }
 }
 
-async function copyText(value: string): Promise<void> {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
-  const textarea = document.createElement('textarea');
-  textarea.value = value;
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-  document.execCommand('copy');
-  textarea.remove();
-}
-
 export function showToast(
   message: string,
   link?: { href: string; label: string },
@@ -122,22 +106,32 @@ export function dismissToast(toastId: string | number): void {
 
 export function showTicketCreatedToast(issue?: { identifier?: string; url?: string }): void {
   ensureToasterMounted();
-  const title = issue?.identifier ? `Ticket ${issue.identifier} created.` : 'Ticket created.';
+  const title = 'Ticket created.';
   if (!issue?.url) {
+    if (issue?.identifier) {
+      toast.success(`Ticket ${issue.identifier} created.`);
+      return;
+    }
     toast.success(title);
     return;
   }
 
   toast.success(title, {
-    description: issue.url,
-    action: {
-      label: 'Copy link',
-      onClick: () => {
-        void copyText(issue.url as string)
-          .then(() => toast.success('Copied ticket link.'))
-          .catch(() => toast.error('Failed to copy ticket link.'));
-      }
-    }
+    description: (
+      <a
+        href={issue.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          color: 'inherit',
+          fontWeight: 650,
+          textDecoration: 'underline',
+          textUnderlineOffset: '2px'
+        }}
+      >
+        {issue.identifier ?? 'Open ticket'}
+      </a>
+    )
   });
 }
 

@@ -18,6 +18,18 @@ interface TabSitePermission {
   label: string;
 }
 
+function resolveContentScriptFile(): string {
+  const fallback = 'src/content/index.ts';
+  const entries = chrome.runtime.getManifest().content_scripts ?? [];
+  for (const entry of entries) {
+    const file = entry.js?.[0];
+    if (file?.trim()) {
+      return file;
+    }
+  }
+  return fallback;
+}
+
 function resolveTabSitePermission(urlValue: string | undefined): TabSitePermission | null {
   if (!urlValue) {
     return null;
@@ -46,22 +58,44 @@ function resolveTabSitePermission(urlValue: string | undefined): TabSitePermissi
 }
 
 async function ensureContentScriptReady(tabId: number): Promise<void> {
-  try {
-    const pingResponse = await chrome.tabs.sendMessage(tabId, { type: 'notivPing' });
-    if ((pingResponse as { ok?: boolean } | undefined)?.ok) {
-      return;
+  const pingContentScript = async (): Promise<boolean> => {
+    try {
+      const pingResponse = await chrome.tabs.sendMessage(tabId, { type: 'notivPing' });
+      return Boolean((pingResponse as { ok?: boolean } | undefined)?.ok);
+    } catch {
+      return false;
     }
-  } catch {
-    // Continue to injection path.
+  };
+
+  const waitForContentScriptReady = async (
+    timeoutMs = 1200,
+    intervalMs = 80
+  ): Promise<boolean> => {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() <= deadline) {
+      if (await pingContentScript()) {
+        return true;
+      }
+      if (Date.now() + intervalMs > deadline) {
+        break;
+      }
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, intervalMs);
+      });
+    }
+    return false;
+  };
+
+  if (await pingContentScript()) {
+    return;
   }
 
   await chrome.scripting.executeScript({
     target: { tabId },
-    files: ['src/content/index.ts']
+    files: [resolveContentScriptFile()]
   });
 
-  const pingResponse = await chrome.tabs.sendMessage(tabId, { type: 'notivPing' }).catch(() => null);
-  if (!(pingResponse as { ok?: boolean } | null)?.ok) {
+  if (!(await waitForContentScriptReady())) {
     throw new Error('Notiv could not start on this page. Refresh and try again.');
   }
 }

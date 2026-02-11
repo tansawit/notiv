@@ -231,7 +231,7 @@ function BaseCombobox({
           cursor: disabled ? 'not-allowed' : 'pointer',
           fontFamily: FONT_STACK_MONO,
           fontSize: '12px',
-          border: `1.5px solid ${palette.inputBorder}`,
+          border: `1.25px solid ${palette.inputBorder}`,
           background: palette.inputBackground,
           color: palette.inputText,
           opacity: disabled ? 0.6 : 1
@@ -298,7 +298,7 @@ function BaseCombobox({
               padding: '6px',
               borderRadius: '6px',
               overflow: 'hidden',
-              border: `1.5px solid ${palette.surfaceBorder}`,
+              border: `1.25px solid ${palette.surfaceBorder}`,
               background: palette.shellBackground,
               boxShadow: palette.surfaceHoverShadow,
               ['--notiv-combobox-hover-bg' as string]: palette.surfaceHoverBackground,
@@ -320,7 +320,7 @@ function BaseCombobox({
                 fontSize: '11px',
                 marginBottom: '5px',
                 outline: 'none',
-                border: `1.5px solid ${palette.surfaceBorder}`,
+                border: `1.25px solid ${palette.surfaceBorder}`,
                 background: palette.inputBackground,
                 color: palette.inputText
               }}
@@ -557,7 +557,7 @@ function BaseLabelSearchCombobox({
           lineHeight: '1',
           textAlign: 'left',
           outline: 'none',
-          border: `1.5px solid ${palette.inputBorder}`,
+          border: `1.25px solid ${palette.inputBorder}`,
           background: palette.inputBackground,
           color: palette.inputText,
           opacity: disabled ? 0.6 : 1,
@@ -601,7 +601,7 @@ function BaseLabelSearchCombobox({
               padding: '6px',
               borderRadius: '6px',
               overflow: 'hidden',
-              border: `1.5px solid ${palette.surfaceBorder}`,
+              border: `1.25px solid ${palette.surfaceBorder}`,
               background: palette.shellBackground,
               boxShadow: palette.surfaceHoverShadow,
               ['--notiv-combobox-hover-bg' as string]: palette.surfaceHoverBackground,
@@ -631,7 +631,7 @@ function BaseLabelSearchCombobox({
                 fontSize: '11px',
                 marginBottom: '5px',
                 outline: 'none',
-                border: `1.5px solid ${palette.surfaceBorder}`,
+                border: `1.25px solid ${palette.surfaceBorder}`,
                 background: palette.inputBackground,
                 color: palette.inputText
               }}
@@ -675,7 +675,7 @@ function BaseLabelSearchCombobox({
                       width: '13px',
                       height: '13px',
                       borderRadius: '3px',
-                      border: `1.5px solid ${item.checked ? palette.textPrimary : palette.surfaceBorder}`,
+                      border: `1.25px solid ${item.checked ? palette.textPrimary : palette.surfaceBorder}`,
                       background: item.checked ? palette.textPrimary : 'transparent',
                       color: item.checked ? palette.shellBackground : 'transparent',
                       flexShrink: 0,
