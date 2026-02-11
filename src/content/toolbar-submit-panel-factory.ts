@@ -7,7 +7,7 @@ import type { NotivThemeMode, PanelPalette } from './toolbar-palette';
 import { makeTextButton } from './toolbar-ui-utils';
 import {
   FONT_STACK_MONO,
-  FONT_STACK_SERIF,
+  FONT_STACK_SANS,
   getPriorityAccentColor,
   getPriorityInactiveColor,
   getVisualModeTokens
@@ -125,7 +125,7 @@ export function createToolbarSubmitPanelElements(
       place-items: center !important;
       box-shadow: none !important;
       outline: none !important;
-      transition: background 120ms ease, color 120ms ease !important;
+      transition: background 80ms ease, color 80ms ease !important;
     `;
     submitBackButton.addEventListener('mouseenter', () => {
       submitBackButton.style.setProperty('background', panelPalette.surfaceHoverBackground, 'important');
@@ -159,7 +159,7 @@ export function createToolbarSubmitPanelElements(
     padding: 8px 0 !important;
     background: transparent !important;
     color: ${panelPalette.textPrimary} !important;
-    font-family: ${FONT_STACK_SERIF} !important;
+    font-family: ${FONT_STACK_SANS} !important;
     font-size: 14px !important;
     font-weight: 500 !important;
     outline: none !important;
@@ -182,7 +182,7 @@ export function createToolbarSubmitPanelElements(
     margin-top: 8px !important;
     background: transparent !important;
     color: ${panelPalette.textPrimary} !important;
-    font-family: ${FONT_STACK_SERIF} !important;
+    font-family: ${FONT_STACK_SANS} !important;
     font-size: 14px !important;
     line-height: 1.4 !important;
     outline: none !important;

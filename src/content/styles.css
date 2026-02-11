@@ -9,73 +9,74 @@
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", monospace;
 
-  /* Core colors */
-  --bg: #fdfbf7;
+  /* Core colors - warm neutrals */
+  --bg: #faf9f7;
   --surface: #ffffff;
-  --text: #111111;
-  --text-muted: #444444;
-  --text-subtle: #888888;
-  --border: #111111;
-  --border-soft: rgba(17, 17, 17, 0.16);
+  --text: #1a1816;
+  --text-muted: #5c5856;
+  --text-subtle: #9c9894;
+  --border: #1a1816;
+  --border-soft: rgba(26, 24, 22, 0.12);
 
   /* Interactive */
-  --hover-bg: rgba(17, 17, 17, 0.05);
-  --focus-ring: rgba(17, 17, 17, 0.2);
-  --shadow: rgba(0, 0, 0, 0.12);
+  --hover-bg: rgba(26, 24, 22, 0.05);
+  --focus-ring: rgba(26, 24, 22, 0.2);
+  --shadow: rgba(0, 0, 0, 0.1);
 
   /* Buttons */
   --btn-bg: #ffffff;
-  --btn-border: #111111;
-  --btn-text: #111111;
-  --btn-primary-bg: #111111;
-  --btn-primary-text: #ffffff;
+  --btn-border: #1a1816;
+  --btn-text: #1a1816;
+  --btn-primary-bg: #1a1816;
+  --btn-primary-text: #faf9f7;
 
   /* Danger */
-  --danger: #9d1f1f;
-  --danger-hover-border: #a72525;
-  --danger-hover-bg: rgba(198, 40, 40, 0.16);
-  --error-border: #c62828;
-  --error-bg: rgba(198, 40, 40, 0.1);
+  --danger: #9a2d24;
+  --danger-hover-border: #b5342a;
+  --danger-hover-bg: rgba(181, 52, 42, 0.12);
+  --error-border: #b5342a;
+  --error-bg: rgba(181, 52, 42, 0.08);
 
   /* Components */
-  --card-border: #111111;
+  --card-border: #1a1816;
   --card-bg: #ffffff;
-  --remove-border: #111111;
+  --remove-border: #1a1816;
   --remove-bg: #ffffff;
-  --remove-text: #111111;
+  --remove-text: #1a1816;
 
   /* ─────────────────────────────────────────────
      Dark Mode Tokens
      ───────────────────────────────────────────── */
 
-  --dark-bg: rgba(24, 24, 24, 0.96);
-  --dark-surface: rgba(34, 34, 34, 0.94);
-  --dark-text: #efefef;
-  --dark-text-muted: #bdbdbd;
-  --dark-text-subtle: #a8a8a8;
-  --dark-border: #d4d4d4;
-  --dark-border-soft: rgba(255, 255, 255, 0.16);
-  --dark-shadow: rgba(0, 0, 0, 0.42);
-  --dark-focus-ring: rgba(255, 255, 255, 0.35);
+  --dark-bg: rgba(28, 28, 28, 0.97);
+  --dark-surface: rgba(36, 36, 36, 0.96);
+  --dark-text: #f0efed;
+  --dark-text-muted: #a8a6a2;
+  --dark-text-subtle: #8a8884;
+  --dark-border: #e0dfdd;
+  --dark-border-soft: rgba(240, 239, 237, 0.12);
+  --dark-shadow: rgba(0, 0, 0, 0.35);
+  --dark-focus-ring: rgba(240, 239, 237, 0.3);
+  --dark-hover-bg: rgba(240, 239, 237, 0.08);
 
-  --dark-btn-bg: rgba(34, 34, 34, 0.94);
-  --dark-btn-border: #cdcdcd;
-  --dark-btn-text: #efefef;
-  --dark-btn-primary-bg: #d7d7d7;
-  --dark-btn-primary-border: #d7d7d7;
-  --dark-btn-primary-text: #111111;
+  --dark-btn-bg: rgba(36, 36, 36, 0.96);
+  --dark-btn-border: #e0dfdd;
+  --dark-btn-text: #f0efed;
+  --dark-btn-primary-bg: #e0dfdd;
+  --dark-btn-primary-border: #e0dfdd;
+  --dark-btn-primary-text: #1c1c1c;
 
-  --dark-danger: #ffd6d6;
-  --dark-danger-hover-border: #ff9b9b;
-  --dark-danger-hover-bg: rgba(190, 70, 70, 0.36);
-  --dark-error-border: #d97d7d;
-  --dark-error-bg: rgba(190, 70, 70, 0.28);
+  --dark-danger: #f0c4c0;
+  --dark-danger-hover-border: #e85a50;
+  --dark-danger-hover-bg: rgba(232, 90, 80, 0.18);
+  --dark-error-border: #e85a50;
+  --dark-error-bg: rgba(232, 90, 80, 0.12);
 
-  --dark-card-border: #cdcdcd;
-  --dark-card-bg: rgba(34, 34, 34, 0.94);
-  --dark-remove-border: #cdcdcd;
-  --dark-remove-bg: rgba(24, 24, 24, 0.94);
-  --dark-remove-text: #efefef;
+  --dark-card-border: #e0dfdd;
+  --dark-card-bg: rgba(36, 36, 36, 0.96);
+  --dark-remove-border: #e0dfdd;
+  --dark-remove-bg: rgba(28, 28, 28, 0.96);
+  --dark-remove-text: #f0efed;
 }
 
 /* ─────────────────────────────────────────────
@@ -83,15 +84,15 @@
    ───────────────────────────────────────────── */
 
 .notiv-panel {
-  width: min(360px, calc(100vw - 20px));
+  width: min(340px, calc(100vw - 20px));
   border: 1.25px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  box-shadow: 0 4px 12px var(--shadow), 0 1px 2px rgba(0, 0, 0, 0.05);
-  background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
-  background-size: 12px 12px;
+  box-shadow: 0 4px 12px var(--shadow), 0 1px 2px rgba(0, 0, 0, 0.04);
+  background-image: radial-gradient(rgba(26, 24, 22, 0.03) 1px, transparent 0);
+  background-size: 16px 16px;
   overflow: hidden;
 }
 
@@ -116,24 +117,24 @@
 }
 
 .notiv-header-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 999px;
   background: var(--text);
   flex: 0 0 auto;
 }
 
 .notiv-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 560;
   color: var(--text);
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   line-height: 1.2;
 }
 
 .notiv-target-chip {
-  max-width: 146px;
+  max-width: 140px;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -142,7 +143,7 @@
   border-radius: 0;
   padding: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.3;
   color: var(--text-muted);
   background: transparent;
@@ -160,8 +161,8 @@
 
 .notiv-icon-button {
   appearance: none;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: 1.25px solid var(--btn-border);
   border-radius: 6px;
   background: var(--btn-bg);
@@ -170,7 +171,7 @@
   place-items: center;
   cursor: pointer;
   transform: scale(1);
-  transition: transform 90ms ease, color 120ms ease, background-color 120ms ease, border-color 120ms ease, filter 120ms ease;
+  transition: transform 80ms ease, color 80ms ease, background-color 80ms ease, border-color 80ms ease, filter 80ms ease;
   padding: 0;
 }
 
@@ -186,11 +187,11 @@
 }
 
 .notiv-icon-button:hover:not(:disabled):not(.notiv-icon-button-ghost) {
-  filter: brightness(0.92);
+  filter: brightness(0.94);
 }
 
 .notiv-icon-button:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
 .notiv-icon-button:focus-visible {
@@ -207,10 +208,11 @@
   border-color: var(--btn-primary-bg);
   background: var(--btn-primary-bg);
   color: var(--btn-primary-text);
+  border-radius: 999px;
 }
 
 .notiv-icon-button-primary:hover:not(:disabled) {
-  filter: brightness(0.92);
+  filter: brightness(0.94);
 }
 
 .notiv-icon-button-danger {
@@ -237,8 +239,8 @@
 
 .notiv-textarea {
   width: 100%;
-  min-height: 92px;
-  max-height: 180px;
+  min-height: 88px;
+  max-height: 160px;
   border: 0;
   border-bottom: none;
   border-radius: 0;
@@ -246,8 +248,8 @@
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 14px;
-  font-weight: 430;
-  line-height: 1.35;
+  font-weight: 420;
+  line-height: 1.4;
   padding: 6px 0;
   resize: none;
 }
@@ -288,9 +290,9 @@
 
 .notiv-color-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   display: none;
 }
@@ -298,13 +300,13 @@
 .notiv-color-grid {
   display: flex;
   flex-wrap: nowrap;
-  gap: 4px;
+  gap: 3px;
 }
 
 .notiv-color-chip {
   appearance: none;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border: 1.25px solid transparent;
   border-radius: 999px;
   padding: 0;
@@ -313,15 +315,15 @@
   background: transparent;
   color: transparent;
   cursor: pointer;
-  transition: box-shadow 120ms ease;
+  transition: box-shadow 80ms ease;
 }
 
 .notiv-color-chip:hover:not(:disabled) .notiv-color-dot {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
 }
 
 .notiv-color-chip:active:not(:disabled) .notiv-color-dot {
-  transform: scale(0.92);
+  transform: scale(0.9);
 }
 
 .notiv-color-chip:disabled {
@@ -339,16 +341,16 @@
 }
 
 .notiv-color-dot {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
   border: 2px solid transparent;
   box-sizing: border-box;
-  transition: filter 110ms ease, transform 80ms ease;
+  transition: filter 80ms ease, transform 80ms ease;
 }
 
 .notiv-inline-actions .notiv-icon-button:active:not(:disabled) {
-  transform: scale(0.93);
+  transform: scale(0.92);
 }
 
 .notiv-color-chip-active .notiv-color-dot {
@@ -365,17 +367,17 @@
 
 .notiv-attachments-grid {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   overflow-x: auto;
   padding-bottom: 2px;
 }
 
 .notiv-attachment-card {
   position: relative;
-  width: 56px;
-  height: 44px;
+  width: 52px;
+  height: 40px;
   border: 1.25px solid var(--card-border);
-  border-radius: 6px;
+  border-radius: 5px;
   overflow: hidden;
   background: var(--card-bg);
   flex: 0 0 auto;
@@ -391,13 +393,13 @@
   position: absolute;
   top: 3px;
   right: 3px;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   border: 1.25px solid var(--remove-border);
   border-radius: 4px;
   background: var(--remove-bg);
   color: var(--remove-text);
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
   cursor: pointer;
   padding: 0;
@@ -414,18 +416,20 @@
   gap: 8px;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   line-height: 1.3;
 }
 
 .notiv-error {
   border: 1.25px solid var(--error-border);
-  border-radius: 6px;
+  border-radius: 5px;
   background: var(--error-bg);
   color: var(--danger);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 450;
-  padding: 8px 10px;
+  padding: 7px 9px;
 }
 
 /* ─────────────────────────────────────────────
@@ -436,7 +440,8 @@
   border-color: var(--dark-border);
   background: var(--dark-bg);
   color: var(--dark-text);
-  box-shadow: 0 8px 18px var(--dark-shadow), 0 1px 2px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 6px 16px var(--dark-shadow), 0 1px 2px rgba(0, 0, 0, 0.12);
+  background-image: radial-gradient(rgba(240, 239, 237, 0.025) 1px, transparent 0);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-header {
@@ -471,11 +476,11 @@
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-ghost:hover:not(:disabled) {
   border: none;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--dark-hover-bg);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button:hover:not(:disabled):not(.notiv-icon-button-ghost) {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-primary {
@@ -485,7 +490,7 @@
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-primary:hover:not(:disabled) {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-icon-button-danger {
@@ -527,7 +532,7 @@
 }
 
 :host([data-notiv-theme="dark"]) .notiv-color-chip-active .notiv-color-dot {
-  border-color: #ffffff;
+  border-color: var(--dark-border);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-color-chip:focus-visible {

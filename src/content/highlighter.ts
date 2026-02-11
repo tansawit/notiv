@@ -1,6 +1,6 @@
 import type { BoundingBox } from '../shared/types';
 import { DEFAULT_HIGHLIGHT_COLOR, getHighlightColorPreset } from '../shared/highlight-colors';
-import { FONT_STACK_SERIF, getVisualModeTokens } from '../shared/visual-tokens';
+import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 import { getNotivThemeMode } from './theme-mode';
 
 interface HighlighterOptions {
@@ -43,7 +43,7 @@ export class Highlighter {
     this.tooltip.style.maxWidth = '340px';
     this.tooltip.style.padding = '4px 9px';
     this.tooltip.style.borderRadius = '6px';
-    this.tooltip.style.fontFamily = FONT_STACK_SERIF;
+    this.tooltip.style.fontFamily = FONT_STACK_SANS;
     this.tooltip.style.fontSize = '12px';
     this.tooltip.style.fontWeight = '550';
     this.tooltip.style.lineHeight = '1.3';

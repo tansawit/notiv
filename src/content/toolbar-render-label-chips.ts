@@ -53,7 +53,7 @@ export function renderSubmitLabelChipsContent(input: RenderSubmitLabelChipsInput
     chip.style.cursor = 'pointer';
     chip.style.lineHeight = '1';
     chip.style.whiteSpace = 'nowrap';
-    chip.style.transition = 'border-color 100ms ease, background 100ms ease';
+    chip.style.transition = 'border-color 80ms ease, background 80ms ease';
 
     const colorDot = document.createElement('span');
     colorDot.style.width = '9px';

@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Toaster, toast } from 'sonner';
 import 'sonner/dist/styles.css';
-import { FONT_STACK_SERIF, getVisualModeTokens } from '../shared/visual-tokens';
+import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 
 type ToastVariant = 'success' | 'error';
 type NotivThemeMode = 'light' | 'dark';
@@ -35,7 +35,7 @@ function renderToaster(theme: NotivThemeMode): void {
       theme={theme}
       toastOptions={{
         style: {
-          fontFamily: FONT_STACK_SERIF,
+          fontFamily: FONT_STACK_SANS,
           background: tokens.toast.background,
           color: tokens.toast.color,
           border: `1px solid ${tokens.toast.border}`

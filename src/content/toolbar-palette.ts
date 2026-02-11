@@ -1,4 +1,5 @@
 import type { NotivThemeMode } from './theme-mode';
+import { getVisualModeTokens } from '../shared/visual-tokens';
 export type { NotivThemeMode };
 
 export interface ToolbarModePalette {
@@ -59,118 +60,119 @@ export interface PanelPalette {
 export function getToolbarModePalette(mode: NotivThemeMode): ToolbarModePalette {
   if (mode === 'dark') {
     return {
-      shellBackground: 'rgba(24, 24, 24, 0.96)',
-      shellBorder: '#d4d4d4',
-      shellShadow: '0 6px 16px rgba(0, 0, 0, 0.36), 0 1px 2px rgba(0, 0, 0, 0.16)',
-      shellShadowExpanded: '0 10px 22px rgba(0, 0, 0, 0.42), 0 1px 2px rgba(0, 0, 0, 0.18)',
-      iconColor: '#efefef'
+      shellBackground: 'rgba(28, 28, 28, 0.97)',
+      shellBorder: '#e0dfdd',
+      shellShadow: '0 6px 16px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.12)',
+      shellShadowExpanded: '0 10px 22px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.14)',
+      iconColor: '#f0efed'
     };
   }
   return {
-    shellBackground: 'rgba(253, 251, 247, 0.98)',
-    shellBorder: '#111111',
-    shellShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05)',
-    shellShadowExpanded: '0 8px 18px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.06)',
-    iconColor: '#111111'
+    shellBackground: 'rgba(250, 249, 247, 0.98)',
+    shellBorder: '#1a1816',
+    shellShadow: '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+    shellShadowExpanded: '0 8px 18px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05)',
+    iconColor: '#1a1816'
   };
 }
 
 export function getToolbarControlPalette(mode: NotivThemeMode): ToolbarControlPalette {
+  const visualTokens = getVisualModeTokens(mode);
   if (mode === 'dark') {
     return {
-      buttonBackground: 'rgba(34, 34, 34, 0.94)',
-      buttonBorder: '#cfcfcf',
-      buttonColor: '#efefef',
-      buttonHoverBackground: 'rgba(255, 255, 255, 0.18)',
-      buttonHoverBorder: 'rgba(255, 255, 255, 0.42)',
+      buttonBackground: 'rgba(36, 36, 36, 0.96)',
+      buttonBorder: '#e0dfdd',
+      buttonColor: '#f0efed',
+      buttonHoverBackground: 'rgba(240, 239, 237, 0.14)',
+      buttonHoverBorder: 'rgba(240, 239, 237, 0.4)',
       buttonHoverColor: '#ffffff',
-      buttonPressedBackground: 'rgba(255, 255, 255, 0.24)',
-      separator: 'rgba(255, 255, 255, 0.18)',
-      badgeBorder: '#d4d4d4',
-      collapsedBadgeBackground: '#d7d7d7',
-      collapsedBadgeColor: '#111111',
-      queueBadgeBackground: '#d7d7d7',
-      queueBadgeColor: '#111111',
-      activeBackground: '#d7d7d7',
-      activeBorder: '#d7d7d7',
-      activeColor: '#111111'
+      buttonPressedBackground: 'rgba(240, 239, 237, 0.2)',
+      separator: 'rgba(240, 239, 237, 0.16)',
+      badgeBorder: visualTokens.badges.border,
+      collapsedBadgeBackground: visualTokens.badges.collapsedBackground,
+      collapsedBadgeColor: visualTokens.badges.collapsedColor,
+      queueBadgeBackground: visualTokens.badges.queueBackground,
+      queueBadgeColor: visualTokens.badges.queueColor,
+      activeBackground: '#e0dfdd',
+      activeBorder: '#e0dfdd',
+      activeColor: '#1c1c1c'
     };
   }
   return {
-    buttonBackground: 'rgba(253, 251, 247, 0.98)',
-    buttonBorder: '#111111',
-    buttonColor: '#111111',
-    buttonHoverBackground: 'rgba(17, 17, 17, 0.1)',
-    buttonHoverBorder: 'rgba(17, 17, 17, 0.28)',
-    buttonHoverColor: '#111111',
-    buttonPressedBackground: 'rgba(17, 17, 17, 0.16)',
-    separator: 'rgba(17, 17, 17, 0.16)',
-    badgeBorder: '#111111',
-    collapsedBadgeBackground: '#c62828',
-    collapsedBadgeColor: '#ffffff',
-    queueBadgeBackground: '#c62828',
-    queueBadgeColor: '#ffffff',
-    activeBackground: '#111111',
-    activeBorder: '#111111',
-    activeColor: '#ffffff'
+    buttonBackground: 'rgba(250, 249, 247, 0.98)',
+    buttonBorder: '#1a1816',
+    buttonColor: '#1a1816',
+    buttonHoverBackground: 'rgba(26, 24, 22, 0.08)',
+    buttonHoverBorder: 'rgba(26, 24, 22, 0.25)',
+    buttonHoverColor: '#1a1816',
+    buttonPressedBackground: 'rgba(26, 24, 22, 0.14)',
+    separator: 'rgba(26, 24, 22, 0.14)',
+    badgeBorder: visualTokens.badges.border,
+    collapsedBadgeBackground: visualTokens.badges.collapsedBackground,
+    collapsedBadgeColor: visualTokens.badges.collapsedColor,
+    queueBadgeBackground: visualTokens.badges.queueBackground,
+    queueBadgeColor: visualTokens.badges.queueColor,
+    activeBackground: '#1a1816',
+    activeBorder: '#1a1816',
+    activeColor: '#faf9f7'
   };
 }
 
 export function getPanelPalette(mode: NotivThemeMode): PanelPalette {
   if (mode === 'dark') {
     return {
-      shellBorder: '#d4d4d4',
-      shellBackground: 'rgba(24, 24, 24, 0.96)',
-      shellShadow: '0 6px 16px rgba(0, 0, 0, 0.38), 0 1px 2px rgba(0, 0, 0, 0.18)',
-      headingColor: '#efefef',
-      textPrimary: '#efefef',
-      textSecondary: '#c7c7c7',
-      textMuted: '#a9a9a9',
-      surfaceBorder: '#c9c9c9',
-      surfaceBackground: 'rgba(34, 34, 34, 0.9)',
-      surfaceHoverBorder: '#d8d8d8',
-      surfaceHoverBackground: 'rgba(255, 255, 255, 0.06)',
-      surfaceHoverShadow: '0 7px 14px rgba(0, 0, 0, 0.36)',
+      shellBorder: '#e0dfdd',
+      shellBackground: 'rgba(28, 28, 28, 0.97)',
+      shellShadow: '0 6px 16px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.12)',
+      headingColor: '#f0efed',
+      textPrimary: '#f0efed',
+      textSecondary: '#a8a6a2',
+      textMuted: '#8a8884',
+      surfaceBorder: '#e0dfdd',
+      surfaceBackground: 'rgba(36, 36, 36, 0.96)',
+      surfaceHoverBorder: '#e0dfdd',
+      surfaceHoverBackground: 'rgba(240, 239, 237, 0.06)',
+      surfaceHoverShadow: '0 6px 14px rgba(0, 0, 0, 0.32)',
       inputBorder: 'transparent',
       inputBackground: 'transparent',
-      inputText: '#ececec',
-      surfaceSelectedBackground: 'rgba(255, 255, 255, 0.1)',
-      iconButtonBorder: '#cfcfcf',
-      iconButtonBackground: 'rgba(34, 34, 34, 0.94)',
-      iconButtonColor: '#efefef',
-      subtleButtonBorder: '#c6c6c6',
-      subtleButtonBackground: 'rgba(34, 34, 34, 0.94)',
-      subtleButtonColor: '#e3e3e3',
-      infoBorder: '#c6c6c6',
-      infoBackground: 'rgba(34, 34, 34, 0.94)',
-      infoText: '#cfcfcf'
+      inputText: '#f0efed',
+      surfaceSelectedBackground: 'rgba(240, 239, 237, 0.08)',
+      iconButtonBorder: '#e0dfdd',
+      iconButtonBackground: 'rgba(36, 36, 36, 0.96)',
+      iconButtonColor: '#f0efed',
+      subtleButtonBorder: '#e0dfdd',
+      subtleButtonBackground: 'rgba(36, 36, 36, 0.96)',
+      subtleButtonColor: '#a8a6a2',
+      infoBorder: '#e0dfdd',
+      infoBackground: 'rgba(36, 36, 36, 0.96)',
+      infoText: '#a8a6a2'
     };
   }
   return {
-    shellBorder: '#111111',
-    shellBackground: 'rgba(253, 251, 247, 0.98)',
-    shellShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05)',
-    headingColor: '#111111',
-    textPrimary: '#111111',
-    textSecondary: '#444444',
-    textMuted: '#888888',
-    surfaceBorder: '#e0e0e0',
+    shellBorder: '#1a1816',
+    shellBackground: 'rgba(250, 249, 247, 0.98)',
+    shellShadow: '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+    headingColor: '#1a1816',
+    textPrimary: '#1a1816',
+    textSecondary: '#5c5856',
+    textMuted: '#9c9894',
+    surfaceBorder: 'rgba(26, 24, 22, 0.12)',
     surfaceBackground: '#ffffff',
-    surfaceHoverBorder: '#111111',
-    surfaceHoverBackground: '#fdfbf7',
-    surfaceHoverShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+    surfaceHoverBorder: '#1a1816',
+    surfaceHoverBackground: '#faf9f7',
+    surfaceHoverShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     inputBorder: 'transparent',
     inputBackground: 'transparent',
-    inputText: '#111111',
-    surfaceSelectedBackground: 'rgba(17, 17, 17, 0.05)',
-    iconButtonBorder: '#e0e0e0',
+    inputText: '#1a1816',
+    surfaceSelectedBackground: 'rgba(26, 24, 22, 0.05)',
+    iconButtonBorder: 'rgba(26, 24, 22, 0.12)',
     iconButtonBackground: '#ffffff',
-    iconButtonColor: '#111111',
-    subtleButtonBorder: '#e0e0e0',
+    iconButtonColor: '#1a1816',
+    subtleButtonBorder: 'rgba(26, 24, 22, 0.12)',
     subtleButtonBackground: '#ffffff',
-    subtleButtonColor: '#444444',
-    infoBorder: '#e0e0e0',
+    subtleButtonColor: '#5c5856',
+    infoBorder: 'rgba(26, 24, 22, 0.12)',
     infoBackground: '#ffffff',
-    infoText: '#444444'
+    infoText: '#5c5856'
   };
 }

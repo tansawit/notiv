@@ -3,7 +3,7 @@ import type { HighlightColor } from '../shared/types';
 import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highlight-colors';
 import type { PanelPalette } from './toolbar-palette';
 import { createIcon, setButtonDisabled, truncateText } from './toolbar-ui-utils';
-import { FONT_STACK_MONO, FONT_STACK_SERIF } from '../shared/visual-tokens';
+import { FONT_STACK_MONO, FONT_STACK_SANS } from '../shared/visual-tokens';
 
 interface QueueNoteSummaryLike {
   id: string;
@@ -48,6 +48,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
 
   const titleNode = queuePanel.querySelector<HTMLElement>('[data-queue-title="true"]');
   if (titleNode) {
+    titleNode.style.color = palette.headingColor;
     if (submitting) {
       titleNode.textContent = 'Notes';
     } else {
@@ -88,7 +89,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     row.style.border = '1.25px solid transparent';
     row.style.borderRadius = '6px';
     row.style.background = hovered ? palette.surfaceHoverBackground : 'transparent';
-    row.style.transition = 'background 120ms ease';
+    row.style.transition = 'background 80ms ease';
     row.style.cursor = 'default';
     if (submitting) {
       row.style.opacity = '0.6';
@@ -110,7 +111,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     indexChip.style.color = colorPreset.pinText;
     indexChip.style.background = colorPreset.pinFill;
     indexChip.style.opacity = '0.75';
-    indexChip.style.transition = 'opacity 120ms ease';
+    indexChip.style.transition = 'opacity 80ms ease';
 
     const applyHoveredState = (value: boolean, deleteBtn: HTMLButtonElement): void => {
       row.style.background = value ? palette.surfaceHoverBackground : 'transparent';
@@ -124,7 +125,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     const comment = document.createElement('div');
     comment.textContent = truncateText(note.comment || 'Untitled note', 110);
     comment.style.color = palette.textPrimary;
-    comment.style.fontFamily = FONT_STACK_SERIF;
+    comment.style.fontFamily = FONT_STACK_SANS;
     comment.style.fontSize = '14px';
     comment.style.fontWeight = '500';
     comment.style.lineHeight = '1.3';
@@ -168,7 +169,7 @@ export function renderQueuePanelContent(input: RenderQueuePanelInput): void {
     deleteButton.style.color = palette.textMuted;
     deleteButton.style.cursor = 'pointer';
     deleteButton.style.opacity = '0';
-    deleteButton.style.transition = 'opacity 120ms ease, color 120ms ease';
+    deleteButton.style.transition = 'opacity 80ms ease, color 80ms ease';
     setButtonDisabled(deleteButton, submitting);
     deleteButton.addEventListener('click', () => {
       onQueueDelete(note.id);

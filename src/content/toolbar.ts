@@ -44,7 +44,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide';
-import { FONT_STACK_SERIF, getVisualModeTokens } from '../shared/visual-tokens';
+import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 
 export interface QueueNoteSummary {
   id: string;
@@ -151,9 +151,9 @@ export class FeedbackToolbar {
   private readonly shellMorphExpandEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
   private readonly shellMorphCollapseEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
   private readonly toolbarContainerEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
-  private readonly contentFadeDurationMs = 180;
-  private readonly controlsOpacityDurationMs = 280;
-  private readonly controlsTransformDurationMs = 280;
+  private readonly contentFadeDurationMs = 80;
+  private readonly controlsOpacityDurationMs = 80;
+  private readonly controlsTransformDurationMs = 80;
 
   private readonly submitPanel: HTMLDivElement;
   private readonly submitMeta: HTMLDivElement;
@@ -607,12 +607,12 @@ export class FeedbackToolbar {
     button.style.cursor = 'pointer';
     button.style.transform = 'scale(1)';
     button.style.transition = [
-      'transform 90ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-      'color 120ms ease',
-      'background-color 120ms ease',
-      'border-color 120ms ease',
-      'box-shadow 120ms ease',
-      'filter 120ms ease'
+      'transform 80ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+      'color 80ms ease',
+      'background-color 80ms ease',
+      'border-color 80ms ease',
+      'box-shadow 80ms ease',
+      'filter 80ms ease'
     ].join(', ');
     button.dataset.notivRestBackground = controlPalette.buttonBackground;
     button.dataset.notivRestBorder = controlPalette.buttonBorder;
@@ -733,7 +733,7 @@ export class FeedbackToolbar {
     panel.style.padding = '10px';
     panel.style.boxShadow = palette.shellShadow;
     panel.style.backgroundImage = 'radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0)';
-    panel.style.backgroundSize = '12px 12px';
+    panel.style.backgroundSize = '16px 16px';
     panel.style.display = 'none';
 
     const heading = document.createElement('div');
@@ -741,7 +741,7 @@ export class FeedbackToolbar {
     heading.textContent = title;
     heading.style.marginBottom = '8px';
     heading.style.color = palette.headingColor;
-    heading.style.fontFamily = FONT_STACK_SERIF;
+    heading.style.fontFamily = FONT_STACK_SANS;
     heading.style.fontSize = '14px';
     heading.style.fontWeight = '600';
 
@@ -833,14 +833,14 @@ export class FeedbackToolbar {
     this.collapsedButton.dataset.notivRestColor = toolbarPalette.iconColor;
     this.collapsedButton.dataset.notivRestShadow = 'none';
     this.collapsedButton.dataset.notivHoverBackground = this.colorMode === 'dark'
-      ? 'rgba(255, 255, 255, 0.08)'
-      : 'rgba(17, 17, 17, 0.06)';
+      ? 'rgba(240, 239, 237, 0.08)'
+      : 'rgba(26, 24, 22, 0.06)';
     this.collapsedButton.dataset.notivHoverBorder = 'transparent';
     this.collapsedButton.dataset.notivHoverColor = toolbarPalette.iconColor;
     this.collapsedButton.dataset.notivHoverShadow = 'none';
     this.collapsedButton.dataset.notivPressedBackground = this.colorMode === 'dark'
-      ? 'rgba(255, 255, 255, 0.12)'
-      : 'rgba(17, 17, 17, 0.1)';
+      ? 'rgba(240, 239, 237, 0.12)'
+      : 'rgba(26, 24, 22, 0.1)';
     this.collapsedButton.dataset.notivPressedBorder = 'transparent';
     this.collapsedButton.dataset.notivPressedColor = toolbarPalette.iconColor;
     this.collapsedButton.dataset.notivPressedShadow = 'none';
@@ -931,7 +931,7 @@ export class FeedbackToolbar {
   private syncMarkersUi(): void {
     const controlPalette = this.getToolbarControlPalette();
     const visible = this.settingsState.markersVisible;
-    const activeHoverBackground = this.colorMode === 'dark' ? '#efefef' : '#2a2a2a';
+    const activeHoverBackground = this.colorMode === 'dark' ? '#f0efed' : '#1a1816';
     const activePressedBackground = this.colorMode === 'dark' ? '#c8c8c8' : '#3a3a3a';
     this.markersButton.title = visible ? 'Hide markers' : 'Show markers';
     this.markersButton.setAttribute('aria-label', visible ? 'Hide markers' : 'Show markers');

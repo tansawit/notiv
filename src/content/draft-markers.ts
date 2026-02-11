@@ -1,7 +1,7 @@
 import type { HighlightColor } from '../shared/types';
 import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highlight-colors';
 import { getNotivThemeMode } from './theme-mode';
-import { FONT_STACK_MONO, FONT_STACK_SERIF, getVisualModeTokens } from '../shared/visual-tokens';
+import { FONT_STACK_MONO, FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 
 interface DraftMarkerNote {
   id: string;
@@ -75,7 +75,7 @@ export class DraftMarkers {
     container.style.pointerEvents = 'none';
     container.style.display = 'none';
     container.style.opacity = '0';
-    container.style.transition = 'opacity 170ms ease';
+    container.style.transition = 'opacity 80ms ease';
     document.documentElement.appendChild(container);
 
     this.container = container;
@@ -370,7 +370,7 @@ export class DraftMarkers {
         ? `0 10px 18px ${markerTokens.shadowActive}, 0 0 0 2px ${colorPreset.fill}`
         : `0 6px 14px ${markerTokens.shadowBase}, 0 0 0 1px ${colorPreset.fill}`;
       bubble.style.opacity = bubbleVisible ? '1' : '0';
-      bubble.style.transition = 'opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease';
+      bubble.style.transition = 'opacity 80ms ease, border-color 80ms ease, box-shadow 80ms ease';
       bubble.style.pointerEvents = bubbleVisible ? 'auto' : 'none';
       bubble.style.cursor = 'pointer';
       bubble.addEventListener('pointerdown', (event) => {
@@ -382,7 +382,7 @@ export class DraftMarkers {
       const text = document.createElement('div');
       text.textContent = truncate(note.comment || 'Note', 360);
       text.style.color = markerTokens.text;
-      text.style.fontFamily = FONT_STACK_SERIF;
+      text.style.fontFamily = FONT_STACK_SANS;
       text.style.fontSize = '13px';
       text.style.fontWeight = '520';
       text.style.lineHeight = '1.3';

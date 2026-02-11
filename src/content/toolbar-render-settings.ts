@@ -1,7 +1,7 @@
 import { Moon, Sun } from 'lucide';
 import type { NotivThemeMode, PanelPalette } from './toolbar-palette';
 import { createIcon, makeSpinner, makeTextButton } from './toolbar-ui-utils';
-import { FONT_STACK_MONO, FONT_STACK_SERIF, getVisualModeTokens } from '../shared/visual-tokens';
+import { FONT_STACK_MONO, FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 
 interface SettingsPanelState {
   loading: boolean;
@@ -45,7 +45,7 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
   const headingTitle = document.createElement('div');
   headingTitle.textContent = 'Settings';
   headingTitle.style.color = palette.headingColor;
-  headingTitle.style.fontFamily = FONT_STACK_SERIF;
+  headingTitle.style.fontFamily = FONT_STACK_SANS;
   headingTitle.style.fontSize = '14px';
   headingTitle.style.fontWeight = '600';
 
@@ -78,9 +78,9 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
   themeToggle.style.cursor = 'pointer';
   themeToggle.style.display = 'inline-grid';
   themeToggle.style.placeItems = 'center';
-  themeToggle.style.transition = 'background 120ms ease, color 120ms ease';
+  themeToggle.style.transition = 'background 80ms ease, color 80ms ease';
   themeToggle.addEventListener('mouseenter', () => {
-    themeToggle.style.background = colorMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(17, 17, 17, 0.05)';
+    themeToggle.style.background = palette.surfaceSelectedBackground;
     themeToggle.style.color = palette.textPrimary;
   });
   themeToggle.addEventListener('mouseleave', () => {
@@ -132,11 +132,11 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
   statusDot.style.borderRadius = '999px';
   statusDot.style.flexShrink = '0';
   if (hasError) {
-    statusDot.style.background = colorMode === 'dark' ? '#e4868e' : '#c62828';
+    statusDot.style.background = visualTokens.settingsConnectionBadge.error.background;
   } else if (connected) {
-    statusDot.style.background = colorMode === 'dark' ? '#67c88e' : '#237147';
+    statusDot.style.background = visualTokens.settingsConnectionBadge.connected.background;
   } else {
-    statusDot.style.background = colorMode === 'dark' ? '#9a9a9a' : '#888888';
+    statusDot.style.background = visualTokens.settingsConnectionBadge.idle;
   }
 
   const identityWrap = document.createElement('div');
@@ -146,7 +146,7 @@ export function renderSettingsPanelContent(input: RenderSettingsPanelInput): voi
   const identity = document.createElement('div');
   identity.textContent = connected ? who : hasError ? 'Connection error' : 'Not connected';
   identity.style.color = palette.textPrimary;
-  identity.style.fontFamily = FONT_STACK_SERIF;
+  identity.style.fontFamily = FONT_STACK_SANS;
   identity.style.fontSize = '14px';
   identity.style.fontWeight = '500';
   identity.style.lineHeight = '1.3';

@@ -1,4 +1,4 @@
-import { FONT_STACK_SERIF, getVisualModeTokens } from '../shared/visual-tokens';
+import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 import { getNotivThemeMode } from './theme-mode';
 
 interface TooltipAnchor {
@@ -41,7 +41,7 @@ export function createLinearAuthTooltipController(): LinearAuthTooltipController
     tooltip.style.background = visualTokens.floatingTooltip.background;
     tooltip.style.color = visualTokens.floatingTooltip.color;
     tooltip.style.border = `1.25px solid ${visualTokens.floatingTooltip.border}`;
-    tooltip.style.fontFamily = FONT_STACK_SERIF;
+    tooltip.style.fontFamily = FONT_STACK_SANS;
     tooltip.style.fontSize = '12px';
     tooltip.style.fontWeight = '520';
     tooltip.style.lineHeight = '1.3';
@@ -51,7 +51,7 @@ export function createLinearAuthTooltipController(): LinearAuthTooltipController
     tooltip.style.boxShadow = visualTokens.floatingTooltip.shadow;
     tooltip.style.opacity = '0';
     tooltip.style.transform = 'translateY(3px)';
-    tooltip.style.transition = 'opacity 120ms ease, transform 120ms ease';
+    tooltip.style.transition = 'opacity 80ms ease, transform 80ms ease';
     tooltip.textContent = message;
     document.documentElement.appendChild(tooltip);
 

@@ -1,6 +1,6 @@
 import type { NotivThemeMode, PanelPalette } from './toolbar-palette';
 import { makeTextButton } from './toolbar-ui-utils';
-import { FONT_STACK_SERIF } from '../shared/visual-tokens';
+import { FONT_STACK_SANS } from '../shared/visual-tokens';
 
 interface CreateToolbarQueuePanelInput {
   colorMode: NotivThemeMode;
@@ -39,7 +39,7 @@ export function createToolbarQueuePanelElements(
   queueTitle.setAttribute('data-queue-title', 'true');
   queueTitle.textContent = 'Notes';
   queueTitle.style.color = panelPalette.headingColor;
-  queueTitle.style.fontFamily = FONT_STACK_SERIF;
+  queueTitle.style.fontFamily = FONT_STACK_SANS;
   queueTitle.style.fontSize = '14px';
   queueTitle.style.fontWeight = '600';
 

@@ -1,5 +1,5 @@
 import type { IconNode } from 'lucide';
-import { FONT_STACK_SERIF, UTILITY_STYLE_TOKENS } from '../shared/visual-tokens';
+import { FONT_STACK_SANS, UTILITY_STYLE_TOKENS } from '../shared/visual-tokens';
 
 function escapeHtmlAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -51,12 +51,12 @@ export function makeTextButton(label: string, subtle = false): HTMLButtonElement
   button.style.padding = '7px 10px';
   button.style.background = subtle ? 'transparent' : UTILITY_STYLE_TOKENS.textButton.solidBackground;
   button.style.color = subtle ? UTILITY_STYLE_TOKENS.textButton.subtleText : UTILITY_STYLE_TOKENS.textButton.solidText;
-  button.style.fontFamily = FONT_STACK_SERIF;
+  button.style.fontFamily = FONT_STACK_SANS;
   button.style.fontSize = '12px';
   button.style.fontWeight = '520';
   button.style.cursor = 'pointer';
   button.style.transform = 'scale(1)';
-  button.style.transition = 'transform 90ms ease, opacity 120ms ease, filter 120ms ease';
+  button.style.transition = 'transform 80ms ease, opacity 80ms ease, filter 80ms ease';
   const resolveMode = (): 'light' | 'dark' =>
     document.documentElement.getAttribute('data-notiv-theme') === 'dark' ? 'dark' : 'light';
   const resolveHoverFilter = (): string => (resolveMode() === 'dark' ? 'brightness(1.1)' : 'brightness(0.92)');

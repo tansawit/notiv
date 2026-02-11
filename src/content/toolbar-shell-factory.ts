@@ -64,7 +64,7 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   container.style.right = '1.25rem';
   container.style.opacity = '0';
   container.style.transform = 'translateY(10px) scale(0.98)';
-  container.style.transition = `opacity 170ms ease, transform 190ms ${toolbarContainerEasing}`;
+  container.style.transition = `opacity 80ms ease, transform 80ms ${toolbarContainerEasing}`;
   container.style.zIndex = '2147483600';
   container.style.display = 'none';
   container.style.pointerEvents = 'none';
@@ -82,8 +82,8 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   panelHost.style.transform = 'translateY(8px) scale(0.98)';
   panelHost.style.opacity = '0';
   panelHost.style.transition = [
-    'opacity 150ms ease',
-    `transform 170ms ${toolbarContainerEasing}`,
+    'opacity 80ms ease',
+    `transform 80ms ${toolbarContainerEasing}`,
     `width ${shellMorphDurationMs}ms ${shellMorphExpandEasing}`,
     `height ${shellMorphDurationMs}ms ${shellMorphExpandEasing}`
   ].join(', ');
@@ -192,7 +192,7 @@ export function createToolbarShellElements(input: CreateToolbarShellInput): Tool
   settingsConnectionBadge.style.borderRadius = '999px';
   settingsConnectionBadge.style.display = 'grid';
   settingsConnectionBadge.style.placeItems = 'center';
-  settingsConnectionBadge.style.transition = 'background 160ms ease, box-shadow 160ms ease, border-color 160ms ease';
+  settingsConnectionBadge.style.transition = 'background 80ms ease, box-shadow 80ms ease, border-color 80ms ease';
   settingsConnectionBadge.style.pointerEvents = 'none';
   settingsButton.appendChild(settingsConnectionBadge);
 

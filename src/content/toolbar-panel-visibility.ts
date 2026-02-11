@@ -57,8 +57,8 @@ function panelHostTransition(
   shellMorphExpandEasing: string
 ): string {
   return [
-    'opacity 150ms ease',
-    `transform 170ms ${toolbarContainerEasing}`,
+    'opacity 80ms ease',
+    `transform 80ms ${toolbarContainerEasing}`,
     `width ${shellMorphDurationMs}ms ${shellMorphExpandEasing}`,
     `height ${shellMorphDurationMs}ms ${shellMorphExpandEasing}`
   ].join(', ');

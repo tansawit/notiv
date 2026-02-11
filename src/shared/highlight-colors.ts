@@ -15,66 +15,66 @@ export const DEFAULT_HIGHLIGHT_COLOR: HighlightColor = 'blue';
 export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   {
     id: 'blue',
-    label: 'Blue',
-    border: '#2f6df6',
-    fill: 'rgba(47, 109, 246, 0.12)',
-    outline: 'rgba(21, 58, 135, 0.62)',
-    pinFill: '#2f6df6',
-    pinText: '#f5f9ff'
+    label: 'Slate',
+    border: '#4a5568',
+    fill: 'rgba(74, 85, 104, 0.12)',
+    outline: 'rgba(45, 55, 72, 0.55)',
+    pinFill: '#4a5568',
+    pinText: '#f7fafc'
   },
   {
     id: 'yellow',
-    label: 'Yellow',
-    border: '#c99f0f',
-    fill: 'rgba(249, 213, 68, 0.2)',
-    outline: 'rgba(140, 109, 15, 0.6)',
-    pinFill: '#d6ac1d',
-    pinText: '#2b1f03'
+    label: 'Amber',
+    border: '#b7861b',
+    fill: 'rgba(183, 134, 27, 0.14)',
+    outline: 'rgba(146, 106, 20, 0.55)',
+    pinFill: '#b7861b',
+    pinText: '#fffbeb'
   },
   {
     id: 'green',
-    label: 'Green',
-    border: '#2c9a4b',
-    fill: 'rgba(67, 183, 101, 0.18)',
-    outline: 'rgba(25, 108, 52, 0.62)',
-    pinFill: '#2f9f4f',
-    pinText: '#f2fff6'
+    label: 'Sage',
+    border: '#5a7a60',
+    fill: 'rgba(90, 122, 96, 0.14)',
+    outline: 'rgba(66, 95, 72, 0.55)',
+    pinFill: '#5a7a60',
+    pinText: '#f0fdf4'
   },
   {
     id: 'red',
-    label: 'Red',
-    border: '#cf4a43',
-    fill: 'rgba(225, 91, 86, 0.16)',
-    outline: 'rgba(131, 34, 31, 0.62)',
-    pinFill: '#cf4a43',
-    pinText: '#fff5f5'
+    label: 'Coral',
+    border: '#c25850',
+    fill: 'rgba(194, 88, 80, 0.12)',
+    outline: 'rgba(153, 68, 62, 0.55)',
+    pinFill: '#c25850',
+    pinText: '#fef2f2'
   },
   {
     id: 'purple',
-    label: 'Purple',
-    border: '#7b58c6',
-    fill: 'rgba(136, 96, 214, 0.16)',
-    outline: 'rgba(84, 55, 146, 0.62)',
-    pinFill: '#7b58c6',
-    pinText: '#f8f4ff'
+    label: 'Violet',
+    border: '#7c6a9a',
+    fill: 'rgba(124, 106, 154, 0.14)',
+    outline: 'rgba(98, 82, 124, 0.55)',
+    pinFill: '#7c6a9a',
+    pinText: '#faf5ff'
   },
   {
     id: 'orange',
-    label: 'Orange',
-    border: '#d88624',
-    fill: 'rgba(234, 155, 65, 0.2)',
-    outline: 'rgba(142, 86, 22, 0.62)',
-    pinFill: '#dd8b29',
-    pinText: '#2d1d07'
+    label: 'Rust',
+    border: '#a86240',
+    fill: 'rgba(168, 98, 64, 0.14)',
+    outline: 'rgba(134, 78, 50, 0.55)',
+    pinFill: '#a86240',
+    pinText: '#fff7ed'
   },
   {
     id: 'light-blue',
-    label: 'Light blue',
-    border: '#30a4d5',
-    fill: 'rgba(92, 197, 236, 0.22)',
-    outline: 'rgba(26, 114, 156, 0.62)',
-    pinFill: '#33a8d8',
-    pinText: '#f1fbff'
+    label: 'Steel',
+    border: '#5a7088',
+    fill: 'rgba(90, 112, 136, 0.14)',
+    outline: 'rgba(68, 86, 106, 0.55)',
+    pinFill: '#5a7088',
+    pinText: '#f0f9ff'
   }
 ];
 

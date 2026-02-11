@@ -60,27 +60,27 @@ export interface VisualModeTokens {
   };
 }
 
-export const FONT_STACK_SERIF =
+export const FONT_STACK_SANS =
   '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 export const FONT_STACK_MONO = '"JetBrains Mono", "SF Mono", monospace';
 
 export const UTILITY_STYLE_TOKENS = {
   textButton: {
-    border: '#111111',
-    subtleText: '#444444',
-    solidBackground: '#111111',
-    solidText: '#ffffff'
+    border: '#1a1816',
+    subtleText: '#5c5856',
+    solidBackground: '#1a1816',
+    solidText: '#faf9f7'
   },
   spinner: {
-    track: 'rgba(17, 17, 17, 0.18)',
-    head: '#111111'
+    track: 'rgba(26, 24, 22, 0.15)',
+    head: '#1a1816'
   },
   skeletonGradient:
-    'linear-gradient(90deg, rgba(17, 17, 17, 0.06) 25%, rgba(255, 255, 255, 0.94) 37%, rgba(17, 17, 17, 0.06) 63%)',
+    'linear-gradient(90deg, rgba(26, 24, 22, 0.05) 25%, rgba(255, 255, 255, 0.9) 37%, rgba(26, 24, 22, 0.05) 63%)',
   combobox: {
-    hoverBackgroundFallback: 'rgba(17, 17, 17, 0.04)',
-    selectedBackgroundFallback: 'rgba(17, 17, 17, 0.08)',
-    selectedBackground: 'rgba(17, 17, 17, 0.06)'
+    hoverBackgroundFallback: 'rgba(26, 24, 22, 0.04)',
+    selectedBackgroundFallback: 'rgba(26, 24, 22, 0.06)',
+    selectedBackground: 'rgba(26, 24, 22, 0.05)'
   },
   labelChipFallbackRgb: '128, 128, 128'
 } as const;
@@ -88,197 +88,197 @@ export const UTILITY_STYLE_TOKENS = {
 const VISUAL_MODE_TOKENS: Record<VisualThemeMode, VisualModeTokens> = {
   light: {
     primaryAction: {
-      border: '#111111',
-      background: '#111111',
-      color: '#ffffff'
+      border: '#1a1816',
+      background: '#1a1816',
+      color: '#faf9f7'
     },
     statusPill: {
       error: {
-        border: '#111111',
-        background: 'rgba(198, 40, 40, 0.12)',
-        color: '#a01f1f'
+        border: '#1a1816',
+        background: 'rgba(181, 52, 42, 0.1)',
+        color: '#9a2d24'
       },
       connected: {
-        border: '#111111',
-        background: 'rgba(35, 113, 71, 0.1)',
-        color: '#1f5e37'
+        border: '#1a1816',
+        background: 'rgba(45, 122, 79, 0.1)',
+        color: '#236b42'
       },
       offline: {
-        border: '#111111',
-        background: 'rgba(17, 17, 17, 0.05)',
-        color: '#444444'
+        border: '#1a1816',
+        background: 'rgba(26, 24, 22, 0.04)',
+        color: '#5c5856'
       }
     },
     message: {
       error: {
-        border: '#111111',
-        background: 'rgba(198, 40, 40, 0.1)',
-        color: '#a01f1f'
+        border: '#1a1816',
+        background: 'rgba(181, 52, 42, 0.08)',
+        color: '#9a2d24'
       },
       notice: {
-        border: '#111111',
-        background: 'rgba(17, 17, 17, 0.05)',
-        color: '#111111'
+        border: '#1a1816',
+        background: 'rgba(26, 24, 22, 0.04)',
+        color: '#1a1816'
       }
     },
-    inputFocusBorder: '#111111',
-    triageAccent: '#c62828',
-    annotatorChipInactiveBorder: '#111111',
+    inputFocusBorder: '#1a1816',
+    triageAccent: '#b5342a',
+    annotatorChipInactiveBorder: '#1a1816',
     annotatorChipInactiveBackground: '#ffffff',
     toast: {
-      border: '#111111',
-      background: '#111111',
-      color: '#ffffff'
+      border: '#1a1816',
+      background: '#1a1816',
+      color: '#faf9f7'
     },
     floatingTooltip: {
-      border: '#111111',
-      background: '#111111',
-      color: '#ffffff',
-      shadow: '0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1)'
+      border: '#1a1816',
+      background: '#1a1816',
+      color: '#faf9f7',
+      shadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.08)'
     },
     markerBubble: {
-      background: '#fdfbf7',
-      text: '#111111',
-      target: '#444444',
-      attachment: '#444444',
-      shadowBase: 'rgba(0, 0, 0, 0.12)',
-      shadowActive: 'rgba(0, 0, 0, 0.2)',
-      pinHoverShadow: 'rgba(0, 0, 0, 0.22)'
+      background: '#faf9f7',
+      text: '#1a1816',
+      target: '#5c5856',
+      attachment: '#5c5856',
+      shadowBase: 'rgba(0, 0, 0, 0.1)',
+      shadowActive: 'rgba(0, 0, 0, 0.16)',
+      pinHoverShadow: 'rgba(0, 0, 0, 0.18)'
     },
     settingsConnectionBadge: {
-      ring: 'rgba(253, 251, 247, 0.95)',
-      border: '#111111',
-      idle: '#777777',
+      ring: 'rgba(250, 249, 247, 0.95)',
+      border: '#1a1816',
+      idle: '#9c9894',
       error: {
-        background: '#c62828',
-        shadow: '0 0 0 1px rgba(253, 251, 247, 0.95), 0 0 0 2px #111111'
+        background: '#b5342a',
+        shadow: '0 0 0 1px rgba(250, 249, 247, 0.95), 0 0 0 2px #1a1816'
       },
       connecting: {
-        background: '#111111',
-        shadow: '0 0 0 1px rgba(253, 251, 247, 0.95), 0 0 0 2px #111111'
+        background: '#1a1816',
+        shadow: '0 0 0 1px rgba(250, 249, 247, 0.95), 0 0 0 2px #1a1816'
       },
       connected: {
-        background: '#237147',
-        shadow: '0 0 0 1px rgba(253, 251, 247, 0.95), 0 0 0 2px #111111'
+        background: '#2d7a4f',
+        shadow: '0 0 0 1px rgba(250, 249, 247, 0.95), 0 0 0 2px #1a1816'
       }
     },
     badges: {
-      border: '#111111',
-      collapsedBackground: '#c62828',
-      collapsedColor: '#ffffff',
-      queueBackground: '#c62828',
-      queueColor: '#ffffff'
+      border: '#1a1816',
+      collapsedBackground: '#b5342a',
+      collapsedColor: '#faf9f7',
+      queueBackground: '#b5342a',
+      queueColor: '#faf9f7'
     }
   },
   dark: {
     primaryAction: {
-      border: '#d7d7d7',
-      background: '#d7d7d7',
-      color: '#111111'
+      border: '#e0dfdd',
+      background: '#e0dfdd',
+      color: '#1c1c1c'
     },
     statusPill: {
       error: {
-        border: '#d4d4d4',
-        background: 'rgba(228, 134, 142, 0.2)',
-        color: '#f2cfd4'
+        border: '#e0dfdd',
+        background: 'rgba(232, 90, 80, 0.15)',
+        color: '#f0c4c0'
       },
       connected: {
-        border: '#d4d4d4',
-        background: 'rgba(103, 200, 142, 0.15)',
-        color: '#b8d7ae'
+        border: '#e0dfdd',
+        background: 'rgba(92, 184, 122, 0.12)',
+        color: '#a8d8b8'
       },
       offline: {
-        border: '#d4d4d4',
-        background: 'rgba(255, 255, 255, 0.06)',
-        color: '#c8c8c8'
+        border: '#e0dfdd',
+        background: 'rgba(240, 239, 237, 0.06)',
+        color: '#a8a6a2'
       }
     },
     message: {
       error: {
-        border: '#d4d4d4',
-        background: 'rgba(228, 134, 142, 0.18)',
-        color: '#f0c9d0'
+        border: '#e0dfdd',
+        background: 'rgba(232, 90, 80, 0.12)',
+        color: '#f0c4c0'
       },
       notice: {
-        border: '#d4d4d4',
-        background: 'rgba(255, 255, 255, 0.06)',
-        color: '#d8d8d8'
+        border: '#e0dfdd',
+        background: 'rgba(240, 239, 237, 0.06)',
+        color: '#f0efed'
       }
     },
-    inputFocusBorder: '#d7d7d7',
-    triageAccent: '#c62828',
-    annotatorChipInactiveBorder: '#d4d4d4',
-    annotatorChipInactiveBackground: 'rgba(255, 255, 255, 0.04)',
+    inputFocusBorder: '#e0dfdd',
+    triageAccent: '#e85a50',
+    annotatorChipInactiveBorder: '#e0dfdd',
+    annotatorChipInactiveBackground: 'rgba(240, 239, 237, 0.04)',
     toast: {
-      border: '#d4d4d4',
-      background: '#1a1a1a',
-      color: '#efefef'
+      border: '#e0dfdd',
+      background: '#1c1c1c',
+      color: '#f0efed'
     },
     floatingTooltip: {
-      border: '#d4d4d4',
-      background: 'rgba(30, 30, 30, 0.96)',
-      color: '#efefef',
-      shadow: '0 4px 12px rgba(0, 0, 0, 0.38), 0 1px 2px rgba(0, 0, 0, 0.18)'
+      border: '#e0dfdd',
+      background: 'rgba(28, 28, 28, 0.96)',
+      color: '#f0efed',
+      shadow: '0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.15)'
     },
     markerBubble: {
-      background: 'rgba(26, 26, 26, 0.97)',
-      text: '#efefef',
-      target: '#b8b8b8',
-      attachment: '#adadad',
-      shadowBase: 'rgba(0, 0, 0, 0.42)',
-      shadowActive: 'rgba(0, 0, 0, 0.5)',
-      pinHoverShadow: 'rgba(0, 0, 0, 0.45)'
+      background: 'rgba(28, 28, 28, 0.97)',
+      text: '#f0efed',
+      target: '#a8a6a2',
+      attachment: '#a8a6a2',
+      shadowBase: 'rgba(0, 0, 0, 0.35)',
+      shadowActive: 'rgba(0, 0, 0, 0.45)',
+      pinHoverShadow: 'rgba(0, 0, 0, 0.4)'
     },
     settingsConnectionBadge: {
-      ring: 'rgba(26, 26, 26, 0.94)',
-      border: '#d4d4d4',
-      idle: '#9a9a9a',
+      ring: 'rgba(28, 28, 28, 0.94)',
+      border: '#e0dfdd',
+      idle: '#8a8884',
       error: {
-        background: '#e4868e',
-        shadow: '0 0 0 1px rgba(26, 26, 26, 0.94), 0 0 0 2px #d4d4d4'
+        background: '#e85a50',
+        shadow: '0 0 0 1px rgba(28, 28, 28, 0.94), 0 0 0 2px #e0dfdd'
       },
       connecting: {
-        background: '#d7d7d7',
-        shadow: '0 0 0 1px rgba(26, 26, 26, 0.94), 0 0 0 2px #d4d4d4'
+        background: '#e0dfdd',
+        shadow: '0 0 0 1px rgba(28, 28, 28, 0.94), 0 0 0 2px #e0dfdd'
       },
       connected: {
-        background: '#67c88e',
-        shadow: '0 0 0 1px rgba(26, 26, 26, 0.94), 0 0 0 2px #d4d4d4'
+        background: '#5cb87a',
+        shadow: '0 0 0 1px rgba(28, 28, 28, 0.94), 0 0 0 2px #e0dfdd'
       }
     },
     badges: {
-      border: '#d4d4d4',
-      collapsedBackground: '#d7d7d7',
-      collapsedColor: '#111111',
-      queueBackground: '#d7d7d7',
-      queueColor: '#111111'
+      border: '#e0dfdd',
+      collapsedBackground: '#e0dfdd',
+      collapsedColor: '#1c1c1c',
+      queueBackground: '#e0dfdd',
+      queueColor: '#1c1c1c'
     }
   }
 };
 
 const PRIORITY_ACCENT_COLORS: Record<VisualThemeMode, Record<string, string>> = {
   light: {
-    '1': '#111111',
-    '2': '#333333',
-    '3': '#555555',
-    '4': '#888888'
+    '1': '#1a1816',
+    '2': '#3a3836',
+    '3': '#5c5856',
+    '4': '#9c9894'
   },
   dark: {
-    '1': '#e8e8e8',
-    '2': '#cecece',
-    '3': '#acacac',
-    '4': '#8a8a8a'
+    '1': '#f0efed',
+    '2': '#d0cfcd',
+    '3': '#a8a6a2',
+    '4': '#8a8884'
   }
 };
 
 const PRIORITY_FALLBACK_ACCENT: Record<VisualThemeMode, string> = {
-  light: '#555555',
-  dark: '#b8b8b8'
+  light: '#5c5856',
+  dark: '#a8a6a2'
 };
 
 const PRIORITY_INACTIVE: Record<VisualThemeMode, string> = {
-  light: 'rgba(17, 17, 17, 0.12)',
-  dark: 'rgba(255, 255, 255, 0.14)'
+  light: 'rgba(26, 24, 22, 0.1)',
+  dark: 'rgba(240, 239, 237, 0.12)'
 };
 
 export function getVisualModeTokens(mode: VisualThemeMode): VisualModeTokens {
