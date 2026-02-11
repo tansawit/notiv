@@ -101,24 +101,40 @@ export function createToolbarSubmitPanelElements(
   if (submitHeading instanceof HTMLElement) {
     submitHeading.style.display = 'flex';
     submitHeading.style.alignItems = 'center';
-    submitHeading.style.gap = '6px';
+    submitHeading.style.gap = '2px';
     submitHeading.style.marginBottom = '8px';
+    submitHeading.style.marginLeft = '-6px';
 
     const submitBackIcon = createBackChevronIcon();
-    const submitBackButton = makeIconButton('Back to notes', submitBackIcon);
+    const submitBackButton = document.createElement('button');
+    submitBackButton.type = 'button';
+    submitBackButton.title = 'Back to notes';
+    submitBackButton.setAttribute('aria-label', 'Back to notes');
     submitBackButton.setAttribute('data-submit-back', 'true');
-    submitBackButton.style.width = '22px';
-    submitBackButton.style.height = '22px';
-    submitBackButton.style.minWidth = '22px';
-    submitBackButton.style.minHeight = '22px';
-    submitBackButton.style.padding = '0';
-    submitBackButton.style.borderRadius = '5px';
-    submitBackButton.style.display = 'inline-flex';
-    submitBackButton.style.alignItems = 'center';
-    submitBackButton.style.justifyContent = 'center';
-    submitBackButton.style.border = `1.25px solid ${panelPalette.iconButtonBorder}`;
-    submitBackButton.style.background = panelPalette.iconButtonBackground;
-    submitBackButton.style.color = panelPalette.iconButtonColor;
+    submitBackButton.appendChild(submitBackIcon);
+    submitBackButton.style.cssText = `
+      all: unset !important;
+      width: 24px !important;
+      height: 24px !important;
+      border: none !important;
+      border-radius: 4px !important;
+      background: transparent !important;
+      color: ${panelPalette.textMuted} !important;
+      cursor: pointer !important;
+      display: inline-grid !important;
+      place-items: center !important;
+      box-shadow: none !important;
+      outline: none !important;
+      transition: background 120ms ease, color 120ms ease !important;
+    `;
+    submitBackButton.addEventListener('mouseenter', () => {
+      submitBackButton.style.setProperty('background', panelPalette.surfaceHoverBackground, 'important');
+      submitBackButton.style.setProperty('color', panelPalette.textPrimary, 'important');
+    });
+    submitBackButton.addEventListener('mouseleave', () => {
+      submitBackButton.style.setProperty('background', 'transparent', 'important');
+      submitBackButton.style.setProperty('color', panelPalette.textMuted, 'important');
+    });
     submitBackButton.addEventListener('click', () => onBackToQueue());
     submitHeading.insertBefore(submitBackButton, submitHeading.firstChild);
   }
@@ -134,45 +150,48 @@ export function createToolbarSubmitPanelElements(
   const submitTitleInput = document.createElement('input');
   submitTitleInput.type = 'text';
   submitTitleInput.placeholder = 'Ticket title';
-  submitTitleInput.style.width = '100%';
-  submitTitleInput.style.height = '34px';
-  submitTitleInput.style.border = `1px solid ${panelPalette.inputBorder}`;
-  submitTitleInput.style.borderRadius = '4px';
-  submitTitleInput.style.padding = '8px 10px';
-  submitTitleInput.style.background = panelPalette.inputBackground;
-  submitTitleInput.style.color = panelPalette.inputText;
-  submitTitleInput.style.fontFamily = FONT_STACK_SERIF;
-  submitTitleInput.style.fontSize = '13px';
-  submitTitleInput.style.fontWeight = '500';
-  submitTitleInput.style.outline = 'none';
-  submitTitleInput.style.boxShadow = 'none';
-  submitTitleInput.style.caretColor = panelPalette.inputText;
+  submitTitleInput.style.cssText = `
+    width: 100% !important;
+    height: 36px !important;
+    border: none !important;
+    border-bottom: 1px solid ${panelPalette.surfaceBorder} !important;
+    border-radius: 0 !important;
+    padding: 8px 0 !important;
+    background: transparent !important;
+    color: ${panelPalette.textPrimary} !important;
+    font-family: ${FONT_STACK_SERIF} !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    caret-color: ${panelPalette.textPrimary} !important;
+  `;
 
   const submitDescriptionInput = document.createElement('textarea');
   submitDescriptionInput.placeholder = 'Description (optional)';
-  submitDescriptionInput.style.width = '100%';
-  submitDescriptionInput.style.height = '80px';
-  submitDescriptionInput.style.minHeight = '80px';
-  submitDescriptionInput.style.maxHeight = '120px';
-  submitDescriptionInput.style.resize = 'none';
-  submitDescriptionInput.style.border = `1px solid ${panelPalette.inputBorder}`;
-  submitDescriptionInput.style.borderRadius = '4px';
-  submitDescriptionInput.style.padding = '8px 10px';
-  submitDescriptionInput.style.marginTop = '8px';
-  submitDescriptionInput.style.background = panelPalette.inputBackground;
-  submitDescriptionInput.style.color = panelPalette.inputText;
-  submitDescriptionInput.style.fontFamily = FONT_STACK_SERIF;
-  submitDescriptionInput.style.fontSize = '13px';
-  submitDescriptionInput.style.lineHeight = '1.4';
-  submitDescriptionInput.style.outline = 'none';
-  submitDescriptionInput.style.boxShadow = 'none';
-  submitDescriptionInput.style.caretColor = panelPalette.inputText;
+  submitDescriptionInput.style.cssText = `
+    width: 100% !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 120px !important;
+    resize: none !important;
+    border: none !important;
+    border-bottom: 1px solid ${panelPalette.surfaceBorder} !important;
+    border-radius: 0 !important;
+    padding: 8px 0 !important;
+    margin-top: 8px !important;
+    background: transparent !important;
+    color: ${panelPalette.textPrimary} !important;
+    font-family: ${FONT_STACK_SERIF} !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    caret-color: ${panelPalette.textPrimary} !important;
+  `;
 
-  const syncSubmitFieldBorder = (field: HTMLInputElement | HTMLTextAreaElement, focused: boolean): void => {
-    const fieldPalette = getPanelPalette();
-    const focusColor = getVisualModeTokens(getColorMode()).inputFocusBorder;
-    field.style.border = `1px solid ${focused ? focusColor : fieldPalette.inputBorder}`;
-    field.style.boxShadow = focused ? `0 0 0 1px ${focusColor}` : 'none';
+  const syncSubmitFieldBorder = (field: HTMLInputElement | HTMLTextAreaElement, _focused: boolean): void => {
+    field.style.boxShadow = 'none';
   };
   submitTitleInput.addEventListener('focus', () => syncSubmitFieldBorder(submitTitleInput, true));
   submitTitleInput.addEventListener('blur', () => syncSubmitFieldBorder(submitTitleInput, false));
@@ -181,19 +200,16 @@ export function createToolbarSubmitPanelElements(
 
   const makePropertyRow = (labelText: string, control: HTMLElement): HTMLDivElement => {
     const row = document.createElement('div');
-    row.style.display = 'flex';
-    row.style.alignItems = 'center';
-    row.style.justifyContent = 'space-between';
-    row.style.gap = '10px';
-    row.style.padding = '6px 0';
+    row.style.display = 'grid';
+    row.style.gap = '2px';
+    row.style.padding = '4px 0';
     const label = document.createElement('span');
     label.textContent = labelText;
     label.style.fontSize = '11px';
-    label.style.color = panelPalette.textSecondary;
+    label.style.color = panelPalette.textMuted;
     label.style.fontFamily = FONT_STACK_MONO;
     label.style.textTransform = 'uppercase';
-    label.style.letterSpacing = '0.05em';
-    label.style.flexShrink = '0';
+    label.style.letterSpacing = '0.04em';
     row.appendChild(label);
     row.appendChild(control);
     return row;
@@ -353,42 +369,32 @@ export function createToolbarSubmitPanelElements(
   triageRow.appendChild(submitTriageInput);
 
   const submitLabelsWrap = document.createElement('div');
-  submitLabelsWrap.style.display = 'flex';
-  submitLabelsWrap.style.flexWrap = 'nowrap';
-  submitLabelsWrap.style.alignItems = 'center';
-  submitLabelsWrap.style.gap = '6px';
-  submitLabelsWrap.style.flex = '1 1 auto';
-  submitLabelsWrap.style.minWidth = '0';
-  submitLabelsWrap.style.minHeight = '32px';
-  submitLabelsWrap.style.overflowX = 'auto';
-  submitLabelsWrap.style.overflowY = 'hidden';
-  submitLabelsWrap.style.scrollbarWidth = 'thin';
+  submitLabelsWrap.style.display = 'contents';
 
   const submitLabelControl = createSubmitLabelControl();
   submitLabelControl.container.style.width = 'auto';
-  submitLabelControl.container.style.flex = '0 0 auto';
 
   const labelSection = document.createElement('div');
   labelSection.style.display = 'grid';
-  labelSection.style.gap = '6px';
-  labelSection.style.paddingTop = '8px';
+  labelSection.style.gap = '4px';
+  labelSection.style.paddingTop = '4px';
   labelSection.style.marginTop = '4px';
 
   const labelTitle = document.createElement('span');
   labelTitle.textContent = 'Labels';
   labelTitle.style.fontSize = '11px';
-  labelTitle.style.color = panelPalette.textSecondary;
+  labelTitle.style.color = panelPalette.textMuted;
   labelTitle.style.fontFamily = FONT_STACK_MONO;
   labelTitle.style.textTransform = 'uppercase';
-  labelTitle.style.letterSpacing = '0.02em';
+  labelTitle.style.letterSpacing = '0.04em';
 
   const labelControls = document.createElement('div');
   labelControls.style.display = 'flex';
+  labelControls.style.flexWrap = 'wrap';
   labelControls.style.alignItems = 'center';
-  labelControls.style.gap = '8px';
-  labelControls.style.flexWrap = 'nowrap';
-  labelControls.style.width = '100%';
-  labelControls.style.minWidth = '0';
+  labelControls.style.justifyContent = 'flex-start';
+  labelControls.style.gap = '6px';
+  labelControls.style.minHeight = '32px';
   labelControls.appendChild(submitLabelsWrap);
   labelControls.appendChild(submitLabelControl.container);
 
@@ -398,15 +404,20 @@ export function createToolbarSubmitPanelElements(
   const submitConfirmButton = makeTextButton('Create ticket');
   submitConfirmButton.style.width = '100%';
   submitConfirmButton.style.marginTop = '12px';
-  submitConfirmButton.style.padding = '9px 11px';
+  submitConfirmButton.style.padding = '10px 12px';
+  submitConfirmButton.style.fontSize = '13px';
+  submitConfirmButton.style.fontWeight = '550';
+  submitConfirmButton.style.border = `1.25px solid ${panelPalette.textMuted}`;
+  submitConfirmButton.style.background = 'transparent';
+  submitConfirmButton.style.color = panelPalette.textPrimary;
 
   const submitFields = document.createElement('div');
   submitFields.style.display = 'grid';
   submitFields.style.gap = '0';
 
   const propertiesSection = document.createElement('div');
-  propertiesSection.style.paddingTop = '10px';
-  propertiesSection.style.marginTop = '10px';
+  propertiesSection.style.paddingTop = '4px';
+  propertiesSection.style.marginTop = '8px';
 
   submitFields.appendChild(submitMeta);
   submitFields.appendChild(submitTitleInput);

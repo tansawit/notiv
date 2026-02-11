@@ -737,6 +737,7 @@ export class FeedbackToolbar {
     panel.style.display = 'none';
 
     const heading = document.createElement('div');
+    heading.setAttribute('data-panel-title', 'true');
     heading.textContent = title;
     heading.style.marginBottom = '8px';
     heading.style.color = palette.headingColor;
@@ -1030,7 +1031,7 @@ export class FeedbackToolbar {
       ? 'Submitting...'
       : this.draftCount <= 0
         ? 'Create ticket from notes'
-        : `Create ticket from ${this.draftCount} notes`;
+        : `Create ticket from ${this.draftCount} note${this.draftCount === 1 ? '' : 's'}`;
     this.submitMeta.textContent =
       this.draftCount <= 0
         ? 'Add at least one note to submit.'

@@ -315,13 +315,14 @@ function BaseCombobox({
                 width: '100%',
                 height: '30px',
                 padding: '0 9px',
-                borderRadius: '7px',
+                borderRadius: '0',
                 fontFamily: FONT_STACK_MONO,
                 fontSize: '11px',
                 marginBottom: '5px',
                 outline: 'none',
-                border: `1.25px solid ${palette.surfaceBorder}`,
-                background: palette.inputBackground,
+                border: 'none',
+                borderBottom: `1px solid ${palette.surfaceBorder}`,
+                background: 'transparent',
                 color: palette.inputText
               }}
               autoComplete="off"
@@ -626,13 +627,14 @@ function BaseLabelSearchCombobox({
                 width: '100%',
                 height: '30px',
                 padding: '0 9px',
-                borderRadius: '7px',
+                borderRadius: '0',
                 fontFamily: FONT_STACK_MONO,
                 fontSize: '11px',
                 marginBottom: '5px',
                 outline: 'none',
-                border: `1.25px solid ${palette.surfaceBorder}`,
-                background: palette.inputBackground,
+                border: 'none',
+                borderBottom: `1px solid ${palette.surfaceBorder}`,
+                background: 'transparent',
                 color: palette.inputText
               }}
               autoComplete="off"
@@ -739,7 +741,7 @@ export function createBaseSubmitDropdownControl(config: {
   const container = document.createElement('div');
   container.setAttribute('data-notiv-ui', 'true');
   container.style.position = 'relative';
-  container.style.width = '172px';
+  container.style.width = '100%';
 
   const portalHost = document.createElement('div');
   portalHost.setAttribute('data-notiv-ui', 'true');
