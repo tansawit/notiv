@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import notivLogo48 from '../../assets/icons/48.png';
-import notivLogo128 from '../../assets/icons/128.png';
 import type { BackgroundResponse } from '../shared/messages';
 import { maskAccessToken } from '../shared/linear-settings-client';
 import { sendRuntimeMessage } from '../shared/runtime';
@@ -133,37 +131,21 @@ function PopupApp(): React.JSX.Element {
     refreshResources
   } = useLinearConnection();
 
-  const statusText = useMemo(() => {
-    if (!connected) {
-      return null;
+  const unifiedStatus = useMemo(() => {
+    if (sitePermissionsLoading) {
+      return { ready: false, label: 'Checking...', actionType: null as 'connect' | 'grant' | null };
     }
-    const viewer = resources.viewerName ?? 'Unknown user';
-    const org = resources.organizationName ?? 'workspace';
-    return `Connected as ${viewer} to ${org}`;
-  }, [connected, resources.viewerName, resources.organizationName]);
-
-  const canAnnotateOnCurrentSite = connected && Boolean(currentSiteTarget) && currentSiteGranted;
-  const siteStatusLabel = sitePermissionsLoading
-    ? 'Checking'
-    : currentSiteTarget
-      ? currentSiteGranted
-        ? 'Granted'
-        : 'Not granted'
-      : 'Unavailable';
-  const homeLead = !connected
-    ? 'Connect Linear to start collecting notes.'
-    : canAnnotateOnCurrentSite
-      ? 'Ready to annotate this page.'
-      : 'Annotation unavailable for this page.';
-  const homeWarning = connected && !canAnnotateOnCurrentSite
-    ? sitePermissionsLoading
-      ? 'Checking site access for this page.'
-      : currentSiteTarget
-        ? `Site access for ${currentSiteTarget.label}: not granted`
-        : 'Open a regular http/https page to annotate.'
-    : null;
-  const isSiteAccessError = Boolean(error && error.toLowerCase().includes('site access was not granted'));
-  const openSiteAccessSettings = (): void => setView('settings');
+    if (!connected) {
+      return { ready: false, label: 'Setup needed', actionType: 'connect' as const };
+    }
+    if (!currentSiteTarget) {
+      return { ready: false, label: 'Unavailable', actionType: null };
+    }
+    if (!currentSiteGranted) {
+      return { ready: false, label: 'Setup needed', actionType: 'grant' as const };
+    }
+    return { ready: true, label: 'Ready', actionType: null };
+  }, [connected, currentSiteTarget, currentSiteGranted, sitePermissionsLoading]);
 
   const openMainSettingsPage = async (): Promise<void> => {
     const response = await sendRuntimeMessage<BackgroundResponse>({ type: 'openSettingsPage' });
@@ -235,14 +217,6 @@ function PopupApp(): React.JSX.Element {
     }
   };
 
-  const handleSiteAccessErrorAction = async (): Promise<void> => {
-    if (currentSiteTarget && !currentSiteGranted) {
-      await toggleCurrentSitePermission();
-      return;
-    }
-    openSiteAccessSettings();
-  };
-
   const activatePicker = async (): Promise<void> => {
     setFeedback(null, null);
     try {
@@ -269,48 +243,64 @@ function PopupApp(): React.JSX.Element {
   if (view === 'home') {
     return (
       <div className="popup-shell">
-        <section className="popup-panel">
-          <div className="popup-header">
-            <div className="popup-header-left">
-              <img
-                className="popup-header-logo"
-                src={notivLogo48}
-                srcSet={`${notivLogo48} 1x, ${notivLogo128} 2x`}
-                alt=""
-                aria-hidden="true"
-              />
-              <h1 className="popup-title">Notiv</h1>
-            </div>
-            <span className={`status-pill ${connected ? 'connected' : ''}`}>
-              {connected ? 'Connected' : 'Not Connected'}
-            </span>
-          </div>
-          <div className="popup-body">
-            <p className={`status-line ${canAnnotateOnCurrentSite ? 'connected' : 'disconnected'}`}>{homeLead}</p>
-            {statusText ? <p className="meta-line">{statusText}</p> : null}
-            {homeWarning ? <div className="home-warning">{homeWarning}</div> : null}
-            <div className="row row-actions">
-              <button className="button" onClick={() => setView('settings')}>
+        <section className="popup-panel popup-panel-flat">
+          <div className="popup-header-flat">
+            <h1 className="popup-title">Notiv</h1>
+            <div className="popup-header-actions">
+              <button className="button-ghost" onClick={() => setView('settings')}>
                 Settings
               </button>
-              <button
-                className="button primary"
-                onClick={() => void activatePicker()}
-                disabled={!connected || !currentSiteGranted || !currentSiteTarget || sitePermissionsLoading}
-                title={
-                  !connected
-                    ? 'Connect Linear to activate picker'
-                    : sitePermissionsLoading
-                      ? 'Checking site access'
+            </div>
+          </div>
+          <div className="popup-content">
+            <div className="status-row">
+              <span className={`status-dot ${unifiedStatus.ready ? 'ready' : !connected ? 'offline' : 'pending'}`} />
+              <div className="status-identity">
+                <span className="status-primary">
+                  {unifiedStatus.ready
+                    ? (resources.viewerName ?? 'Connected')
+                    : !connected
+                      ? 'Not connected'
                       : !currentSiteTarget
-                        ? 'Open a regular http/https page to annotate'
-                        : !currentSiteGranted
-                          ? 'Grant site access to activate picker'
-                          : 'Activate picker'
-                }
-              >
-                Activate
-              </button>
+                        ? 'No webpage'
+                        : 'Site access needed'}
+                </span>
+                <span className="status-secondary">
+                  {unifiedStatus.ready
+                    ? (resources.organizationName ?? 'Ready to annotate')
+                    : !connected
+                      ? 'Connect Linear to start'
+                      : !currentSiteTarget
+                        ? 'Open a webpage to annotate'
+                        : currentSiteTarget.label}
+                </span>
+              </div>
+            </div>
+            <div className="popup-actions">
+              {unifiedStatus.ready ? (
+                <button
+                  className="button"
+                  onClick={() => void activatePicker()}
+                >
+                  Start Annotating
+                </button>
+              ) : unifiedStatus.actionType === 'connect' ? (
+                <button
+                  className="button"
+                  onClick={() => void connectWithOAuth()}
+                  disabled={authBusy}
+                >
+                  {authBusy ? 'Connecting...' : 'Connect Linear'}
+                </button>
+              ) : unifiedStatus.actionType === 'grant' ? (
+                <button
+                  className="button"
+                  onClick={() => void toggleCurrentSitePermission()}
+                  disabled={sitePermissionsBusy}
+                >
+                  {sitePermissionsBusy ? 'Granting...' : 'Grant Access'}
+                </button>
+              ) : null}
             </div>
           </div>
         </section>
@@ -321,159 +311,135 @@ function PopupApp(): React.JSX.Element {
   }
 
   return (
-    <div className="popup-shell popup-settings">
-      <section className="popup-panel">
-        <div className="popup-header">
-          <div className="popup-header-left">
+    <div className="popup-shell">
+      <section className="popup-panel popup-panel-flat">
+        <div className="popup-header-flat">
+          <div className="popup-header-left-flat">
             <button
-              className="button button-compact popup-header-back"
+              className="icon-button-ghost-small"
               onClick={() => setView('home')}
               aria-label="Back"
               title="Back"
             >
               <Icon path="M15 18l-6-6 6-6" size={14} />
             </button>
-            <img
-              className="popup-header-logo"
-              src={notivLogo48}
-              srcSet={`${notivLogo48} 1x, ${notivLogo128} 2x`}
-              alt=""
-              aria-hidden="true"
-            />
             <h1 className="popup-title">Settings</h1>
           </div>
+          <button className="button-ghost" onClick={() => void openMainSettingsPage()}>
+            Open
+          </button>
         </div>
 
-        <div className="popup-body popup-settings-body">
-          <section className="settings-connection-block">
-            <div className="settings-section-head">
-              <p className="settings-kicker">Linear</p>
-              <span className={`status-pill ${connected ? 'connected' : ''}`}>
-                {connected ? 'Connected' : 'Not connected'}
-              </span>
+        <div className="popup-content settings-content">
+          <div className="settings-section">
+            <span className="settings-section-label">Linear</span>
+            <div className="status-row">
+              <span className={`status-dot ${connected ? 'ready' : 'offline'}`} />
+              <div className="status-identity">
+                <span className="status-primary">
+                  {connected ? (resources.viewerName ?? 'Connected') : 'Not connected'}
+                </span>
+                <span className="status-secondary">
+                  {connected ? (resources.organizationName ?? 'Linear workspace') : 'Connect to start'}
+                </span>
+              </div>
             </div>
-            {statusText ? <p className="meta-line settings-meta">{statusText}</p> : null}
-
-            <div className="settings-connection-actions">
-              <button className="button primary settings-secondary-action" disabled={authBusy} onClick={() => void connectWithOAuth()}>
-                {authBusy ? 'Working...' : connected ? 'Reconnect' : 'Connect with OAuth'}
+            <div className="popup-actions">
+              <button className="button" disabled={authBusy} onClick={() => void connectWithOAuth()}>
+                {authBusy ? 'Working...' : connected ? 'Reconnect' : 'Connect'}
               </button>
-              <button
-                className="button settings-secondary-action"
-                disabled={authBusy || loadingResources || !connected}
-                onClick={() => void refreshResources()}
-              >
-                {loadingResources ? 'Refreshing...' : 'Refresh'}
-              </button>
-              <button className="button settings-secondary-action" disabled={authBusy || !connected} onClick={() => void disconnect()}>
-                Disconnect
-              </button>
-            </div>
-          </section>
-
-          {allowPatFallback ? (
-            <section className="settings-token-block">
-              <p className="settings-kicker">API token fallback</p>
-
-              {tokenEditing ? (
-                <label className="label">
-                  API Token
-                  <input
-                    className="input"
-                    type="password"
-                    placeholder="lin_api_..."
-                    value={tokenDraft}
-                    onChange={(event) => setTokenDraft(event.target.value)}
-                    autoFocus
-                  />
-                </label>
-              ) : (
-                <div className="token-row">
-                  <div className="token-badge">{maskAccessToken(settings.accessToken)}</div>
-                  <button
-                    className="icon-button"
-                    onClick={() => {
-                      setTokenEditing(true);
-                      setTokenDraft(settings.accessToken);
-                    }}
-                    aria-label="Edit API token"
-                    title="Edit API token"
-                  >
-                    <Icon path="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z" size={15} />
+              {connected ? (
+                <>
+                  <button className="button" disabled={authBusy || loadingResources} onClick={() => void refreshResources()}>
+                    {loadingResources ? '...' : 'Refresh'}
                   </button>
-                </div>
-              )}
-
-              {tokenEditing ? (
-                <div className="settings-token-actions">
-                  <button className="button primary" disabled={authBusy} onClick={() => void saveToken()}>
-                    Save token
+                  <button className="button" disabled={authBusy} onClick={() => void disconnect()}>
+                    Disconnect
                   </button>
-                  {settings.accessToken ? (
-                    <button
-                      className="button"
-                      disabled={authBusy}
-                      onClick={() => {
-                        setTokenEditing(false);
-                        setTokenDraft(settings.accessToken);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  ) : null}
-                </div>
+                </>
               ) : null}
-            </section>
-          ) : null}
-
-          <section className="settings-site-block">
-            <div className="settings-section-head">
-              <p className="settings-kicker">Site access</p>
-              <span className={`site-status-pill ${currentSiteTarget && currentSiteGranted ? 'granted' : ''}`}>
-                {siteStatusLabel}
-              </span>
             </div>
-            <p className="meta-line settings-meta">
-              {sitePermissionsLoading
-                ? 'Checking current site...'
-                : currentSiteTarget
-                  ? `Current site: ${currentSiteTarget.label}`
-                  : 'Current tab is not a regular http/https page.'}
-            </p>
-            <div className="settings-site-current-row">
+          </div>
+
+          <div className="settings-divider" />
+
+          <div className="settings-section">
+            <span className="settings-section-label">Site access</span>
+            <div className="status-row">
+              <span className={`status-dot ${currentSiteTarget && currentSiteGranted ? 'ready' : sitePermissionsLoading ? 'pending' : 'offline'}`} />
+              <div className="status-identity">
+                <span className="status-primary">
+                  {sitePermissionsLoading
+                    ? 'Checking...'
+                    : currentSiteTarget && currentSiteGranted
+                      ? 'Access granted'
+                      : currentSiteTarget
+                        ? 'Not granted'
+                        : 'Unavailable'}
+                </span>
+                <span className="status-secondary">
+                  {currentSiteTarget ? currentSiteTarget.label : 'Not a regular webpage'}
+                </span>
+              </div>
+            </div>
+            <div className="popup-actions">
               <button
-                className={`button settings-site-quick ${currentSiteGranted ? '' : 'primary'}`}
+                className="button"
                 disabled={sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget}
                 onClick={() => void toggleCurrentSitePermission()}
               >
-                {sitePermissionsBusy
-                  ? 'Working...'
-                  : currentSiteGranted
-                    ? 'Revoke'
-                    : 'Grant'}
-              </button>
-              <button className="button settings-site-refresh" disabled={sitePermissionsLoading || sitePermissionsBusy} onClick={() => void refreshCurrentSitePermission()}>
-                Refresh
+                {sitePermissionsBusy ? 'Working...' : currentSiteGranted ? 'Revoke' : 'Grant'}
               </button>
             </div>
-            <button className="button settings-site-open-full" onClick={() => void openMainSettingsPage()}>
-              Open full site access settings
-            </button>
-          </section>
+          </div>
+
+          {allowPatFallback ? (
+            <>
+              <div className="settings-divider" />
+              <div className="settings-section">
+                <span className="settings-section-label">API Token</span>
+                {tokenEditing ? (
+                  <>
+                    <input
+                      className="input"
+                      type="password"
+                      placeholder="lin_api_..."
+                      value={tokenDraft}
+                      onChange={(event) => setTokenDraft(event.target.value)}
+                      autoFocus
+                    />
+                    <div className="popup-actions">
+                      <button className="button" disabled={authBusy} onClick={() => void saveToken()}>
+                        Save
+                      </button>
+                      {settings.accessToken ? (
+                        <button className="button" disabled={authBusy} onClick={() => { setTokenEditing(false); setTokenDraft(settings.accessToken); }}>
+                          Cancel
+                        </button>
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <div className="settings-row-inline">
+                    <code className="token-display">{maskAccessToken(settings.accessToken)}</code>
+                    <button
+                      className="icon-button-ghost-small"
+                      onClick={() => { setTokenEditing(true); setTokenDraft(settings.accessToken); }}
+                      aria-label="Edit API token"
+                      title="Edit"
+                    >
+                      <Icon path="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z" size={12} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : null}
         </div>
       </section>
 
       {notice ? <div className="notice">{notice}</div> : null}
-      {error ? (
-        <div className={`error ${isSiteAccessError ? 'error-with-action' : ''}`}>
-          <div>{error}</div>
-          {isSiteAccessError ? (
-            <button className="button button-compact error-action" onClick={() => void handleSiteAccessErrorAction()}>
-              {currentSiteTarget && !currentSiteGranted ? 'Grant' : 'Open site access'}
-            </button>
-          ) : null}
-        </div>
-      ) : null}
+      {error ? <div className="error">{error}</div> : null}
     </div>
   );
 }

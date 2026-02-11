@@ -203,7 +203,7 @@ function SettingsApp(): React.JSX.Element {
       <section className="panel">
         <div className="panel-head">
           <strong>Linear</strong>
-          <span className={`status-pill ${connected ? 'connected' : ''}`}>{connected ? 'Connected' : 'Disconnected'}</span>
+          <span className={`status-badge ${connected ? 'ready' : ''}`}>{connected ? 'Connected' : 'Disconnected'}</span>
         </div>
 
         {allowPatFallback ? (
@@ -238,8 +238,8 @@ function SettingsApp(): React.JSX.Element {
         ) : null}
 
         <div className="actions">
-          <button className="button primary" disabled={authBusy} onClick={() => void connectWithOAuth()}>
-            {authBusy ? 'Working...' : connected ? 'Reconnect OAuth' : 'Connect with OAuth'}
+          <button className={`button primary ${authBusy ? 'loading' : ''}`} disabled={authBusy} onClick={() => void connectWithOAuth()}>
+            {authBusy ? 'Connecting...' : connected ? 'Reconnect' : 'Connect with OAuth'}
           </button>
           {allowPatFallback && tokenEditing ? (
             <>
@@ -307,7 +307,7 @@ function SettingsApp(): React.JSX.Element {
       <section className="panel">
         <div className="panel-head">
           <strong>Site access</strong>
-          <span className="status-pill">{grantedSiteOrigins.length} granted</span>
+          <span className="status-badge">{grantedSiteOrigins.length} granted</span>
         </div>
         <div className="meta-line">Notiv only runs on sites you explicitly allow.</div>
         <label className="label">
@@ -364,7 +364,11 @@ function SettingsApp(): React.JSX.Element {
         {sitePermissionsLoading ? (
           <div className="muted">Loading granted sites...</div>
         ) : grantedSiteOrigins.length === 0 ? (
-          <div className="muted">No site permissions granted yet.</div>
+          <div className="empty-state">
+            <div className="empty-state-icon">🌐</div>
+            <p className="empty-state-title">No sites added yet</p>
+            <p className="empty-state-desc">Add a site above to start annotating</p>
+          </div>
         ) : (
           <ul className="granted-site-list">
             {grantedSiteOrigins.map((origin) => (
