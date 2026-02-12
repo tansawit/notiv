@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notiv — New Design Directions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0a;
+      color: #fafafa;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      padding: 40px 48px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #a1a1aa;
+      max-width: 680px;
+      line-height: 1.6;
+    }
+
+    .page-subtitle strong {
+      color: #fafafa;
+      font-weight: 500;
+    }
+
+    .directions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .direction-column {
+      padding: 40px 48px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .direction-column:last-child {
+      border-right: none;
+    }
+
+    .direction-header {
+      margin-bottom: 32px;
+    }
+
+    .direction-number {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #52525b;
+      margin-bottom: 8px;
+    }
+
+    .direction-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .direction-desc {
+      font-size: 13px;
+      color: #a1a1aa;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .traits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .trait {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 5px 10px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.04);
+      color: #a1a1aa;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .font-stack {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: #71717a;
+      margin-bottom: 24px;
+    }
+
+    .font-stack span {
+      color: #a1a1aa;
+    }
+
+    .palette-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .swatch-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .swatch-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px;
+      color: #52525b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .mockup-frame {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    iframe {
+      width: 100%;
+      height: 580px;
+      border: none;
+      display: block;
+    }
+
+    .inspiration-note {
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .inspiration-note-title {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #52525b;
+      margin-bottom: 8px;
+    }
+
+    .inspiration-note-text {
+      font-size: 12px;
+      color: #71717a;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1100px) {
+      .directions-grid {
+        grid-template-columns: 1fr;
+      }
+      .direction-column {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1 class="page-title">New Design Directions</h1>
+    <p class="page-subtitle">
+      Based on your inspiration images. Both directions share: <strong>monospace labels</strong>,
+      <strong>visible grid systems</strong>, <strong>pill-shaped buttons</strong>,
+      <strong>limited color palette</strong>, and <strong>technical typography hierarchy</strong>.
+    </p>
+  </div>
+
+  <div class="directions-grid">
+    <!-- Direction 1: Technical Document -->
+    <div class="direction-column">
+      <div class="direction-header">
+        <div class="direction-number">Direction 01</div>
+        <h2 class="direction-name">Technical Document</h2>
+        <p class="direction-desc">
+          Cream paper with visible grid lines. Deep indigo ink. Serif headlines with mono labels.
+          Perforated edges. Feels like a printed instrument readout or architect's drawing.
+          Inspired by: receipt form, Tidal Shift poster.
+        </p>
+        <div class="traits">
+          <span class="trait">Light mode</span>
+          <span class="trait">Editorial</span>
+          <span class="trait">Grid-forward</span>
+          <span class="trait">Physical</span>
+        </div>
+        <div class="font-stack">
+          Fonts: <span>Space Mono</span> + <span>Newsreader</span>
+        </div>
+        <div class="palette-row">
+          <div class="swatch-group">
+            <div class="swatch" style="background: #f8f6f1"></div>
+            <span class="swatch-label">Paper</span>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch" style="background: #1a1a3e"></div>
+            <span class="swatch-label">Ink</span>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch" style="background: #d4e157"></div>
+            <span class="swatch-label">Highlight</span>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch" style="background: linear-gradient(135deg, #d4a03a, #6b8068, #c25d50, #7b6b99)"></div>
+            <span class="swatch-label">Colors</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup-frame">
+        <iframe src="direction-1-document.html"></iframe>
+      </div>
+      <div class="inspiration-note">
+        <div class="inspiration-note-title">Key Elements</div>
+        <p class="inspiration-note-text">
+          Visible 8px grid overlay • Perforated top edge • Dotted dividers •
+          Uppercase mono labels with wide tracking • Serif for content text •
+          Square color chips • Pill-shaped primary button • Footer metadata
+        </p>
+      </div>
+    </div>
+
+    <!-- Direction 2: Control Surface -->
+    <div class="direction-column">
+      <div class="direction-header">
+        <div class="direction-number">Direction 02</div>
+        <h2 class="direction-name">Control Surface</h2>
+        <p class="direction-desc">
+          Near-black background with electric lime accent. Glowing status indicators.
+          Large numeric hierarchy. Pill buttons with glow effects.
+          Inspired by: audio interface, crypto offramp.
+        </p>
+        <div class="traits">
+          <span class="trait">Dark mode</span>
+          <span class="trait">Technical</span>
+          <span class="trait">Glowing</span>
+          <span class="trait">Premium</span>
+        </div>
+        <div class="font-stack">
+          Fonts: <span>Space Mono</span> + <span>Space Grotesk</span>
+        </div>
+        <div class="palette-row">
+          <div class="swatch-group">
+            <div class="swatch" style="background: #0f0f0f"></div>
+            <span class="swatch-label">Surface</span>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch" style="background: #f0f0f0"></div>
+            <span class="swatch-label">Text</span>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch" style="background: #c8ff00"></div>
+            <span class="swatch-label">Accent</span>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch" style="background: linear-gradient(135deg, #00e5ff, #ff00ff, #ff8800, #ff4444)"></div>
+            <span class="swatch-label">Colors</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup-frame">
+        <iframe src="direction-2-control.html"></iframe>
+      </div>
+      <div class="inspiration-note">
+        <div class="inspiration-note-title">Key Elements</div>
+        <p class="inspiration-note-text">
+          Pulsing status indicator with glow • Large workspace name •
+          Full-width pill button with arrow icon • Bordered textarea •
+          Glowing color chips • Uppercase labels throughout • Subtle border separators
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

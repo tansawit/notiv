@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refined Direction: Quiet Craft</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,550;14..32,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Warm neutral base - works on any website */
+      --paper: #faf9f7;
+      --surface: #ffffff;
+      --ink: #1a1816;
+      --ink-muted: #5c5856;
+      --ink-subtle: #9c9894;
+      --border: #1a1816;
+      --border-soft: rgba(26, 24, 22, 0.12);
+
+      /* Single accent for primary actions only */
+      --accent: #1a1816;
+      --accent-text: #faf9f7;
+
+      /* Functional colors - muted, not loud */
+      --success: #2d7a4f;
+      --danger: #b5342a;
+
+      /* Highlight colors - desaturated, professional */
+      --hl-slate: #4a5568;
+      --hl-amber: #b7861b;
+      --hl-sage: #5a7a60;
+      --hl-coral: #c25850;
+      --hl-violet: #7c6a9a;
+      --hl-rust: #a86240;
+      --hl-steel: #5a7088;
+
+      /* Typography */
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+      /* Spacing - tighter, more intentional */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      /* Simulating being on a random website */
+      background:
+        linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 60px 40px;
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .mockup-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 12px;
+    }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ═══════════════════════════════════════════
+       POPUP - Refined
+       Tighter, quieter, more intentional
+       ═══════════════════════════════════════════ */
+
+    .popup {
+      width: 320px;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        0 12px 40px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      /* Barely-there dot texture */
+      background-image: radial-gradient(rgba(26, 24, 22, 0.03) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .popup-header {
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .popup-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .popup-logo {
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      display: grid;
+      place-items: center;
+    }
+
+    .popup-logo-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ink);
+    }
+
+    .popup-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .popup-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-subtle);
+    }
+
+    .popup-badge.ready {
+      color: var(--success);
+    }
+
+    .popup-body {
+      padding: var(--space-lg);
+      display: grid;
+      gap: var(--space-lg);
+    }
+
+    .status-block {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .status-indicator.offline {
+      background: var(--ink-subtle);
+    }
+
+    .status-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .status-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-subtle);
+    }
+
+    .status-value {
+      font-size: 15px;
+      font-weight: 550;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .status-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .popup-actions {
+      display: grid;
+      gap: var(--space-sm);
+    }
+
+    .btn {
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 550;
+      cursor: pointer;
+      transition: background 80ms ease, transform 80ms ease;
+    }
+
+    .btn:hover {
+      background: var(--paper);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      border-radius: 999px;
+    }
+
+    .btn-primary:hover {
+      background: var(--ink-muted);
+      border-color: var(--ink-muted);
+    }
+
+    /* ═══════════════════════════════════════════
+       ANNOTATOR - Refined
+       ═══════════════════════════════════════════ */
+
+    .annotator {
+      width: 340px;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        0 12px 40px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      background-image: radial-gradient(rgba(26, 24, 22, 0.03) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .annotator-header {
+      padding: 10px var(--space-lg);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .annotator-target {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      letter-spacing: 0.01em;
+    }
+
+    .annotator-actions {
+      display: flex;
+      gap: 2px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ink-muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 80ms ease, color 80ms ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(26, 24, 22, 0.06);
+      color: var(--ink);
+    }
+
+    .icon-btn-danger:hover {
+      background: rgba(181, 52, 42, 0.1);
+      color: var(--danger);
+    }
+
+    .annotator-body {
+      padding: var(--space-md) var(--space-lg) var(--space-lg);
+      display: grid;
+      gap: var(--space-md);
+    }
+
+    .textarea {
+      width: 100%;
+      min-height: 72px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 450;
+      line-height: 1.5;
+      color: var(--ink);
+      resize: none;
+      outline: none;
+    }
+
+    .textarea::placeholder {
+      color: var(--ink-subtle);
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .color-grid {
+      display: flex;
+      gap: 6px;
+    }
+
+    .color-chip {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 60ms ease;
+    }
+
+    .color-chip:hover {
+      transform: scale(1.12);
+    }
+
+    .color-chip.active {
+      border-color: var(--ink);
+    }
+
+    .color-chip-inner {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+
+    .inline-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 80ms ease, transform 80ms ease;
+    }
+
+    .action-btn:hover {
+      background: var(--paper);
+    }
+
+    .action-btn:active {
+      transform: scale(0.95);
+    }
+
+    .action-btn-primary {
+      width: auto;
+      padding: 0 16px;
+      gap: 6px;
+      display: flex;
+      align-items: center;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      border-radius: 999px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 550;
+    }
+
+    .action-btn-primary:hover {
+      background: var(--ink-muted);
+      border-color: var(--ink-muted);
+    }
+
+    .annotator-footer {
+      padding: var(--space-sm) var(--space-lg);
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-subtle);
+      letter-spacing: 0.02em;
+    }
+
+    .icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .icon-sm {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Highlight colors - muted, professional */
+    .hl-slate { background: var(--hl-slate); }
+    .hl-amber { background: var(--hl-amber); }
+    .hl-sage { background: var(--hl-sage); }
+    .hl-coral { background: var(--hl-coral); }
+    .hl-violet { background: var(--hl-violet); }
+    .hl-rust { background: var(--hl-rust); }
+    .hl-steel { background: var(--hl-steel); }
+
+    /* ═══════════════════════════════════════════
+       DARK MODE VARIANT
+       ═══════════════════════════════════════════ */
+
+    .dark-context {
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dark-context .popup,
+    .dark-context .annotator {
+      --paper: #1c1c1c;
+      --surface: #242424;
+      --ink: #f0efed;
+      --ink-muted: #a8a6a2;
+      --ink-subtle: #6c6a66;
+      --border: #e0dfdd;
+      --border-soft: rgba(240, 239, 237, 0.12);
+      --accent: #e0dfdd;
+      --accent-text: #1c1c1c;
+      --success: #5cb87a;
+      --danger: #e85a50;
+      background-image: radial-gradient(rgba(240, 239, 237, 0.025) 1px, transparent 1px);
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.2),
+        0 4px 16px rgba(0, 0, 0, 0.25),
+        0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark-context .popup-header,
+    .dark-context .annotator-header {
+      border-bottom-color: var(--border-soft);
+    }
+
+    .dark-context .controls-row,
+    .dark-context .annotator-footer {
+      border-top-color: var(--border-soft);
+    }
+
+    .dark-context .icon-btn:hover {
+      background: rgba(240, 239, 237, 0.08);
+    }
+
+    .dark-context .icon-btn-danger:hover {
+      background: rgba(232, 90, 80, 0.15);
+    }
+
+    .dark-context .btn:hover,
+    .dark-context .action-btn:hover {
+      background: #2a2a2a;
+    }
+
+    .dark-context .btn-primary:hover,
+    .dark-context .action-btn-primary:hover {
+      background: #c8c7c5;
+      border-color: #c8c7c5;
+    }
+
+    .dark-context .color-chip.active {
+      border-color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+  <!-- Light mode on colorful website background -->
+  <div class="mockup-section">
+    <div class="mockup-label">Light / Any Background</div>
+    <div class="popup">
+      <div class="popup-header">
+        <div class="popup-brand">
+          <div class="popup-logo">
+            <div class="popup-logo-dot"></div>
+          </div>
+          <span class="popup-title">Notiv</span>
+        </div>
+        <span class="popup-badge ready">Ready</span>
+      </div>
+      <div class="popup-body">
+        <div class="status-block">
+          <div class="status-indicator"></div>
+          <div class="status-content">
+            <span class="status-label">Workspace</span>
+            <span class="status-value">Design Team</span>
+            <span class="status-meta">sawit@example.com</span>
+          </div>
+        </div>
+        <div class="popup-actions">
+          <button class="btn btn-primary">Start Annotating</button>
+          <button class="btn">Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-section">
+    <div class="mockup-label">Annotator</div>
+    <div class="annotator">
+      <div class="annotator-header">
+        <span class="annotator-target">&lt;button.submit-btn&gt;</span>
+        <div class="annotator-actions">
+          <button class="icon-btn icon-btn-danger">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 7h12M9 7V5h6v2M8 7l1 12h6l1-12"/>
+            </svg>
+          </button>
+          <button class="icon-btn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 6l12 12M18 6L6 18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="annotator-body">
+        <textarea class="textarea" placeholder="What needs attention?">Button text is hard to read on mobile</textarea>
+
+        <div class="controls-row">
+          <div class="color-grid">
+            <div class="color-chip active">
+              <div class="color-chip-inner hl-slate"></div>
+            </div>
+            <div class="color-chip">
+              <div class="color-chip-inner hl-amber"></div>
+            </div>
+            <div class="color-chip">
+              <div class="color-chip-inner hl-sage"></div>
+            </div>
+            <div class="color-chip">
+              <div class="color-chip-inner hl-coral"></div>
+            </div>
+            <div class="color-chip">
+              <div class="color-chip-inner hl-violet"></div>
+            </div>
+            <div class="color-chip">
+              <div class="color-chip-inner hl-rust"></div>
+            </div>
+            <div class="color-chip">
+              <div class="color-chip-inner hl-steel"></div>
+            </div>
+          </div>
+          <div class="inline-actions">
+            <button class="action-btn">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2.5"/>
+                <path d="M7 16l3.3-3.8a1 1 0 0 1 1.5 0l2.3 2.6 1.3-1.5a1 1 0 0 1 1.5 0L19 16"/>
+                <circle cx="14" cy="9.5" r="1.5"/>
+              </svg>
+            </button>
+            <button class="action-btn-primary">
+              Save
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 5l6 7-6 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="annotator-footer">
+        <span>0/3 images</span>
+        <span>Enter to save</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dark mode variant -->
+  <div class="mockup-section">
+    <div class="mockup-label">Dark Mode</div>
+    <div class="dark-context">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-brand">
+            <div class="popup-logo">
+              <div class="popup-logo-dot"></div>
+            </div>
+            <span class="popup-title">Notiv</span>
+          </div>
+          <span class="popup-badge ready">Ready</span>
+        </div>
+        <div class="popup-body">
+          <div class="status-block">
+            <div class="status-indicator"></div>
+            <div class="status-content">
+              <span class="status-label">Workspace</span>
+              <span class="status-value">Design Team</span>
+              <span class="status-meta">sawit@example.com</span>
+            </div>
+          </div>
+          <div class="popup-actions">
+            <button class="btn btn-primary">Start Annotating</button>
+            <button class="btn">Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-section">
+    <div class="mockup-label">Dark Annotator</div>
+    <div class="dark-context">
+      <div class="annotator">
+        <div class="annotator-header">
+          <span class="annotator-target">&lt;button.submit-btn&gt;</span>
+          <div class="annotator-actions">
+            <button class="icon-btn icon-btn-danger">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 7h12M9 7V5h6v2M8 7l1 12h6l1-12"/>
+              </svg>
+            </button>
+            <button class="icon-btn">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 6l12 12M18 6L6 18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="annotator-body">
+          <textarea class="textarea" placeholder="What needs attention?">Button text is hard to read on mobile</textarea>
+
+          <div class="controls-row">
+            <div class="color-grid">
+              <div class="color-chip active">
+                <div class="color-chip-inner hl-slate"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-amber"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-sage"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-coral"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-violet"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-rust"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-steel"></div>
+              </div>
+            </div>
+            <div class="inline-actions">
+              <button class="action-btn">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="4" width="16" height="16" rx="2.5"/>
+                  <path d="M7 16l3.3-3.8a1 1 0 0 1 1.5 0l2.3 2.6 1.3-1.5a1 1 0 0 1 1.5 0L19 16"/>
+                  <circle cx="14" cy="9.5" r="1.5"/>
+                </svg>
+              </button>
+              <button class="action-btn-primary">
+                Save
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14M13 5l6 7-6 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="annotator-footer">
+          <span>0/3 images</span>
+          <span>Enter to save</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

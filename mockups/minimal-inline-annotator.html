@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimal Inline Annotator – Two Versions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,550;14..32,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #faf9f7;
+      --surface: #ffffff;
+      --ink: #1a1816;
+      --ink-muted: #5c5856;
+      --ink-subtle: #9c9894;
+      --border: #1a1816;
+      --border-soft: rgba(26, 24, 22, 0.12);
+      --accent: #1a1816;
+      --accent-text: #faf9f7;
+      --success: #2d7a4f;
+      --danger: #b5342a;
+
+      --hl-slate: #4a5568;
+      --hl-amber: #b7861b;
+      --hl-sage: #5a7a60;
+      --hl-coral: #c25850;
+      --hl-violet: #7c6a9a;
+      --hl-rust: #a86240;
+      --hl-steel: #5a7088;
+
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 60px 40px;
+    }
+
+    .page-title {
+      text-align: center;
+      color: white;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      margin-bottom: 48px;
+    }
+
+    .versions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 48px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .version-section {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .version-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .version-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .version-title {
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .version-desc {
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════
+       SIMULATED PAGE CONTEXT
+       ═══════════════════════════════════════════ */
+
+    .page-context {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      min-height: 280px;
+      position: relative;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .fake-ui {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .fake-heading {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .fake-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .fake-button {
+      align-self: flex-start;
+      padding: 10px 20px;
+      background: #5046e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .fake-button.selected {
+      outline: 2px solid var(--hl-coral);
+      outline-offset: 2px;
+    }
+
+    /* ═══════════════════════════════════════════
+       VERSION A: Two-line with color row below
+       ═══════════════════════════════════════════ */
+
+    .inline-annotator-a {
+      position: absolute;
+      left: 32px;
+      top: 170px;
+      width: 320px;
+      background: var(--paper);
+      border: 1.25px solid var(--border);
+      border-radius: 12px;
+      padding: var(--space-md);
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        0 12px 40px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .inline-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 450;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .inline-input::placeholder {
+      color: var(--ink-subtle);
+    }
+
+    .enter-hint {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-subtle);
+      padding: 3px 6px;
+      background: rgba(26, 24, 22, 0.04);
+      border-radius: 4px;
+    }
+
+    .color-row {
+      display: flex;
+      gap: 6px;
+      padding-top: var(--space-xs);
+    }
+
+    .color-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 60ms ease;
+      border: 2px solid transparent;
+    }
+
+    .color-dot:hover {
+      transform: scale(1.15);
+    }
+
+    .color-dot.active {
+      border-color: var(--ink);
+    }
+
+    .hl-slate { background: var(--hl-slate); }
+    .hl-amber { background: var(--hl-amber); }
+    .hl-sage { background: var(--hl-sage); }
+    .hl-coral { background: var(--hl-coral); }
+    .hl-violet { background: var(--hl-violet); }
+    .hl-rust { background: var(--hl-rust); }
+    .hl-steel { background: var(--hl-steel); }
+
+    /* ═══════════════════════════════════════════
+       VERSION B: Single-line with expandable dot
+       ═══════════════════════════════════════════ */
+
+    .inline-annotator-b {
+      position: absolute;
+      left: 32px;
+      top: 170px;
+      background: var(--paper);
+      border: 1.25px solid var(--border);
+      border-radius: 10px;
+      padding: 10px var(--space-md);
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        0 12px 40px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .main-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .color-trigger {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 60ms ease;
+      flex-shrink: 0;
+    }
+
+    .color-trigger:hover {
+      transform: scale(1.12);
+    }
+
+    .inline-input-b {
+      flex: 1;
+      min-width: 200px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 450;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .inline-input-b::placeholder {
+      color: var(--ink-subtle);
+    }
+
+    .color-picker-expanded {
+      display: flex;
+      gap: 6px;
+      padding-top: var(--space-sm);
+      margin-top: var(--space-sm);
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .color-option {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 60ms ease;
+      border: 2px solid transparent;
+    }
+
+    .color-option:hover {
+      transform: scale(1.15);
+    }
+
+    .color-option.active {
+      border-color: var(--ink);
+    }
+
+    /* ═══════════════════════════════════════════
+       FLOATING BADGE
+       ═══════════════════════════════════════════ */
+
+    .floating-badge {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: 1.25px solid var(--border);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.12),
+        0 4px 16px rgba(0, 0, 0, 0.08);
+      transition: transform 80ms ease;
+    }
+
+    .floating-badge:hover {
+      transform: scale(1.05);
+    }
+
+    /* ═══════════════════════════════════════════
+       STATES SHOWCASE
+       ═══════════════════════════════════════════ */
+
+    .states-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .state-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .state-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Collapsed state preview */
+    .inline-collapsed {
+      background: var(--paper);
+      border: 1.25px solid var(--border);
+      border-radius: 10px;
+      padding: 10px var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.04),
+        0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Badge variants */
+    .badge-empty {
+      background: var(--paper);
+      color: var(--ink);
+      border: 1.25px solid var(--border);
+    }
+
+    .badge-count {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .mini-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ═══════════════════════════════════════════
+       KEYBOARD HINTS
+       ═══════════════════════════════════════════ */
+
+    .keyboard-hints {
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+    }
+
+    .hint-row {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+    }
+
+    .kbd {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 3px 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+      color: white;
+    }
+
+    /* ═══════════════════════════════════════════
+       DARK MODE
+       ═══════════════════════════════════════════ */
+
+    .dark-preview {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .dark-preview .inline-annotator-a,
+    .dark-preview .inline-annotator-b,
+    .dark-preview .inline-collapsed {
+      --paper: #1c1c1c;
+      --surface: #242424;
+      --ink: #f0efed;
+      --ink-muted: #a8a6a2;
+      --ink-subtle: #6c6a66;
+      --border: #e0dfdd;
+      --border-soft: rgba(240, 239, 237, 0.12);
+      position: static;
+    }
+
+    .dark-preview .mini-badge.badge-count {
+      background: #e0dfdd;
+      color: #1c1c1c;
+      border: 1px solid #e0dfdd;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="page-title">Minimal Inline Annotator</h1>
+  <p class="page-subtitle">Two approaches: color row below vs. expandable dot</p>
+
+  <div class="versions-grid">
+    <!-- VERSION A -->
+    <div class="version-section">
+      <div class="version-header">
+        <span class="version-label">Version A</span>
+        <h2 class="version-title">Two-Line with Color Row</h2>
+        <p class="version-desc">Input on top, color picker always visible below. Clear visual hierarchy, slightly taller.</p>
+      </div>
+
+      <div class="page-context">
+        <div class="fake-ui">
+          <h2 class="fake-heading">Welcome back</h2>
+          <p class="fake-text">Your dashboard is ready. Click below to continue to your account settings.</p>
+          <button class="fake-button selected">Continue →</button>
+        </div>
+
+        <div class="inline-annotator-a">
+          <div class="input-row">
+            <input type="text" class="inline-input" placeholder="What's wrong?" value="Button too small on mobile">
+            <span class="enter-hint">⏎</span>
+          </div>
+          <div class="color-row">
+            <div class="color-dot hl-slate"></div>
+            <div class="color-dot hl-amber"></div>
+            <div class="color-dot hl-sage"></div>
+            <div class="color-dot hl-coral active"></div>
+            <div class="color-dot hl-violet"></div>
+            <div class="color-dot hl-rust"></div>
+            <div class="color-dot hl-steel"></div>
+          </div>
+        </div>
+
+        <div class="floating-badge">2</div>
+      </div>
+
+      <div class="states-row">
+        <div class="state-card">
+          <span class="state-label">Empty state</span>
+          <div class="inline-collapsed">
+            <input type="text" class="inline-input" placeholder="What's wrong?" disabled style="min-width: 140px">
+            <span class="enter-hint">⏎</span>
+          </div>
+        </div>
+        <div class="state-card">
+          <span class="state-label">Badge states</span>
+          <div style="display: flex; gap: 8px;">
+            <div class="mini-badge badge-empty">0</div>
+            <div class="mini-badge badge-count">3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERSION B -->
+    <div class="version-section">
+      <div class="version-header">
+        <span class="version-label">Version B</span>
+        <h2 class="version-title">Single-Line + Expandable Dot</h2>
+        <p class="version-desc">Color dot on left, click to expand picker. More compact when picker is closed.</p>
+      </div>
+
+      <div class="page-context">
+        <div class="fake-ui">
+          <h2 class="fake-heading">Welcome back</h2>
+          <p class="fake-text">Your dashboard is ready. Click below to continue to your account settings.</p>
+          <button class="fake-button selected">Continue →</button>
+        </div>
+
+        <div class="inline-annotator-b">
+          <div class="main-row">
+            <div class="color-trigger hl-coral"></div>
+            <input type="text" class="inline-input-b" placeholder="What's wrong?" value="Button too small on mobile">
+            <span class="enter-hint">⏎</span>
+          </div>
+          <div class="color-picker-expanded">
+            <div class="color-option hl-slate"></div>
+            <div class="color-option hl-amber"></div>
+            <div class="color-option hl-sage"></div>
+            <div class="color-option hl-coral active"></div>
+            <div class="color-option hl-violet"></div>
+            <div class="color-option hl-rust"></div>
+            <div class="color-option hl-steel"></div>
+          </div>
+        </div>
+
+        <div class="floating-badge">2</div>
+      </div>
+
+      <div class="states-row">
+        <div class="state-card">
+          <span class="state-label">Collapsed (default)</span>
+          <div class="inline-collapsed">
+            <div class="color-trigger hl-slate" style="width: 16px; height: 16px;"></div>
+            <input type="text" class="inline-input-b" placeholder="What's wrong?" disabled style="min-width: 120px">
+            <span class="enter-hint">⏎</span>
+          </div>
+        </div>
+        <div class="state-card">
+          <span class="state-label">Badge states</span>
+          <div style="display: flex; gap: 8px;">
+            <div class="mini-badge badge-empty">0</div>
+            <div class="mini-badge badge-count">3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEYBOARD HINTS -->
+  <div class="keyboard-hints" style="max-width: 1000px; margin: 32px auto 0;">
+    <div class="hint-row">
+      <div class="hint"><span class="kbd">Enter</span> Save note to queue</div>
+      <div class="hint"><span class="kbd">⌘</span> + <span class="kbd">Enter</span> Submit immediately</div>
+      <div class="hint"><span class="kbd">Esc</span> Cancel</div>
+      <div class="hint"><span class="kbd">⌘</span> + <span class="kbd">V</span> Paste image</div>
+    </div>
+  </div>
+
+  <!-- DARK MODE PREVIEW -->
+  <div style="max-width: 1000px; margin: 48px auto 0;">
+    <span class="version-label">Dark Mode</span>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 12px;">
+      <div class="dark-preview">
+        <div class="inline-annotator-a" style="width: 100%;">
+          <div class="input-row">
+            <input type="text" class="inline-input" placeholder="What's wrong?" value="Button too small on mobile">
+            <span class="enter-hint">⏎</span>
+          </div>
+          <div class="color-row">
+            <div class="color-dot hl-slate"></div>
+            <div class="color-dot hl-amber"></div>
+            <div class="color-dot hl-sage"></div>
+            <div class="color-dot hl-coral active"></div>
+            <div class="color-dot hl-violet"></div>
+            <div class="color-dot hl-rust"></div>
+            <div class="color-dot hl-steel"></div>
+          </div>
+        </div>
+      </div>
+      <div class="dark-preview">
+        <div class="inline-annotator-b">
+          <div class="main-row">
+            <div class="color-trigger hl-coral"></div>
+            <input type="text" class="inline-input-b" placeholder="What's wrong?" value="Button too small on mobile">
+            <span class="enter-hint">⏎</span>
+          </div>
+          <div class="color-picker-expanded">
+            <div class="color-option hl-slate"></div>
+            <div class="color-option hl-amber"></div>
+            <div class="color-option hl-sage"></div>
+            <div class="color-option hl-coral active"></div>
+            <div class="color-option hl-violet"></div>
+            <div class="color-option hl-rust"></div>
+            <div class="color-option hl-steel"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div style="max-width: 1000px; margin: 48px auto 0; color: white;">
+    <span class="version-label">Comparison</span>
+    <table style="width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 13px;">
+      <thead>
+        <tr style="text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2);">
+          <th style="padding: 12px 0; color: rgba(255,255,255,0.6); font-weight: 500;"></th>
+          <th style="padding: 12px; color: rgba(255,255,255,0.6); font-weight: 500;">Version A (Two-Line)</th>
+          <th style="padding: 12px; color: rgba(255,255,255,0.6); font-weight: 500;">Version B (Expandable)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <td style="padding: 12px 0; color: rgba(255,255,255,0.5);">Height</td>
+          <td style="padding: 12px;">~72px (fixed)</td>
+          <td style="padding: 12px;">~44px collapsed, ~72px expanded</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <td style="padding: 12px 0; color: rgba(255,255,255,0.5);">Color access</td>
+          <td style="padding: 12px;">Always visible (1 click)</td>
+          <td style="padding: 12px;">Click dot to expand (2 clicks)</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <td style="padding: 12px 0; color: rgba(255,255,255,0.5);">Visual weight</td>
+          <td style="padding: 12px;">Slightly heavier</td>
+          <td style="padding: 12px;">Lighter when collapsed</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0; color: rgba(255,255,255,0.5);">Best for</td>
+          <td style="padding: 12px;">Users who frequently change colors</td>
+          <td style="padding: 12px;">Users who stick to one color</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

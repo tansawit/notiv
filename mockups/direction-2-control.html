@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direction 2: Control Surface</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Dark control surface palette */
+      --bg: #0f0f0f;
+      --surface: #171717;
+      --surface-raised: #1f1f1f;
+      --ink: #f0f0f0;
+      --ink-muted: #8a8a8a;
+      --ink-subtle: #505050;
+      --border: #2a2a2a;
+      --border-glow: #3a3a3a;
+
+      /* Electric accent - lime */
+      --accent: #c8ff00;
+      --accent-dim: #a0cc00;
+      --accent-soft: rgba(200, 255, 0, 0.1);
+      --accent-glow: rgba(200, 255, 0, 0.25);
+      --accent-text: #0f0f0f;
+
+      /* Status */
+      --success: #c8ff00;
+      --danger: #ff4444;
+      --danger-soft: rgba(255, 68, 68, 0.15);
+
+      /* Typography */
+      --font-mono: "Space Mono", monospace;
+      --font-sans: "Space Grotesk", -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-mono);
+      background: #080808;
+      min-height: 100vh;
+      padding: 40px;
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .mockup-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--ink-subtle);
+    }
+
+    /* ═══════════════════════════════════════════
+       POPUP - Control Surface Style
+       ═══════════════════════════════════════════ */
+
+    .popup {
+      width: 300px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.03),
+        0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .popup-header {
+      padding: 16px 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .popup-brand-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .popup-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--accent-glow); }
+      50% { opacity: 0.6; box-shadow: 0 0 6px var(--accent-glow); }
+    }
+
+    .popup-indicator.offline {
+      background: var(--ink-subtle);
+      box-shadow: none;
+      animation: none;
+    }
+
+    .popup-brand {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .popup-status {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+
+    .popup-status.offline {
+      color: var(--ink-subtle);
+    }
+
+    .popup-body {
+      padding: 20px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .info-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--ink-subtle);
+    }
+
+    .info-value {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .info-value-small {
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    .btn {
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 100ms ease, box-shadow 100ms ease;
+      box-shadow: 0 0 20px var(--accent-soft);
+    }
+
+    .btn:hover {
+      background: var(--accent-dim);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent-text);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+    }
+
+    .btn-secondary {
+      background: var(--surface-raised);
+      color: var(--ink-muted);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .popup-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--ink-subtle);
+      letter-spacing: 0.06em;
+    }
+
+    /* ═══════════════════════════════════════════
+       ANNOTATOR - Control Surface Style
+       ═══════════════════════════════════════════ */
+
+    .annotator {
+      width: 320px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.03),
+        0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .annotator-header {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .annotator-target {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+    }
+
+    .annotator-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink-subtle);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 100ms ease, color 100ms ease;
+    }
+
+    .icon-btn:hover {
+      background: var(--surface-raised);
+      color: var(--ink);
+    }
+
+    .icon-btn-danger:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .annotator-body {
+      padding: 16px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .input-section {
+      display: grid;
+      gap: 8px;
+    }
+
+    .input-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--ink-subtle);
+    }
+
+    .textarea {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink);
+      padding: 12px;
+      resize: none;
+      outline: none;
+      transition: border-color 100ms ease, box-shadow 100ms ease;
+    }
+
+    .textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .textarea::placeholder {
+      color: var(--ink-subtle);
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .color-section {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .color-grid {
+      display: flex;
+      gap: 6px;
+    }
+
+    .color-chip {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 80ms ease, box-shadow 100ms ease;
+    }
+
+    .color-chip:hover {
+      transform: scale(1.15);
+    }
+
+    .color-chip.active {
+      border-color: var(--ink);
+    }
+
+    .color-chip-inner {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .color-chip.active .color-chip-inner {
+      box-shadow: 0 0 14px currentColor;
+    }
+
+    .submit-btn {
+      height: 44px;
+      padding: 0 24px;
+      border: none;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 100ms ease, box-shadow 100ms ease;
+      box-shadow: 0 0 16px var(--accent-soft);
+    }
+
+    .submit-btn:hover {
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.97);
+    }
+
+    .annotator-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--ink-subtle);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Color palette - electric, glowing */
+    .hl-lime { background: #c8ff00; color: #c8ff00; }
+    .hl-cyan { background: #00e5ff; color: #00e5ff; }
+    .hl-magenta { background: #ff00ff; color: #ff00ff; }
+    .hl-orange { background: #ff8800; color: #ff8800; }
+    .hl-blue { background: #4488ff; color: #4488ff; }
+    .hl-red { background: #ff4444; color: #ff4444; }
+    .hl-white { background: #ffffff; color: #ffffff; }
+  </style>
+</head>
+<body>
+  <div class="mockup-section">
+    <span class="mockup-label">Popup</span>
+    <div class="popup">
+      <div class="popup-header">
+        <div class="popup-brand-row">
+          <div class="popup-indicator"></div>
+          <span class="popup-brand">Notiv</span>
+        </div>
+        <span class="popup-status">Online</span>
+      </div>
+      <div class="popup-body">
+        <div>
+          <div class="info-row">
+            <span class="info-label">Workspace</span>
+          </div>
+          <div class="info-value">Design Team</div>
+          <div class="info-value-small">sawit@example.com</div>
+        </div>
+        <button class="btn">
+          Start Session
+          <span class="btn-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </button>
+        <button class="btn btn-secondary">Settings</button>
+      </div>
+      <div class="popup-footer">
+        <span>v0.1.0</span>
+        <span>Linear</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-section">
+    <span class="mockup-label">Annotator</span>
+    <div class="annotator">
+      <div class="annotator-header">
+        <span class="annotator-target">&lt;button.submit&gt;</span>
+        <div class="annotator-actions">
+          <button class="icon-btn icon-btn-danger">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 7h12M9 7V5h6v2M8 7l1 12h6l1-12"/>
+            </svg>
+          </button>
+          <button class="icon-btn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 6l12 12M18 6L6 18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="annotator-body">
+        <div class="input-section">
+          <span class="input-label">Note</span>
+          <textarea class="textarea" placeholder="What needs attention?">Button text is hard to read on mobile</textarea>
+        </div>
+
+        <div class="controls-row">
+          <div class="color-section">
+            <div class="color-grid">
+              <div class="color-chip active">
+                <div class="color-chip-inner hl-lime"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-cyan"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-magenta"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-orange"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-blue"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-red"></div>
+              </div>
+              <div class="color-chip">
+                <div class="color-chip-inner hl-white"></div>
+              </div>
+            </div>
+          </div>
+          <button class="submit-btn">
+            Save
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h11M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="annotator-footer">
+        <span>0/3 Images</span>
+        <span>Enter to save</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
