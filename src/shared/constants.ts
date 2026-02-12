@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
   submitPriority: 'submitPriority',
   submitTriage: 'submitTriage',
   submitLabelIds: 'submitLabelIds',
+  submitSettingsExpanded: 'submitSettingsExpanded',
   themePreference: 'themePreference'
 } as const;
 

@@ -406,6 +406,7 @@ function setToolbarVisible(visible: boolean): void {
     setPickerActive(false);
     inlineAnnotator.close();
     queuePanel.setVisible(false);
+    floatingBadge.setQueuePanelOpen(false);
     annotatorFocusTarget = null;
     editingDraftId = null;
     selectedElement = null;
@@ -427,6 +428,9 @@ async function submitDrafts(): Promise<void> {
     showToast('No notes to submit yet.', undefined, 'error');
     return;
   }
+
+  const notePositions = queuePanel.getNotePositions();
+  floatingBadge.playFlyingDotsAnimation(notePositions);
 
   queuePanel.setSubmitting(true);
   const submittingToastId = showSubmittingTicketToast();
@@ -465,8 +469,10 @@ async function submitDrafts(): Promise<void> {
 
     setDrafts([]);
     queuePanel.setVisible(false);
+    floatingBadge.setQueuePanelOpen(false);
     queuePanel.resetPriority();
     dismissToast(submittingToastId);
+    floatingBadge.playSubmitSuccessAnimation();
     showTicketCreatedToast(issue);
   } catch (error) {
     dismissToast(submittingToastId);
@@ -590,6 +596,7 @@ function handleAnnotatorSubmit(
   refreshFocusedComponentHighlight();
   selectedElement = null;
   selectedClickPoint = null;
+  floatingBadge.showSavedConfirmation();
   if (pickerActive && toolbarVisible) {
     detector.start();
   }
@@ -626,7 +633,9 @@ const floatingBadge = new FloatingBadge({
       void syncPickerState(true);
       void ensureSettingsLoaded();
     }
-    queuePanel.setVisible(!queuePanel.isVisible());
+    const willBeVisible = !queuePanel.isVisible();
+    queuePanel.setVisible(willBeVisible);
+    floatingBadge.setQueuePanelOpen(willBeVisible);
   }
 });
 
@@ -646,6 +655,7 @@ const queuePanel = new QueuePanel({
   },
   onEdit: (id) => {
     queuePanel.setVisible(false);
+    floatingBadge.setQueuePanelOpen(false);
     draftMarkers.requestEdit(id);
   }
 });
@@ -684,6 +694,7 @@ window.addEventListener('keydown', (event) => {
 
   if (queuePanel.isVisible()) {
     queuePanel.setVisible(false);
+    floatingBadge.setQueuePanelOpen(false);
     return;
   }
 

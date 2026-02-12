@@ -22,6 +22,12 @@ export interface QueuePanelCallbacks {
   onEdit: (id: string) => void;
 }
 
+export interface NotePosition {
+  x: number;
+  y: number;
+  color: string;
+}
+
 export interface SubmissionSettings {
   priority: number | null;
   labelIds: string[];
@@ -43,6 +49,7 @@ export class QueuePanel {
   private submitBtn: HTMLButtonElement | null = null;
   private clearBtn: HTMLButtonElement | null = null;
   private settingsEl: HTMLDivElement | null = null;
+  private labelsBtnEl: HTMLButtonElement | null = null;
   private items: QueueNoteSummary[] = [];
   private renderedItemIds: string[] = [];
   private hoveredId: string | null = null;
@@ -58,6 +65,8 @@ export class QueuePanel {
   private resources: QueuePanelResources = { teams: [], labels: [], users: [] };
   private settings: SubmissionSettings = { priority: null, labelIds: [], assigneeId: null };
   private selectedTeamId: string | null = null;
+  private settingsExpanded = false;
+  private settingsJustExpanded = false;
   private readonly systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
   private readonly themeChangeHandler = (): void => {
     this.applyThemeMode();
@@ -98,6 +107,23 @@ export class QueuePanel {
     return { ...this.settings };
   }
 
+  getNotePositions(): NotePosition[] {
+    if (!this.listEl) return [];
+    const positions: NotePosition[] = [];
+    const rows = this.listEl.querySelectorAll('.notiv-queue-row');
+    rows.forEach((row, index) => {
+      const rect = row.getBoundingClientRect();
+      const note = this.items[index];
+      const colorPreset = note ? getHighlightColorPreset(resolveHighlightColor(note.highlightColor)) : null;
+      positions.push({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        color: colorPreset?.pinFill ?? '#1a1816'
+      });
+    });
+    return positions;
+  }
+
   resetPriority(): void {
     this.settings.priority = null;
     void this.saveSettings();
@@ -110,7 +136,8 @@ export class QueuePanel {
         STORAGE_KEYS.submitTeamId,
         STORAGE_KEYS.submitPriority,
         STORAGE_KEYS.submitLabelIds,
-        STORAGE_KEYS.submitAssigneeId
+        STORAGE_KEYS.submitAssigneeId,
+        STORAGE_KEYS.submitSettingsExpanded
       ]);
       if (items) {
         if (typeof items[STORAGE_KEYS.submitTeamId] === 'string') {
@@ -125,6 +152,9 @@ export class QueuePanel {
         if (typeof items[STORAGE_KEYS.submitAssigneeId] === 'string') {
           this.settings.assigneeId = items[STORAGE_KEYS.submitAssigneeId] as string;
         }
+        if (typeof items[STORAGE_KEYS.submitSettingsExpanded] === 'boolean') {
+          this.settingsExpanded = items[STORAGE_KEYS.submitSettingsExpanded] as boolean;
+        }
       }
     } catch {
       // Ignore
@@ -138,7 +168,8 @@ export class QueuePanel {
         [STORAGE_KEYS.submitTeamId]: this.selectedTeamId,
         [STORAGE_KEYS.submitPriority]: this.settings.priority,
         [STORAGE_KEYS.submitLabelIds]: this.settings.labelIds,
-        [STORAGE_KEYS.submitAssigneeId]: this.settings.assigneeId
+        [STORAGE_KEYS.submitAssigneeId]: this.settings.assigneeId,
+        [STORAGE_KEYS.submitSettingsExpanded]: this.settingsExpanded
       });
     } catch {
       // Ignore
@@ -219,8 +250,22 @@ export class QueuePanel {
 
     const submitBtn = document.createElement('button');
     submitBtn.type = 'button';
-    submitBtn.className = 'notiv-queue-panel-btn primary';
-    submitBtn.textContent = 'Submit';
+    submitBtn.className = 'notiv-queue-submit-btn';
+    submitBtn.title = 'Submit to Linear';
+    submitBtn.setAttribute('aria-label', 'Submit to Linear');
+    const submitIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    submitIcon.setAttribute('width', '16');
+    submitIcon.setAttribute('height', '16');
+    submitIcon.setAttribute('viewBox', '0 0 24 24');
+    submitIcon.setAttribute('fill', 'none');
+    submitIcon.setAttribute('stroke', 'currentColor');
+    submitIcon.setAttribute('stroke-width', '1.5');
+    submitIcon.setAttribute('stroke-linecap', 'round');
+    submitIcon.setAttribute('stroke-linejoin', 'round');
+    const submitPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    submitPath.setAttribute('d', 'M5 12h11M12 5l7 7-7 7');
+    submitIcon.appendChild(submitPath);
+    submitBtn.appendChild(submitIcon);
     submitBtn.addEventListener('click', () => this.callbacks.onSubmit());
 
     actions.appendChild(clearBtn);
@@ -327,7 +372,7 @@ export class QueuePanel {
 
     if (this.submitBtn) {
       this.submitBtn.disabled = this.items.length === 0 || this.submitting;
-      this.submitBtn.textContent = this.submitting ? 'Submitting...' : 'Submit';
+      this.submitBtn.classList.toggle('submitting', this.submitting);
     }
 
     if (this.clearBtn) {
@@ -445,6 +490,23 @@ export class QueuePanel {
         this.callbacks.onDelete(note.id);
       });
 
+      const deleteBtnDefaultColor = isDark ? '#8a8884' : '#9c9894';
+      const deleteBtnHoverColor = isDark ? '#f07070' : '#c94a4a';
+
+      deleteBtn.addEventListener('mouseenter', () => {
+        deleteBtn.style.color = deleteBtnHoverColor;
+        deleteBtn.style.opacity = '1';
+      });
+
+      deleteBtn.addEventListener('mouseleave', () => {
+        deleteBtn.style.color = deleteBtnDefaultColor;
+        if (!row.matches(':hover')) {
+          deleteBtn.style.opacity = '0';
+        } else {
+          deleteBtn.style.opacity = '0.6';
+        }
+      });
+
       deleteBtn.addEventListener('focus', () => {
         deleteBtn.style.opacity = '1';
         row.style.background = isDark ? 'rgba(240, 239, 237, 0.06)' : 'rgba(26, 24, 22, 0.05)';
@@ -488,7 +550,6 @@ export class QueuePanel {
   private renderSettings(): void {
     if (!this.settingsEl) return;
 
-    // Remove any existing dropdowns from shadow root
     if (this.shadowRoot) {
       this.shadowRoot.querySelectorAll('.notiv-queue-dropdown').forEach((el) => el.remove());
     }
@@ -498,15 +559,22 @@ export class QueuePanel {
     const bar = document.createElement('div');
     bar.className = 'notiv-queue-settings-bar';
 
-    // Team button
     const selectedTeam = this.resources.teams.find((t) => t.id === this.selectedTeamId) ?? this.resources.teams[0];
     const teamBtn = document.createElement('button');
     teamBtn.type = 'button';
-    teamBtn.className = 'notiv-queue-inline-btn';
+    teamBtn.className = 'notiv-queue-inline-btn notiv-queue-team-collapsed';
     if (this.teamDropdownOpen) teamBtn.classList.add('active');
-    teamBtn.innerHTML = selectedTeam
-      ? `<span class="notiv-queue-inline-team-key">${selectedTeam.key}</span>`
-      : `<span class="notiv-queue-inline-placeholder">Team</span>`;
+
+    const teamArrow = document.createElement('span');
+    teamArrow.className = 'notiv-queue-inline-team-arrow';
+    teamArrow.textContent = '→';
+    teamBtn.appendChild(teamArrow);
+
+    const teamKey = document.createElement('span');
+    teamKey.className = 'notiv-queue-inline-team-key';
+    teamKey.textContent = selectedTeam?.key ?? 'Team';
+    teamBtn.appendChild(teamKey);
+
     teamBtn.innerHTML += this.createDropdownChevronHtml();
     teamBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -525,153 +593,198 @@ export class QueuePanel {
       requestAnimationFrame(() => this.positionDropdown(dropdown, teamBtn));
     }
 
-    // Priority button (dropdown)
-    const priorityBtn = document.createElement('button');
-    priorityBtn.type = 'button';
-    priorityBtn.className = 'notiv-queue-inline-btn';
-    if (this.priorityDropdownOpen) priorityBtn.classList.add('active');
+    if (this.settingsExpanded) {
+      const shouldAnimate = this.settingsJustExpanded;
+      this.settingsJustExpanded = false;
 
-    const currentPriorityIcon = this.settings.priority === 1
-      ? this.createUrgentIcon()
-      : this.settings.priority === 2
-        ? this.createPriorityBarsIcon(3)
-        : this.settings.priority === 3
-          ? this.createPriorityBarsIcon(2)
-          : this.settings.priority === 4
-            ? this.createPriorityBarsIcon(1)
-            : this.createNoPriorityIcon();
-    priorityBtn.appendChild(currentPriorityIcon);
-    priorityBtn.innerHTML += this.createDropdownChevronHtml();
-    priorityBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.priorityDropdownOpen = !this.priorityDropdownOpen;
-      this.teamDropdownOpen = false;
-      this.labelsDropdownOpen = false;
-      this.assigneeDropdownOpen = false;
-      this.renderSettings();
-    });
-    bar.appendChild(priorityBtn);
+      const expandableGroup = document.createElement('div');
+      expandableGroup.className = 'notiv-queue-expandable-group';
 
-    if (this.priorityDropdownOpen && this.shadowRoot) {
-      const dropdown = this.createPriorityDropdown();
-      this.shadowRoot.appendChild(dropdown);
-      requestAnimationFrame(() => this.positionDropdown(dropdown, priorityBtn));
-    }
+      const priorityBtn = document.createElement('button');
+      priorityBtn.type = 'button';
+      priorityBtn.className = 'notiv-queue-inline-btn notiv-queue-expandable-item';
+      if (shouldAnimate) priorityBtn.classList.add('animate-in');
+      if (this.priorityDropdownOpen) priorityBtn.classList.add('active');
 
-    // Assignee button
-    const selectedUser = this.resources.users.find((u) => u.id === this.settings.assigneeId);
-    const assigneeBtn = document.createElement('button');
-    assigneeBtn.type = 'button';
-    assigneeBtn.className = 'notiv-queue-inline-btn notiv-queue-inline-assignee';
-    if (this.assigneeDropdownOpen) assigneeBtn.classList.add('active');
+      const currentPriorityIcon = this.settings.priority === 1
+        ? this.createUrgentIcon()
+        : this.settings.priority === 2
+          ? this.createPriorityBarsIcon(3)
+          : this.settings.priority === 3
+            ? this.createPriorityBarsIcon(2)
+            : this.settings.priority === 4
+              ? this.createPriorityBarsIcon(1)
+              : this.createNoPriorityIcon();
+      priorityBtn.appendChild(currentPriorityIcon);
+      priorityBtn.innerHTML += this.createDropdownChevronHtml();
+      priorityBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.priorityDropdownOpen = !this.priorityDropdownOpen;
+        this.teamDropdownOpen = false;
+        this.labelsDropdownOpen = false;
+        this.assigneeDropdownOpen = false;
+        this.renderSettings();
+      });
+      expandableGroup.appendChild(priorityBtn);
 
-    if (selectedUser) {
-      if (selectedUser.avatarUrl) {
-        const avatar = document.createElement('img');
-        avatar.className = 'notiv-queue-inline-avatar';
-        avatar.src = selectedUser.avatarUrl;
-        avatar.alt = '';
-        assigneeBtn.appendChild(avatar);
+      if (this.priorityDropdownOpen && this.shadowRoot) {
+        const dropdown = this.createPriorityDropdown();
+        this.shadowRoot.appendChild(dropdown);
+        requestAnimationFrame(() => this.positionDropdown(dropdown, priorityBtn));
+      }
+
+      const selectedUser = this.resources.users.find((u) => u.id === this.settings.assigneeId);
+      const assigneeBtn = document.createElement('button');
+      assigneeBtn.type = 'button';
+      assigneeBtn.className = 'notiv-queue-inline-btn notiv-queue-inline-assignee notiv-queue-expandable-item';
+      if (shouldAnimate) assigneeBtn.classList.add('animate-in');
+      if (this.assigneeDropdownOpen) assigneeBtn.classList.add('active');
+
+      if (selectedUser) {
+        if (selectedUser.avatarUrl) {
+          const avatar = document.createElement('img');
+          avatar.className = 'notiv-queue-inline-avatar';
+          avatar.src = selectedUser.avatarUrl;
+          avatar.alt = '';
+          assigneeBtn.appendChild(avatar);
+        } else {
+          const placeholder = document.createElement('span');
+          placeholder.className = 'notiv-queue-inline-avatar-placeholder';
+          placeholder.textContent = selectedUser.name.charAt(0).toUpperCase();
+          assigneeBtn.appendChild(placeholder);
+        }
+      } else {
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('width', '14');
+        icon.setAttribute('height', '14');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.setAttribute('fill', 'none');
+        icon.setAttribute('stroke', 'currentColor');
+        icon.setAttribute('stroke-width', '1.5');
+        icon.innerHTML = '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>';
+        assigneeBtn.appendChild(icon);
+      }
+      assigneeBtn.innerHTML += this.createDropdownChevronHtml();
+      assigneeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.assigneeDropdownOpen = !this.assigneeDropdownOpen;
+        this.priorityDropdownOpen = false;
+        this.labelsDropdownOpen = false;
+        this.teamDropdownOpen = false;
+        this.assigneeSearchQuery = '';
+        this.renderSettings();
+      });
+      expandableGroup.appendChild(assigneeBtn);
+
+      if (this.assigneeDropdownOpen && this.shadowRoot) {
+        const dropdown = this.createAssigneeDropdown();
+        this.shadowRoot.appendChild(dropdown);
+        requestAnimationFrame(() => this.positionDropdown(dropdown, assigneeBtn));
+      }
+
+      const selectedLabels = this.settings.labelIds
+        .map((id) => this.resources.labels.find((l) => l.id === id))
+        .filter((l): l is LinearLabel => l !== undefined);
+
+      const labelsBtn = document.createElement('button');
+      labelsBtn.type = 'button';
+      labelsBtn.className = 'notiv-queue-inline-btn notiv-queue-inline-labels notiv-queue-expandable-item';
+      if (shouldAnimate) labelsBtn.classList.add('animate-in');
+      if (this.labelsDropdownOpen) labelsBtn.classList.add('active');
+
+      if (selectedLabels.length > 0) {
+        const chipsContainer = document.createElement('div');
+        chipsContainer.className = 'notiv-queue-inline-labels-chips';
+
+        const maxVisible = 1;
+        const visibleLabels = selectedLabels.slice(0, maxVisible);
+        const overflowCount = selectedLabels.length - maxVisible;
+
+        visibleLabels.forEach((label) => {
+          const chip = document.createElement('span');
+          chip.className = 'notiv-queue-inline-label-chip';
+
+          const dot = document.createElement('span');
+          dot.className = 'notiv-queue-inline-label-dot';
+          dot.style.background = label.color;
+
+          const name = document.createElement('span');
+          name.textContent = label.name;
+
+          chip.appendChild(dot);
+          chip.appendChild(name);
+          chipsContainer.appendChild(chip);
+        });
+
+        if (overflowCount > 0) {
+          const overflow = document.createElement('span');
+          overflow.className = 'notiv-queue-inline-labels-overflow';
+          overflow.textContent = `+${overflowCount}`;
+          chipsContainer.appendChild(overflow);
+        }
+
+        labelsBtn.appendChild(chipsContainer);
       } else {
         const placeholder = document.createElement('span');
-        placeholder.className = 'notiv-queue-inline-avatar-placeholder';
-        placeholder.textContent = selectedUser.name.charAt(0).toUpperCase();
-        assigneeBtn.appendChild(placeholder);
+        placeholder.className = 'notiv-queue-inline-placeholder';
+        placeholder.textContent = 'Labels';
+        labelsBtn.appendChild(placeholder);
       }
-    } else {
-      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      icon.setAttribute('width', '14');
-      icon.setAttribute('height', '14');
-      icon.setAttribute('viewBox', '0 0 24 24');
-      icon.setAttribute('fill', 'none');
-      icon.setAttribute('stroke', 'currentColor');
-      icon.setAttribute('stroke-width', '2');
-      icon.innerHTML = '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>';
-      assigneeBtn.appendChild(icon);
+      labelsBtn.innerHTML += this.createDropdownChevronHtml();
+      labelsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.labelsDropdownOpen = !this.labelsDropdownOpen;
+        this.priorityDropdownOpen = false;
+        this.assigneeDropdownOpen = false;
+        this.teamDropdownOpen = false;
+        this.labelsSearchQuery = '';
+        this.renderSettings();
+      });
+      expandableGroup.appendChild(labelsBtn);
+      this.labelsBtnEl = labelsBtn;
+
+      if (this.labelsDropdownOpen && this.shadowRoot) {
+        const dropdown = this.createLabelsDropdown();
+        this.shadowRoot.appendChild(dropdown);
+        requestAnimationFrame(() => this.positionDropdown(dropdown, labelsBtn));
+      }
+
+      bar.appendChild(expandableGroup);
     }
-    assigneeBtn.innerHTML += this.createDropdownChevronHtml();
-    assigneeBtn.addEventListener('click', (e) => {
+
+    const spacer = document.createElement('div');
+    spacer.style.flex = '1';
+    bar.appendChild(spacer);
+
+    const optionsBtn = document.createElement('button');
+    optionsBtn.type = 'button';
+    optionsBtn.className = 'notiv-queue-options-toggle';
+    optionsBtn.textContent = this.settingsExpanded ? 'Less' : 'Options';
+
+    const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chevron.setAttribute('width', '10');
+    chevron.setAttribute('height', '10');
+    chevron.setAttribute('viewBox', '0 0 24 24');
+    chevron.setAttribute('fill', 'none');
+    chevron.setAttribute('stroke', 'currentColor');
+    chevron.setAttribute('stroke-width', '2.5');
+    chevron.setAttribute('stroke-linecap', 'round');
+    chevron.setAttribute('stroke-linejoin', 'round');
+    chevron.innerHTML = this.settingsExpanded ? '<path d="M15 18l-6-6 6-6"/>' : '<path d="M6 9l6 6 6-6"/>';
+    optionsBtn.appendChild(chevron);
+
+    optionsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.assigneeDropdownOpen = !this.assigneeDropdownOpen;
+      const wasExpanded = this.settingsExpanded;
+      this.settingsExpanded = !this.settingsExpanded;
+      this.settingsJustExpanded = !wasExpanded && this.settingsExpanded;
       this.priorityDropdownOpen = false;
       this.labelsDropdownOpen = false;
-      this.teamDropdownOpen = false;
-      this.assigneeSearchQuery = '';
-      this.renderSettings();
-    });
-    bar.appendChild(assigneeBtn);
-
-    if (this.assigneeDropdownOpen && this.shadowRoot) {
-      const dropdown = this.createAssigneeDropdown();
-      this.shadowRoot.appendChild(dropdown);
-      requestAnimationFrame(() => this.positionDropdown(dropdown, assigneeBtn));
-    }
-
-    // Labels button
-    const selectedLabels = this.settings.labelIds
-      .map((id) => this.resources.labels.find((l) => l.id === id))
-      .filter((l): l is LinearLabel => l !== undefined);
-
-    const labelsBtn = document.createElement('button');
-    labelsBtn.type = 'button';
-    labelsBtn.className = 'notiv-queue-inline-btn notiv-queue-inline-labels';
-    if (this.labelsDropdownOpen) labelsBtn.classList.add('active');
-
-    if (selectedLabels.length > 0) {
-      const chipsContainer = document.createElement('div');
-      chipsContainer.className = 'notiv-queue-inline-labels-chips';
-
-      const maxVisible = 1;
-      const visibleLabels = selectedLabels.slice(0, maxVisible);
-      const overflowCount = selectedLabels.length - maxVisible;
-
-      visibleLabels.forEach((label) => {
-        const chip = document.createElement('span');
-        chip.className = 'notiv-queue-inline-label-chip';
-
-        const dot = document.createElement('span');
-        dot.className = 'notiv-queue-inline-label-dot';
-        dot.style.background = label.color;
-
-        const name = document.createElement('span');
-        name.textContent = label.name;
-
-        chip.appendChild(dot);
-        chip.appendChild(name);
-        chipsContainer.appendChild(chip);
-      });
-
-      if (overflowCount > 0) {
-        const overflow = document.createElement('span');
-        overflow.className = 'notiv-queue-inline-labels-overflow';
-        overflow.textContent = `+${overflowCount}`;
-        chipsContainer.appendChild(overflow);
-      }
-
-      labelsBtn.appendChild(chipsContainer);
-    } else {
-      const placeholder = document.createElement('span');
-      placeholder.className = 'notiv-queue-inline-placeholder';
-      placeholder.textContent = 'Labels';
-      labelsBtn.appendChild(placeholder);
-    }
-    labelsBtn.innerHTML += this.createDropdownChevronHtml();
-    labelsBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.labelsDropdownOpen = !this.labelsDropdownOpen;
-      this.priorityDropdownOpen = false;
       this.assigneeDropdownOpen = false;
-      this.teamDropdownOpen = false;
-      this.labelsSearchQuery = '';
+      void this.saveSettings();
       this.renderSettings();
     });
-    bar.appendChild(labelsBtn);
-
-    if (this.labelsDropdownOpen && this.shadowRoot) {
-      const dropdown = this.createLabelsDropdown();
-      this.shadowRoot.appendChild(dropdown);
-      requestAnimationFrame(() => this.positionDropdown(dropdown, labelsBtn));
-    }
+    bar.appendChild(optionsBtn);
 
     this.settingsEl.appendChild(bar);
   }
@@ -804,10 +917,67 @@ export class QueuePanel {
         }
         void this.saveSettings();
         this.renderLabelsDropdownList(listEl);
+        this.updateLabelsBtnContent();
       });
 
       listEl.appendChild(item);
     });
+  }
+
+  private updateLabelsBtnContent(): void {
+    if (!this.labelsBtnEl) return;
+
+    const selectedLabels = this.settings.labelIds
+      .map((id) => this.resources.labels.find((l) => l.id === id))
+      .filter((l): l is LinearLabel => l !== undefined);
+
+    const chevron = this.labelsBtnEl.querySelector('.notiv-queue-dropdown-chevron');
+    this.labelsBtnEl.innerHTML = '';
+
+    if (selectedLabels.length > 0) {
+      const chipsContainer = document.createElement('div');
+      chipsContainer.className = 'notiv-queue-inline-labels-chips';
+
+      const maxVisible = 1;
+      const visibleLabels = selectedLabels.slice(0, maxVisible);
+      const overflowCount = selectedLabels.length - maxVisible;
+
+      visibleLabels.forEach((label) => {
+        const chip = document.createElement('span');
+        chip.className = 'notiv-queue-inline-label-chip';
+
+        const dot = document.createElement('span');
+        dot.className = 'notiv-queue-inline-label-dot';
+        dot.style.background = label.color;
+
+        const name = document.createElement('span');
+        name.textContent = label.name;
+
+        chip.appendChild(dot);
+        chip.appendChild(name);
+        chipsContainer.appendChild(chip);
+      });
+
+      if (overflowCount > 0) {
+        const overflow = document.createElement('span');
+        overflow.className = 'notiv-queue-inline-labels-overflow';
+        overflow.textContent = `+${overflowCount}`;
+        chipsContainer.appendChild(overflow);
+      }
+
+      this.labelsBtnEl.appendChild(chipsContainer);
+    } else {
+      const placeholder = document.createElement('span');
+      placeholder.className = 'notiv-queue-inline-placeholder';
+      placeholder.textContent = 'Labels';
+      this.labelsBtnEl.appendChild(placeholder);
+    }
+
+    if (chevron) {
+      this.labelsBtnEl.appendChild(chevron);
+    } else {
+      this.labelsBtnEl.innerHTML += this.createDropdownChevronHtml();
+    }
   }
 
   private createAssigneeDropdown(): HTMLDivElement {
@@ -1029,7 +1199,7 @@ export class QueuePanel {
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('fill', 'none');
     svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-width', '1.5');
     svg.setAttribute('stroke-linecap', 'round');
     svg.setAttribute('stroke-linejoin', 'round');
 
@@ -1057,7 +1227,7 @@ export class QueuePanel {
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('fill', 'none');
     svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-width', '1.5');
     svg.setAttribute('stroke-linecap', 'round');
     svg.setAttribute('stroke-linejoin', 'round');
 
@@ -1205,7 +1375,7 @@ export class QueuePanel {
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('fill', 'none');
     svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-width', '1.5');
     svg.setAttribute('stroke-linecap', 'round');
     svg.setAttribute('stroke-linejoin', 'round');
 

@@ -77,7 +77,7 @@ function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.E
       <path
         d={path}
         stroke="currentColor"
-        strokeWidth={2}
+        strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
@@ -317,7 +317,7 @@ function InlineAnnotatorPanel({
                 {teams.length > 5 && (
                   <div className="notiv-inline-team-dropdown-search">
                     <svg className="notiv-inline-team-dropdown-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <input
                       ref={teamSearchRef}

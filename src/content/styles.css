@@ -175,7 +175,7 @@
   appearance: none;
   width: 32px;
   height: 32px;
-  border: 1.25px solid var(--btn-border);
+  border: 1px solid var(--border-soft);
   border-radius: 6px;
   background: var(--btn-bg);
   color: var(--btn-text);
@@ -432,7 +432,7 @@
   position: relative;
   width: 52px;
   height: 40px;
-  border: 1.25px solid var(--card-border);
+  border: 1px solid var(--border-soft);
   border-radius: 5px;
   overflow: hidden;
   background: var(--card-bg);
@@ -530,18 +530,50 @@
 .notiv-inline-submit-btn.success {
   background: #2d7a4f;
   border-color: #2d7a4f;
-  animation: notiv-submit-success 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: notiv-submit-success 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes notiv-submit-success {
   0% {
     transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(45, 122, 79, 0.4);
   }
-  40% {
-    transform: scale(1.1);
+  30% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(45, 122, 79, 0.2);
+  }
+  60% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 10px rgba(45, 122, 79, 0);
   }
   100% {
     transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(45, 122, 79, 0);
+  }
+}
+
+.notiv-queue-panel-btn.primary.success {
+  background: #2d7a4f;
+  border-color: #2d7a4f;
+  animation: notiv-panel-submit-success 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes notiv-panel-submit-success {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(45, 122, 79, 0.4);
+  }
+  25% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 8px rgba(45, 122, 79, 0.15);
+  }
+  50% {
+    transform: scale(0.96);
+    box-shadow: 0 0 0 12px rgba(45, 122, 79, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
   }
 }
 
@@ -801,7 +833,7 @@
 }
 
 .notiv-inline-input:focus-visible {
-  box-shadow: 0 1px 0 var(--border);
+  box-shadow: none;
 }
 
 .notiv-inline-attachment-count {
@@ -1336,7 +1368,7 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  box-shadow: 0 2px 8px var(--shadow);
+  box-shadow: 0 1px 4px var(--shadow);
   transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
   overflow: hidden;
   padding: 0;
@@ -1361,18 +1393,164 @@
   animation: notiv-badge-pulse 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes notiv-badge-pulse {
+@keyframes notiv-badge-breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+.notiv-floating-badge.breathing {
+  animation: notiv-badge-breathe 3s ease-in-out infinite;
+}
+
+.notiv-floating-badge.breathing:hover {
+  animation: none;
+}
+
+@keyframes notiv-badge-celebrate {
   0% {
     transform: scale(1);
     box-shadow: 0 2px 8px var(--shadow);
   }
+  20% {
+    transform: scale(1.18);
+    box-shadow: 0 4px 16px var(--shadow), 0 0 0 6px rgba(26, 24, 22, 0.12);
+  }
   40% {
-    transform: scale(1.15);
-    box-shadow: 0 4px 16px var(--shadow), 0 0 0 4px rgba(26, 24, 22, 0.1);
+    transform: scale(0.92);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  80% {
+    transform: scale(0.98);
   }
   100% {
     transform: scale(1);
     box-shadow: 0 2px 8px var(--shadow);
+  }
+}
+
+.notiv-floating-badge.celebrate {
+  animation: notiv-badge-celebrate 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes notiv-badge-receive {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.12);
+  }
+  60% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.notiv-floating-badge.receive {
+  animation: notiv-badge-receive 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes notiv-badge-submit-success {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  25% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 8px rgba(45, 122, 79, 0.3), 0 4px 16px var(--shadow);
+  }
+  50% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 12px rgba(45, 122, 79, 0.1), 0 2px 8px var(--shadow);
+  }
+  75% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+}
+
+.notiv-floating-badge.submit-success {
+  animation: notiv-badge-submit-success 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Saved overlay */
+.notiv-badge-saved-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2d7a4f;
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notiv-badge-saved-overlay svg {
+  width: 18px;
+  height: 18px;
+  color: white;
+}
+
+.notiv-badge-saved-overlay.visible {
+  opacity: 1;
+  transform: scale(1);
+  animation: notiv-saved-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes notiv-saved-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Flying dots */
+.notiv-flying-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot-color, #1a1816);
+  left: 50%;
+  top: 50%;
+  transform: translate(var(--start-x, 0), var(--start-y, 0));
+  animation: notiv-fly-to-badge 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes notiv-fly-to-badge {
+  0% {
+    transform: translate(var(--start-x), var(--start-y)) scale(1);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(0, 0) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0) scale(0);
+    opacity: 0;
   }
 }
 
@@ -1467,6 +1645,14 @@
   background: rgba(240, 239, 237, 0.04);
 }
 
+:host([data-notiv-theme="dark"]) .notiv-badge-saved-overlay {
+  background: #5cb87a;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-badge-saved-overlay svg {
+  color: #1c1c1c;
+}
+
 /* ─────────────────────────────────────────────
    Queue Panel
    ───────────────────────────────────────────── */
@@ -1521,7 +1707,8 @@
 
 .notiv-queue-panel-actions {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
 }
 
 .notiv-queue-panel-btn {
@@ -1553,10 +1740,59 @@
   background: var(--btn-primary-bg);
   color: var(--btn-primary-text);
   border-color: var(--btn-primary-bg);
+  min-width: 80px;
+  font-weight: 550;
+  position: relative;
 }
 
 .notiv-queue-panel-btn.primary:hover:not(:disabled) {
   filter: brightness(0.94);
+  transform: translateY(-1px);
+}
+
+.notiv-queue-panel-btn.primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Submit icon button (unified with inline annotator) */
+.notiv-queue-submit-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 100ms ease, background 100ms ease, box-shadow 100ms ease;
+}
+
+.notiv-queue-submit-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(26, 24, 22, 0.15);
+}
+
+.notiv-queue-submit-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.notiv-queue-submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.notiv-queue-submit-btn.submitting {
+  animation: notiv-submit-spin 800ms linear infinite;
+}
+
+@keyframes notiv-submit-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .notiv-queue-panel-btn.ghost {
@@ -1566,8 +1802,8 @@
 }
 
 .notiv-queue-panel-btn.ghost:hover:not(:disabled) {
-  background: var(--hover-bg);
-  color: var(--text);
+  background: rgba(220, 80, 80, 0.1);
+  color: #c94a4a;
 }
 
 .notiv-queue-panel-list {
@@ -1639,8 +1875,17 @@
 }
 
 :host([data-notiv-theme="dark"]) .notiv-queue-panel-btn.ghost:hover:not(:disabled) {
-  background: var(--dark-hover-bg);
-  color: var(--dark-text);
+  background: rgba(240, 100, 100, 0.15);
+  color: #f07070;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-submit-btn {
+  background: var(--dark-btn-primary-bg);
+  color: var(--dark-btn-primary-text);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-submit-btn:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* ─────────────────────────────────────────────
@@ -1738,18 +1983,24 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  max-width: 72px;
   font-family: var(--font-sans);
   font-size: 11px;
   color: var(--text-muted);
-  white-space: nowrap;
+  min-width: 0;
+}
+
+.notiv-queue-inline-label-chip > span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notiv-queue-inline-label-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  flex-shrink: 0;
   flex-shrink: 0;
 }
 
@@ -1988,7 +2239,7 @@
   background: var(--surface);
   border: 1.25px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 8px 24px var(--shadow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   z-index: 2147483647;
   animation: notiv-dropdown-enter 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -2312,4 +2563,95 @@
 
 :host([data-notiv-theme="dark"]) .notiv-queue-dropdown-item-prefix {
   color: var(--dark-text-muted);
+}
+
+/* ─────────────────────────────────────────────
+   Options Toggle Button
+   ───────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────
+   Settings Expand/Collapse Animation
+   ───────────────────────────────────────────── */
+
+.notiv-queue-expandable-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.notiv-queue-expandable-item {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notiv-queue-expandable-item.animate-in {
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: notiv-settings-item-enter 150ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.notiv-queue-expandable-item.animate-in:nth-child(1) { animation-delay: 0ms; }
+.notiv-queue-expandable-item.animate-in:nth-child(2) { animation-delay: 50ms; }
+.notiv-queue-expandable-item.animate-in:nth-child(3) { animation-delay: 100ms; }
+
+@keyframes notiv-settings-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notiv-queue-options-toggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-subtle);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 80ms ease, color 80ms ease;
+}
+
+.notiv-queue-options-toggle:hover {
+  background: var(--hover-bg);
+  color: var(--text-muted);
+}
+
+.notiv-queue-options-toggle svg {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notiv-queue-inline-team-arrow {
+  color: var(--text-subtle);
+  font-size: 11px;
+  margin-right: 2px;
+}
+
+.notiv-queue-team-collapsed {
+  gap: 4px;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-options-toggle {
+  color: var(--dark-text-subtle);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-options-toggle:hover {
+  background: var(--dark-hover-bg);
+  color: var(--dark-text-muted);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-inline-team-arrow {
+  color: var(--dark-text-subtle);
 }

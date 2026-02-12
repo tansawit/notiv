@@ -461,6 +461,15 @@ export class DraftMarkers {
         from { opacity: 0; transform: translateX(-4px) scale(0.98); }
         to { opacity: 1; transform: none; }
       }
+      @keyframes notiv-pin-pulse {
+        0%, 100% { transform: rotate(-45deg) scale(1); }
+        50% { transform: rotate(-45deg) scale(1.12); }
+      }
+      @keyframes notiv-pin-hover-pulse {
+        0% { transform: rotate(-45deg) scale(1.08); }
+        50% { transform: rotate(-45deg) scale(1.14); }
+        100% { transform: rotate(-45deg) scale(1.08); }
+      }
       [data-notiv-draft-marker="true"] {
         transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
       }
@@ -471,12 +480,15 @@ export class DraftMarkers {
         transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 120ms ease;
       }
       [data-notiv-draft-marker="true"]:hover [data-notiv-draft-pin="true"] {
-        transform: rotate(-45deg) scale(1.08);
+        animation: notiv-pin-hover-pulse 800ms ease-in-out infinite;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
       [data-notiv-draft-marker="true"]:hover [data-notiv-note-bubble="true"] {
         opacity: 1 !important;
         pointer-events: auto !important;
+      }
+      [data-notiv-draft-pin="true"].pulse-once {
+        animation: notiv-pin-pulse 400ms ease-in-out;
       }
     `;
     document.head.appendChild(style);
