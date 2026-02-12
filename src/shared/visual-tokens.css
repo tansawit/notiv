@@ -106,3 +106,102 @@
     --notiv-popup-texture-bottom: rgba(28, 28, 28, 0.95);
   }
 }
+
+/* Manual theme overrides via attribute (for when user overrides system preference) */
+:root[data-theme="light"] {
+  --notiv-paper: #faf9f7;
+  --notiv-surface: #ffffff;
+  --notiv-ink: #1a1816;
+  --notiv-ink-muted: #5c5856;
+  --notiv-ink-tertiary: #9c9894;
+  --notiv-line: #1a1816;
+  --notiv-line-strong: #1a1816;
+  --notiv-border-light: rgba(26, 24, 22, 0.12);
+  --notiv-accent: #1a1816;
+  --notiv-accent-ink: #faf9f7;
+  --notiv-accent-stamp: #b5342a;
+
+  --notiv-ok: #2d7a4f;
+  --notiv-ok-border: #1a1816;
+  --notiv-ok-bg: #f7faf8;
+  --notiv-ok-bg-soft: rgba(45, 122, 79, 0.08);
+  --notiv-ok-border-soft: #1a1816;
+  --notiv-ok-border-connected: #1a1816;
+  --notiv-ok-bg-connected: rgba(45, 122, 79, 0.12);
+  --notiv-ok-text: #236b42;
+
+  --notiv-danger: #b5342a;
+  --notiv-danger-border: #1a1816;
+  --notiv-danger-bg-soft: rgba(181, 52, 42, 0.1);
+
+  --notiv-input-focus: #1a1816;
+  --notiv-input-placeholder: #9c9894;
+  --notiv-chip-hover-border: #1a1816;
+  --notiv-chip-active-border: #1a1816;
+  --notiv-chip-active-bg: rgba(26, 24, 22, 0.06);
+  --notiv-chip-active-text: #1a1816;
+  --notiv-token-border: #1a1816;
+  --notiv-token-bg: #ffffff;
+  --notiv-token-text: #5c5856;
+  --notiv-icon-muted: #5c5856;
+  --notiv-card-bg: #ffffff;
+  --notiv-status-pill-bg: rgba(26, 24, 22, 0.04);
+  --notiv-chip-bg: rgba(26, 24, 22, 0.04);
+  --notiv-chip-text: #5c5856;
+  --notiv-hover-bg: rgba(26, 24, 22, 0.05);
+  --notiv-hover-border: #1a1816;
+  --notiv-select-arrow: #1a1816;
+
+  --notiv-popup-texture-dot: rgba(26, 24, 22, 0.03);
+  --notiv-popup-texture-top: rgba(255, 255, 255, 0.6);
+  --notiv-popup-texture-bottom: rgba(250, 249, 247, 0.9);
+}
+
+:root[data-theme="dark"] {
+  --notiv-paper: #1c1c1c;
+  --notiv-surface: #242424;
+  --notiv-ink: #f0efed;
+  --notiv-ink-muted: #a8a6a2;
+  --notiv-ink-tertiary: #8a8884;
+  --notiv-line: #e0dfdd;
+  --notiv-line-strong: #e0dfdd;
+  --notiv-border-light: rgba(240, 239, 237, 0.12);
+  --notiv-accent: #e0dfdd;
+  --notiv-accent-ink: #1c1c1c;
+  --notiv-accent-stamp: #e85a50;
+
+  --notiv-ok: #5cb87a;
+  --notiv-ok-border: #e0dfdd;
+  --notiv-ok-bg: rgba(92, 184, 122, 0.08);
+  --notiv-ok-bg-soft: rgba(92, 184, 122, 0.1);
+  --notiv-ok-border-soft: #e0dfdd;
+  --notiv-ok-border-connected: #e0dfdd;
+  --notiv-ok-bg-connected: rgba(92, 184, 122, 0.15);
+  --notiv-ok-text: #7dcea0;
+
+  --notiv-danger: #e85a50;
+  --notiv-danger-border: #e0dfdd;
+  --notiv-danger-bg-soft: rgba(232, 90, 80, 0.15);
+
+  --notiv-input-focus: #e0dfdd;
+  --notiv-input-placeholder: #8a8884;
+  --notiv-chip-hover-border: #e0dfdd;
+  --notiv-chip-active-border: #e0dfdd;
+  --notiv-chip-active-bg: rgba(240, 239, 237, 0.08);
+  --notiv-chip-active-text: #f0efed;
+  --notiv-token-border: #e0dfdd;
+  --notiv-token-bg: #242424;
+  --notiv-token-text: #a8a6a2;
+  --notiv-icon-muted: #a8a6a2;
+  --notiv-card-bg: #242424;
+  --notiv-status-pill-bg: rgba(240, 239, 237, 0.06);
+  --notiv-chip-bg: rgba(240, 239, 237, 0.06);
+  --notiv-chip-text: #a8a6a2;
+  --notiv-hover-bg: rgba(240, 239, 237, 0.08);
+  --notiv-hover-border: #e0dfdd;
+  --notiv-select-arrow: #e0dfdd;
+
+  --notiv-popup-texture-dot: rgba(240, 239, 237, 0.025);
+  --notiv-popup-texture-top: rgba(36, 36, 36, 0.8);
+  --notiv-popup-texture-bottom: rgba(28, 28, 28, 0.95);
+}

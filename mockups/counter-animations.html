@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counter Animation Mockups</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1c1c1c;
+      color: #f0efed;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 14px;
+      font-weight: 500;
+      color: #8a8884;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 40px;
+    }
+
+    .demos {
+      display: flex;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+
+    .demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .demo-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #a8a6a2;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .demo-description {
+      font-size: 11px;
+      color: #6a6864;
+      max-width: 160px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* Base badge styles */
+    .badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      background: #e0dfdd;
+      color: #1c1c1c;
+      font-family: "SF Mono", "JetBrains Mono", monospace;
+      font-size: 18px;
+      font-weight: 600;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .badge:hover {
+      transform: scale(1.05);
+    }
+
+    .badge:active {
+      transform: scale(0.95);
+    }
+
+    /* ═══════════════════════════════════════════
+       1. FLIP COUNTER
+       ═══════════════════════════════════════════ */
+    .badge-flip {
+      overflow: hidden;
+    }
+
+    .flip-container {
+      position: relative;
+      height: 24px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .flip-number {
+      position: absolute;
+      transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .flip-number.current {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .flip-number.exit-up {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    .flip-number.enter-below {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       3. SLOT MACHINE
+       ═══════════════════════════════════════════ */
+    .badge-slot {
+      overflow: hidden;
+    }
+
+    .slot-container {
+      position: relative;
+      height: 24px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .slot-track {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .slot-digit {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ═══════════════════════════════════════════
+       5. STACKING DEPTH
+       ═══════════════════════════════════════════ */
+    .badge-stack-wrapper {
+      position: relative;
+      width: 48px;
+      height: 48px;
+    }
+
+    .stack-layer {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      background: #e0dfdd;
+      transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 300ms ease;
+    }
+
+    .stack-layer-1 {
+      opacity: 0;
+      transform: translate(0, 0) scale(0.92);
+    }
+
+    .stack-layer-2 {
+      opacity: 0;
+      transform: translate(0, 0) scale(0.84);
+    }
+
+    .stack-layer-3 {
+      opacity: 0;
+      transform: translate(0, 0) scale(0.76);
+    }
+
+    /* Stack states based on count */
+    .badge-stack-wrapper[data-count="2"] .stack-layer-1,
+    .badge-stack-wrapper[data-count="3"] .stack-layer-1,
+    .badge-stack-wrapper[data-count="4"] .stack-layer-1,
+    .badge-stack-wrapper[data-count="5"] .stack-layer-1 {
+      opacity: 0.15;
+      transform: translate(-3px, 3px) scale(0.92);
+    }
+
+    .badge-stack-wrapper[data-count="3"] .stack-layer-2,
+    .badge-stack-wrapper[data-count="4"] .stack-layer-2,
+    .badge-stack-wrapper[data-count="5"] .stack-layer-2 {
+      opacity: 0.1;
+      transform: translate(-6px, 6px) scale(0.84);
+    }
+
+    .badge-stack-wrapper[data-count="4"] .stack-layer-3,
+    .badge-stack-wrapper[data-count="5"] .stack-layer-3 {
+      opacity: 0.06;
+      transform: translate(-9px, 9px) scale(0.76);
+    }
+
+    .badge-stack {
+      position: relative;
+      z-index: 1;
+      transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .badge-stack.pop {
+      transform: scale(1.15);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      background: #2a2a2a;
+      color: #a8a6a2;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 100ms ease;
+    }
+
+    .btn:hover {
+      background: #3a3a3a;
+      color: #f0efed;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Empty state badge */
+    .badge.empty {
+      background: transparent;
+      border: 2px dashed #4a4a4a;
+      color: #6a6864;
+    }
+  </style>
+</head>
+<body>
+  <h1>Counter Animation Mockups</h1>
+
+  <div class="demos">
+    <!-- 1. Flip Counter -->
+    <div class="demo">
+      <div class="demo-label">1. Flip Counter</div>
+      <div class="badge badge-flip" onclick="incrementFlip()">
+        <div class="flip-container">
+          <span class="flip-number current" id="flip-current">0</span>
+          <span class="flip-number enter-below" id="flip-next">1</span>
+        </div>
+      </div>
+      <div class="demo-description">Old slides up and out, new slides up from below</div>
+      <div class="controls">
+        <button class="btn" onclick="decrementFlip()">-</button>
+        <button class="btn" onclick="incrementFlip()">+</button>
+        <button class="btn" onclick="resetFlip()">Reset</button>
+      </div>
+    </div>
+
+    <!-- 3. Slot Machine -->
+    <div class="demo">
+      <div class="demo-label">3. Slot Machine</div>
+      <div class="badge badge-slot" onclick="incrementSlot()">
+        <div class="slot-container">
+          <div class="slot-track" id="slot-track">
+            <div class="slot-digit">0</div>
+            <div class="slot-digit">1</div>
+            <div class="slot-digit">2</div>
+            <div class="slot-digit">3</div>
+            <div class="slot-digit">4</div>
+            <div class="slot-digit">5</div>
+            <div class="slot-digit">6</div>
+            <div class="slot-digit">7</div>
+            <div class="slot-digit">8</div>
+            <div class="slot-digit">9</div>
+          </div>
+        </div>
+      </div>
+      <div class="demo-description">Rolls through numbers like a slot machine</div>
+      <div class="controls">
+        <button class="btn" onclick="decrementSlot()">-</button>
+        <button class="btn" onclick="incrementSlot()">+</button>
+        <button class="btn" onclick="resetSlot()">Reset</button>
+      </div>
+    </div>
+
+    <!-- 5. Stacking Depth -->
+    <div class="demo">
+      <div class="demo-label">5. Stacking Depth</div>
+      <div class="badge-stack-wrapper" id="stack-wrapper" data-count="0">
+        <div class="stack-layer stack-layer-3"></div>
+        <div class="stack-layer stack-layer-2"></div>
+        <div class="stack-layer stack-layer-1"></div>
+        <div class="badge badge-stack" id="badge-stack" onclick="incrementStack()">
+          <span id="stack-count">0</span>
+        </div>
+      </div>
+      <div class="demo-description">Layers appear behind badge as count grows</div>
+      <div class="controls">
+        <button class="btn" onclick="decrementStack()">-</button>
+        <button class="btn" onclick="incrementStack()">+</button>
+        <button class="btn" onclick="resetStack()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════
+    // 1. FLIP COUNTER
+    // ═══════════════════════════════════════════
+    let flipCount = 0;
+
+    function incrementFlip() {
+      if (flipCount >= 99) return;
+      animateFlip(flipCount, flipCount + 1);
+      flipCount++;
+    }
+
+    function decrementFlip() {
+      if (flipCount <= 0) return;
+      animateFlip(flipCount, flipCount - 1, true);
+      flipCount--;
+    }
+
+    function resetFlip() {
+      animateFlip(flipCount, 0);
+      flipCount = 0;
+    }
+
+    function animateFlip(from, to, reverse = false) {
+      const current = document.getElementById('flip-current');
+      const next = document.getElementById('flip-next');
+
+      next.textContent = to;
+
+      if (reverse) {
+        current.className = 'flip-number exit-up';
+        next.className = 'flip-number current';
+        next.style.transform = 'translateY(100%)';
+        next.style.opacity = '0';
+        requestAnimationFrame(() => {
+          current.style.transform = 'translateY(-100%)';
+          next.style.transform = 'translateY(0)';
+          next.style.opacity = '1';
+        });
+      } else {
+        current.className = 'flip-number exit-up';
+        next.className = 'flip-number current';
+      }
+
+      setTimeout(() => {
+        current.textContent = to;
+        current.className = 'flip-number current';
+        next.className = 'flip-number enter-below';
+      }, 300);
+    }
+
+    // ═══════════════════════════════════════════
+    // 3. SLOT MACHINE
+    // ═══════════════════════════════════════════
+    let slotCount = 0;
+
+    function incrementSlot() {
+      if (slotCount >= 9) return;
+      slotCount++;
+      updateSlot();
+    }
+
+    function decrementSlot() {
+      if (slotCount <= 0) return;
+      slotCount--;
+      updateSlot();
+    }
+
+    function resetSlot() {
+      slotCount = 0;
+      updateSlot();
+    }
+
+    function updateSlot() {
+      const track = document.getElementById('slot-track');
+      track.style.transform = `translateY(${-slotCount * 24}px)`;
+    }
+
+    // ═══════════════════════════════════════════
+    // 5. STACKING DEPTH
+    // ═══════════════════════════════════════════
+    let stackCount = 0;
+
+    function incrementStack() {
+      if (stackCount >= 5) return;
+      stackCount++;
+      updateStack();
+      popBadge();
+    }
+
+    function decrementStack() {
+      if (stackCount <= 0) return;
+      stackCount--;
+      updateStack();
+    }
+
+    function resetStack() {
+      stackCount = 0;
+      updateStack();
+    }
+
+    function updateStack() {
+      const wrapper = document.getElementById('stack-wrapper');
+      const countEl = document.getElementById('stack-count');
+      const badge = document.getElementById('badge-stack');
+
+      wrapper.dataset.count = stackCount;
+      countEl.textContent = stackCount;
+
+      if (stackCount === 0) {
+        badge.classList.add('empty');
+      } else {
+        badge.classList.remove('empty');
+      }
+    }
+
+    function popBadge() {
+      const badge = document.getElementById('badge-stack');
+      badge.classList.add('pop');
+      setTimeout(() => badge.classList.remove('pop'), 200);
+    }
+
+    // Initialize
+    updateStack();
+  </script>
+</body>
+</html>

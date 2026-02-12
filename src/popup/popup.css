@@ -56,7 +56,7 @@ body {
 
 .popup-panel {
   border: 1px solid var(--popup-line);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--popup-surface);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.04),
@@ -98,11 +98,11 @@ body {
 
 .popup-title {
   margin: 0;
-  font-size: var(--type-base);
+  font-size: var(--type-sm);
   font-weight: 600;
   line-height: 1.2;
-  color: var(--popup-ink);
-  letter-spacing: -0.01em;
+  color: var(--popup-muted);
+  letter-spacing: 0.02em;
 }
 
 /* ─────────────────────────────────────────────
@@ -130,43 +130,42 @@ body {
 
 .button-ghost {
   appearance: none;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
-  color: var(--popup-subtle);
-  font-family: var(--notiv-font-mono);
-  font-size: var(--type-xs);
+  color: var(--popup-muted);
+  font-family: var(--notiv-font-sans);
+  font-size: var(--type-sm);
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 5px 8px;
+  padding: 5px 10px;
   cursor: pointer;
   border-radius: 6px;
-  transition: color 80ms ease, background 80ms ease;
+  transition: color 80ms ease, background 80ms ease, border-color 80ms ease;
 }
 
 .button-ghost:hover {
   color: var(--popup-ink);
   background: var(--notiv-hover-bg);
+  border-color: var(--popup-line-soft);
 }
 
 .popup-content {
   display: grid;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
 }
 
 .status-row {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   padding: var(--space-xs) 0;
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
   flex-shrink: 0;
-  margin-top: 5px;
+  margin-top: 6px;
   background: var(--popup-subtle);
 }
 
@@ -206,11 +205,11 @@ body {
 }
 
 .status-primary {
-  font-size: var(--type-lg);
-  font-weight: 550;
+  font-size: var(--type-base);
+  font-weight: 500;
   color: var(--popup-ink);
   line-height: 1.3;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -228,9 +227,10 @@ body {
 .popup-actions {
   display: grid;
   gap: var(--space-sm);
+  margin-top: var(--space-xs);
 }
 
-.popup-actions .button {
+.popup-actions .button:not(.primary) {
   background: transparent;
   border-color: var(--popup-line-soft);
 }
@@ -288,6 +288,16 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm);
+}
+
+.settings-value {
+  font-size: var(--type-base);
+  font-weight: 500;
+  color: var(--popup-ink);
+}
+
+.settings-row-inline .button {
+  min-width: 90px;
 }
 
 /* ─────────────────────────────────────────────
@@ -588,8 +598,150 @@ body {
    Dark Mode
    ───────────────────────────────────────────── */
 
+:root[data-theme="dark"] {
+  --popup-paper: #1c1c1c;
+  --popup-surface: #242424;
+  --popup-ink: #f0efed;
+  --popup-muted: #a8a6a2;
+  --popup-subtle: #8a8884;
+  --popup-line: #e0dfdd;
+  --popup-line-soft: rgba(240, 239, 237, 0.12);
+  --popup-danger: #e85a50;
+}
+
+:root[data-theme="dark"] body {
+  background-image:
+    radial-gradient(rgba(240, 239, 237, 0.025) 1px, transparent 0),
+    linear-gradient(180deg, rgba(36, 36, 36, 0.8), rgba(28, 28, 28, 0.95));
+}
+
+:root[data-theme="dark"] .popup-panel {
+  border-color: var(--popup-line);
+  background: var(--popup-paper);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+:root[data-theme="dark"] .popup-header {
+  background: var(--popup-surface);
+}
+
+:root[data-theme="dark"] .button {
+  background: var(--popup-surface);
+  border-color: var(--popup-line);
+  color: var(--popup-ink);
+}
+
+:root[data-theme="dark"] .button:hover:not(:disabled) {
+  background: #2c2a28;
+}
+
+:root[data-theme="dark"] .button.primary {
+  background: var(--popup-line);
+  border-color: var(--popup-line);
+  color: #1c1c1c;
+}
+
+:root[data-theme="dark"] .button.primary:hover:not(:disabled) {
+  background: #c8c7c5;
+  border-color: #c8c7c5;
+}
+
+:root[data-theme="dark"] .button-ghost:hover {
+  color: var(--popup-ink);
+  background: var(--notiv-hover-bg);
+  border-color: var(--popup-line-soft);
+}
+
+:root[data-theme="dark"] .icon-button-ghost {
+  color: var(--popup-muted);
+}
+
+:root[data-theme="dark"] .icon-button-ghost:hover:not(:disabled) {
+  background: var(--notiv-hover-bg);
+  color: var(--popup-ink);
+}
+
+:root[data-theme="dark"] .icon-button-ghost-small:hover {
+  background: var(--notiv-hover-bg);
+  color: var(--popup-ink);
+}
+
+:root[data-theme="dark"] .input {
+  background: var(--popup-surface);
+  border-color: var(--popup-line-soft);
+  color: var(--popup-ink);
+}
+
+:root[data-theme="dark"] .settings-divider {
+  background: var(--popup-line-soft);
+}
+
+:root[data-theme="dark"] .popup-actions .button:not(.primary) {
+  background: transparent;
+  border-color: var(--popup-line-soft);
+}
+
+:root[data-theme="dark"] .status-dot.pending {
+  background: #d4a84b;
+}
+
+:root[data-theme="dark"] .notice {
+  background: rgba(92, 184, 122, 0.1);
+  border-color: var(--popup-line);
+  color: #a8d8b8;
+}
+
+:root[data-theme="dark"] .error {
+  background: rgba(232, 90, 80, 0.12);
+  border-color: var(--popup-line);
+  color: #f0c4c0;
+}
+
+/* Force light mode overrides (when user explicitly selects light in dark system) */
+:root[data-theme="light"] body {
+  background-image:
+    radial-gradient(var(--notiv-popup-texture-dot) 1px, transparent 0),
+    linear-gradient(180deg, var(--notiv-popup-texture-top), var(--notiv-popup-texture-bottom));
+}
+
+:root[data-theme="light"] .popup-panel {
+  border-color: var(--popup-line);
+  background: var(--popup-surface);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme="light"] .button {
+  background: var(--popup-surface);
+  border-color: var(--popup-line);
+  color: var(--popup-ink);
+}
+
+:root[data-theme="light"] .button:hover:not(:disabled) {
+  background: var(--popup-paper);
+}
+
+:root[data-theme="light"] .button.primary {
+  background: var(--popup-ink);
+  border-color: var(--popup-ink);
+  color: var(--popup-paper);
+}
+
+:root[data-theme="light"] .button.primary:hover:not(:disabled) {
+  background: var(--popup-muted);
+  border-color: var(--popup-muted);
+}
+
+:root[data-theme="light"] .popup-actions .button:not(.primary) {
+  background: transparent;
+  border-color: var(--popup-line-soft);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --popup-paper: #1c1c1c;
     --popup-surface: #242424;
     --popup-ink: #f0efed;
@@ -686,13 +838,14 @@ body {
   .button-ghost:hover {
     color: var(--popup-ink);
     background: var(--notiv-hover-bg);
+    border-color: var(--popup-line-soft);
   }
 
   .status-dot.pending {
     background: #d4a84b;
   }
 
-  .popup-actions .button {
+  .popup-actions .button:not(.primary) {
     background: transparent;
     border-color: var(--popup-line-soft);
   }

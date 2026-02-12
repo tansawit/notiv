@@ -124,6 +124,10 @@ export class DraftMarkers {
     this.render();
   }
 
+  requestEdit(id: string): void {
+    this.callbacks.onEditRequest(id);
+  }
+
   destroy(): void {
     if (this.visibilityTimer) {
       window.clearTimeout(this.visibilityTimer);

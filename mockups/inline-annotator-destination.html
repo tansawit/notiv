@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inline Annotator - Destination Indicator Mockup</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1c1c1c;
+      color: #f0efed;
+      min-height: 100vh;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .mock-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #6a6864;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .mock-description {
+      font-size: 12px;
+      color: #8a8884;
+      margin-bottom: 16px;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════
+       Base Annotator Styles
+       ═══════════════════════════════════════════ */
+    .annotator {
+      width: 360px;
+      border: 1.25px solid #e0dfdd;
+      border-radius: 10px;
+      background: rgba(28, 28, 28, 0.97);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 6px 16px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+
+    .main-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      min-height: 44px;
+    }
+
+    .input {
+      flex: 1;
+      min-width: 0;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: #f0efed;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 420;
+      line-height: 28px;
+      outline: none;
+    }
+
+    .input::placeholder {
+      color: #6a6864;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #8a8884;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 80ms ease, color 80ms ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(240, 239, 237, 0.08);
+      color: #f0efed;
+    }
+
+    .submit-btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 999px;
+      background: #e0dfdd;
+      color: #1c1c1c;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: transform 80ms ease, filter 80ms ease;
+    }
+
+    .submit-btn:hover {
+      filter: brightness(0.94);
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 10px 8px;
+      border-top: 1px solid rgba(240, 239, 237, 0.12);
+    }
+
+    .swatches {
+      display: flex;
+      gap: 4px;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .swatch.active::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      color: white;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.4);
+    }
+
+    .hint {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-family: "SF Mono", monospace;
+      font-size: 9px;
+    }
+
+    .hint-key {
+      color: #6a6864;
+      font-size: 10px;
+    }
+
+    .hint-label {
+      color: #8a8884;
+    }
+
+    .hint-sep {
+      color: #6a6864;
+      margin: 0 3px;
+    }
+
+    /* ═══════════════════════════════════════════
+       Destination Indicator Variants
+       ═══════════════════════════════════════════ */
+
+    /* Option A: In footer, left side */
+    .destination-footer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #6a6864;
+      cursor: pointer;
+      padding: 2px 6px 2px 2px;
+      margin: -2px;
+      border-radius: 4px;
+      transition: background 80ms ease, color 80ms ease;
+    }
+
+    .destination-footer:hover {
+      background: rgba(240, 239, 237, 0.08);
+      color: #a8a6a2;
+    }
+
+    .destination-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .destination-arrow {
+      color: #4a4a4a;
+    }
+
+    .destination-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .destination-chevron {
+      width: 10px;
+      height: 10px;
+      color: #4a4a4a;
+      flex-shrink: 0;
+    }
+
+    /* Option B: Above input as pill */
+    .destination-pill-row {
+      padding: 8px 10px 0;
+    }
+
+    .destination-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 22px;
+      padding: 0 8px 0 6px;
+      border-radius: 999px;
+      background: rgba(240, 239, 237, 0.06);
+      border: 1px solid rgba(240, 239, 237, 0.1);
+      font-size: 10px;
+      color: #a8a6a2;
+      cursor: pointer;
+      transition: background 80ms ease, border-color 80ms ease;
+    }
+
+    .destination-pill:hover {
+      background: rgba(240, 239, 237, 0.1);
+      border-color: rgba(240, 239, 237, 0.2);
+    }
+
+    /* Option C: Subtle text under input */
+    .destination-subtle {
+      padding: 0 10px 6px;
+      font-size: 10px;
+      color: #4a4a4a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .destination-subtle-link {
+      color: #6a6864;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .destination-subtle-link:hover {
+      color: #8a8884;
+      text-decoration: underline;
+    }
+
+    /* Option D: Right side of submit button */
+    .main-row-with-dest {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+    }
+
+    .submit-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dest-mini {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+      color: #6a6864;
+      cursor: pointer;
+      transition: background 80ms ease;
+    }
+
+    .dest-mini:hover {
+      background: rgba(240, 239, 237, 0.08);
+    }
+
+    .dest-mini-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+    }
+
+    /* A2 Improved variants */
+    .dest-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 20px;
+      padding: 0 8px;
+      border-radius: 4px;
+      background: rgba(240, 239, 237, 0.08);
+      font-size: 10px;
+      font-weight: 500;
+      color: #a8a6a2;
+      cursor: pointer;
+      transition: background 80ms ease, color 80ms ease;
+    }
+
+    .dest-chip:hover {
+      background: rgba(240, 239, 237, 0.14);
+      color: #d0cfcd;
+    }
+
+    .dest-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .dest-chip-chevron {
+      width: 10px;
+      height: 10px;
+      opacity: 0.5;
+    }
+
+    .dest-minimal {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 500;
+      color: #6a6864;
+      cursor: pointer;
+      transition: background 80ms ease, color 80ms ease;
+    }
+
+    .dest-minimal:hover {
+      background: rgba(240, 239, 237, 0.08);
+      color: #a8a6a2;
+    }
+
+    .dest-minimal-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .dest-arrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 500;
+      color: #8a8884;
+      cursor: pointer;
+      transition: background 80ms ease, color 80ms ease;
+    }
+
+    .dest-arrow:hover {
+      background: rgba(240, 239, 237, 0.08);
+      color: #a8a6a2;
+    }
+
+    .dest-arrow-icon {
+      color: #6a6864;
+    }
+
+    /* Option E: Expanded settings row */
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-top: 1px solid rgba(240, 239, 237, 0.08);
+      background: rgba(240, 239, 237, 0.02);
+    }
+
+    .setting-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+      padding: 0 8px 0 6px;
+      border-radius: 4px;
+      background: rgba(240, 239, 237, 0.06);
+      font-size: 10px;
+      color: #a8a6a2;
+      cursor: pointer;
+      transition: background 80ms ease;
+    }
+
+    .setting-chip:hover {
+      background: rgba(240, 239, 237, 0.1);
+    }
+
+    .setting-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+    }
+
+    .setting-chip-priority {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+    }
+
+    /* Team picker dropdown */
+    .team-dropdown {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      right: 0;
+      width: 200px;
+      background: rgba(38, 38, 38, 0.98);
+      border: 1px solid rgba(240, 239, 237, 0.12);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .team-dropdown-list {
+      padding: 4px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .team-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      color: #d0cfcd;
+      cursor: pointer;
+      transition: background 60ms ease;
+    }
+
+    .team-dropdown-item:hover {
+      background: rgba(240, 239, 237, 0.08);
+    }
+
+    .team-dropdown-item.selected {
+      background: rgba(240, 239, 237, 0.06);
+    }
+
+    .team-dropdown-item-prefix {
+      font-size: 10px;
+      font-weight: 600;
+      color: #8a8884;
+      font-family: "SF Mono", monospace;
+      min-width: 32px;
+    }
+
+    .team-dropdown-item-check {
+      margin-left: auto;
+      width: 14px;
+      height: 14px;
+      color: #8a8884;
+    }
+
+    .team-dropdown-footer {
+      padding: 8px 10px;
+      border-top: 1px solid rgba(240, 239, 237, 0.08);
+      background: rgba(240, 239, 237, 0.02);
+    }
+
+    .team-dropdown-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #6a6864;
+      cursor: pointer;
+      transition: color 80ms ease;
+    }
+
+    .team-dropdown-hint:hover {
+      color: #8a8884;
+    }
+
+    .team-dropdown-hint-icon {
+      width: 12px;
+      height: 12px;
+      opacity: 0.6;
+    }
+
+    .demos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+    }
+
+    .demo {
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demos">
+    <!-- Option A1: Destination next to submit button -->
+    <div class="demo">
+      <div class="mock-label">A1: Next to Submit</div>
+      <div class="mock-description">Compact destination indicator right of submit button. Keeps swatches in footer.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <div class="dest-mini">
+            <span class="dest-mini-dot" style="background: #6366f1;"></span>
+            <span>Eng</span>
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="footer">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option A2: Destination between swatches and hint -->
+    <div class="demo">
+      <div class="mock-label">A2: Footer Middle</div>
+      <div class="mock-description">Destination as subtle separator between swatches and keyboard hints.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer" style="justify-content: flex-start; gap: 12px;">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8b6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="destination-footer" style="margin-left: auto; margin-right: 0;">
+            <span class="destination-dot" style="background: #6366f1;"></span>
+            <span class="destination-text">Eng</span>
+            <svg class="destination-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option A3: Destination before swatches -->
+    <div class="demo">
+      <div class="mock-label">A3: Footer Left + Swatches</div>
+      <div class="mock-description">Destination on far left, swatches follow, hints on right.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer" style="gap: 10px;">
+          <div class="destination-footer" style="padding-right: 8px; border-right: 1px solid rgba(240, 239, 237, 0.1);">
+            <span class="destination-dot" style="background: #6366f1;"></span>
+            <span class="destination-text">Eng</span>
+            <svg class="destination-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="hint" style="margin-left: auto;">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option A2-1: Chip with pill background -->
+    <div class="demo">
+      <div class="mock-label">A2-1: Pill Chip</div>
+      <div class="mock-description">Destination as subtle pill chip. Chevron included. Uses issue prefix.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer" style="justify-content: flex-start; gap: 12px;">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="dest-chip" style="margin-left: auto;">
+            <span class="dest-chip-dot" style="background: #6366f1;"></span>
+            <span>ENG</span>
+            <svg class="dest-chip-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option A2-2: No chevron, hover reveals -->
+    <div class="demo">
+      <div class="mock-label">A2-2: No Chevron</div>
+      <div class="mock-description">Cleaner without chevron. Hover state signals clickability.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer" style="justify-content: flex-start; gap: 12px;">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="dest-minimal" style="margin-left: auto;">
+            <span class="dest-minimal-dot" style="background: #6366f1;"></span>
+            <span>ENG</span>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option A2-3: Arrow instead of dot -->
+    <div class="demo">
+      <div class="mock-label">A2-3: Arrow Prefix</div>
+      <div class="mock-description">"→ ENG" reads as "goes to ENG". No dot, cleaner separation from swatches.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer" style="justify-content: flex-start; gap: 12px;">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="dest-arrow" style="margin-left: auto;">
+            <span class="dest-arrow-icon">→</span>
+            <span>ENG</span>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Picker Dropdown -->
+    <div class="demo">
+      <div class="mock-label">Team Picker Dropdown</div>
+      <div class="mock-description">Clicking "→ ENG" opens this dropdown. Footer hints to queue settings for other options.</div>
+      <div class="annotator" style="position: relative;">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer" style="justify-content: flex-start; gap: 12px; position: relative;">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="dest-arrow" style="margin-left: auto; background: rgba(240, 239, 237, 0.08); color: #a8a6a2;">
+            <span class="dest-arrow-icon">→</span>
+            <span>ENG</span>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+
+          <!-- Dropdown -->
+          <div class="team-dropdown">
+            <div class="team-dropdown-list">
+              <div class="team-dropdown-item selected">
+                <span class="team-dropdown-item-prefix">ENG</span>
+                <span>Engineering</span>
+                <svg class="team-dropdown-item-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12l5 5L20 7"/>
+                </svg>
+              </div>
+              <div class="team-dropdown-item">
+                <span class="team-dropdown-item-prefix">DES</span>
+                <span>Design</span>
+              </div>
+              <div class="team-dropdown-item">
+                <span class="team-dropdown-item-prefix">PROD</span>
+                <span>Product</span>
+              </div>
+              <div class="team-dropdown-item">
+                <span class="team-dropdown-item-prefix">MKT</span>
+                <span>Marketing</span>
+              </div>
+            </div>
+            <div class="team-dropdown-footer">
+              <div class="team-dropdown-hint">
+                <svg class="team-dropdown-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>Priority, labels & more in queue settings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option B: Pill above input -->
+    <div class="demo">
+      <div class="mock-label">B: Pill Above Input</div>
+      <div class="mock-description">Small pill badge above the input field. More prominent but takes vertical space.</div>
+      <div class="annotator">
+        <div class="destination-pill-row">
+          <div class="destination-pill">
+            <span class="destination-dot" style="background: #6366f1;"></span>
+            <span>Engineering · High</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+        </div>
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option C: Subtle text -->
+    <div class="demo">
+      <div class="mock-label">C: Subtle Text</div>
+      <div class="mock-description">Very minimal. Just text under the input. Almost invisible until needed.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="destination-subtle">
+          <span>→</span>
+          <span class="destination-subtle-link">
+            <span class="destination-dot" style="background: #6366f1; width: 6px; height: 6px;"></span>
+            Engineering
+          </span>
+        </div>
+        <div class="footer">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option D: Settings row -->
+    <div class="demo">
+      <div class="mock-label">D: Settings Row</div>
+      <div class="mock-description">Dedicated row with all settings visible. Most explicit but tallest.</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="settings-row">
+          <div class="setting-chip">
+            <span class="setting-chip-dot" style="background: #6366f1;"></span>
+            Engineering
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="setting-chip">
+            <span class="setting-chip-priority" style="background: #f59e0b;"></span>
+            High
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="setting-chip">
+            + Labels
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="footer">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="hint">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Submit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option E: Integrated with hint -->
+    <div class="demo">
+      <div class="mock-label">E: Integrated with Hint</div>
+      <div class="mock-description">Destination becomes part of the keyboard hint. "⌘↵ → Engineering"</div>
+      <div class="annotator">
+        <div class="main-row">
+          <input class="input" type="text" placeholder="Add a note..." value="Button state needs fixing">
+          <button class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="submit-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="footer">
+          <div class="swatches">
+            <button class="swatch active" style="background: #8b8b8b;"></button>
+            <button class="swatch" style="background: #eab308;"></button>
+            <button class="swatch" style="background: #6b8e6b;"></button>
+            <button class="swatch" style="background: #dc6b6b;"></button>
+            <button class="swatch" style="background: #9b8bb5;"></button>
+            <button class="swatch" style="background: #c9886b;"></button>
+            <button class="swatch" style="background: #7b8fa8;"></button>
+          </div>
+          <div class="hint" style="cursor: pointer;">
+            <span class="hint-key">↵</span>
+            <span class="hint-label">Save</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-key">⌘</span>
+            <span class="hint-key">↵</span>
+            <span class="hint-label" style="display: inline-flex; align-items: center; gap: 4px;">
+              →
+              <span class="destination-dot" style="background: #6366f1; width: 6px; height: 6px; display: inline-block;"></span>
+              Eng
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

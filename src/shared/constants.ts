@@ -5,12 +5,14 @@ export const STORAGE_KEYS = {
   linearOAuthClientId: 'linearOAuthClientId',
   captureRedactionEnabled: 'captureRedactionEnabled',
   markersVisible: 'markersVisible',
+  lastHighlightColor: 'lastHighlightColor',
   submitTeamId: 'submitTeamId',
   submitProjectId: 'submitProjectId',
   submitAssigneeId: 'submitAssigneeId',
   submitPriority: 'submitPriority',
   submitTriage: 'submitTriage',
-  submitLabelIds: 'submitLabelIds'
+  submitLabelIds: 'submitLabelIds',
+  themePreference: 'themePreference'
 } as const;
 
 export const LEGACY_STORAGE_KEYS = {

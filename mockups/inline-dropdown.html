@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inline Dropdown Mockup</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1816;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 20px;
+    }
+
+    .panel {
+      width: 320px;
+      max-height: 400px;
+      background: #2a2826;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .panel-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #252321;
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0efed;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #8a8884;
+    }
+
+    .btn-primary {
+      background: #f0efed;
+      color: #1a1816;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .notes-list {
+      padding: 8px;
+    }
+
+    .note-row {
+      display: flex;
+      gap: 10px;
+      padding: 10px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .note-row:hover {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .note-index {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: rgba(74, 144, 226, 0.15);
+      border: 1px solid rgba(74, 144, 226, 0.3);
+      color: #4a90e2;
+      font-size: 9px;
+      font-weight: 600;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .note-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .note-comment {
+      color: #f0efed;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .note-target {
+      color: #6a6864;
+      font-size: 10px;
+      font-family: 'SF Mono', Monaco, monospace;
+      margin-top: 4px;
+    }
+
+    /* Settings Section */
+    .settings {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .settings-header {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .settings-header:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .settings-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-label {
+      font-size: 12px;
+      color: #8a8884;
+    }
+
+    .settings-badge {
+      background: rgba(255,255,255,0.1);
+      color: #f0efed;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .settings-chevron {
+      color: #6a6864;
+      transition: transform 200ms ease;
+    }
+
+    .settings-chevron.expanded {
+      transform: rotate(180deg);
+    }
+
+    .settings-content {
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .settings-row-label {
+      font-size: 11px;
+      color: #6a6864;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Selector Button */
+    .selector-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      color: #f0efed;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .selector-btn:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .selector-btn.active {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .selector-btn .chevron {
+      margin-left: auto;
+      color: #6a6864;
+      transition: transform 200ms ease;
+    }
+
+    .selector-btn.active .chevron {
+      transform: rotate(180deg);
+    }
+
+    .selector-placeholder {
+      color: #6a6864;
+    }
+
+    .team-key {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: #8a8884;
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Inline Dropdown */
+    .inline-dropdown {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: expand 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes expand {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .dropdown-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .dropdown-search-icon {
+      color: #6a6864;
+      flex-shrink: 0;
+    }
+
+    .dropdown-search input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #f0efed;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .dropdown-search input::placeholder {
+      color: #6a6864;
+    }
+
+    .dropdown-list {
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #f0efed;
+      font-size: 13px;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(255,255,255,0.06);
+    }
+
+    .dropdown-item.selected {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .dropdown-item-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: #8a8884;
+    }
+
+    .dropdown-item-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .dropdown-item-check {
+      margin-left: auto;
+      color: #8a8884;
+    }
+
+    .dropdown-item-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dropdown-item-prefix {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: #6a6864;
+      min-width: 36px;
+    }
+
+    /* Priority buttons */
+    .priority-options {
+      display: flex;
+      gap: 4px;
+    }
+
+    .priority-btn {
+      width: 32px;
+      height: 28px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      color: #6a6864;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .priority-btn:hover {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .priority-btn.active {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+      color: #f0efed;
+    }
+
+    /* Add button */
+    .add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      background: transparent;
+      border: 1px dashed rgba(255,255,255,0.15);
+      border-radius: 6px;
+      color: #6a6864;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .add-btn:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.2);
+      color: #8a8884;
+    }
+
+    .add-btn.active {
+      background: rgba(255,255,255,0.06);
+      border-style: solid;
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    /* Selected chips */
+    .selected-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 5px;
+      font-size: 12px;
+      color: #f0efed;
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .chip-remove {
+      color: #6a6864;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .chip-remove:hover {
+      color: #f0efed;
+    }
+
+    /* Hidden class */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Instructions */
+    .instructions {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: #6a6864;
+      font-size: 13px;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+
+    .instructions strong {
+      color: #f0efed;
+    }
+  </style>
+</head>
+<body>
+  <div class="instructions">
+    <strong>Inline Dropdown Mockup</strong><br><br>
+    Click on Team, Labels, or Assignee selectors to see inline expansion with auto-scroll behavior.
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Notes (2)</span>
+      <div class="panel-actions">
+        <button class="btn btn-ghost">Clear</button>
+        <button class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+
+    <div class="panel-content" id="panelContent">
+      <div class="notes-list">
+        <div class="note-row">
+          <div class="note-index">1</div>
+          <div class="note-body">
+            <div class="note-comment">Add error handling for edge case</div>
+            <div class="note-target">omniINIT · Dashboard</div>
+          </div>
+        </div>
+        <div class="note-row">
+          <div class="note-index">2</div>
+          <div class="note-body">
+            <div class="note-comment">This APR calculation looks wrong</div>
+            <div class="note-target">omniINIT · TVL Section</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings">
+        <div class="settings-header" id="settingsHeader">
+          <div class="settings-header-left">
+            <span class="settings-label">Submission settings</span>
+            <span class="settings-badge">2</span>
+          </div>
+          <svg class="settings-chevron expanded" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+
+        <div class="settings-content" id="settingsContent">
+          <!-- Team -->
+          <div class="settings-row" id="teamRow">
+            <span class="settings-row-label">Team</span>
+            <button class="selector-btn" id="teamBtn">
+              <span class="team-key">CORE</span>
+              <span>Core</span>
+              <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="inline-dropdown hidden" id="teamDropdown">
+              <div class="dropdown-search">
+                <svg class="dropdown-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" placeholder="Search teams...">
+              </div>
+              <div class="dropdown-list">
+                <div class="dropdown-item">
+                  <span class="dropdown-item-prefix">CONT</span>
+                  <span>Contract</span>
+                </div>
+                <div class="dropdown-item selected">
+                  <span class="dropdown-item-prefix">CORE</span>
+                  <span>Core</span>
+                  <svg class="dropdown-item-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                </div>
+                <div class="dropdown-item">
+                  <span class="dropdown-item-prefix">ENG</span>
+                  <span>Engineering</span>
+                </div>
+                <div class="dropdown-item">
+                  <span class="dropdown-item-prefix">PROD</span>
+                  <span>Product</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Priority -->
+          <div class="settings-row">
+            <span class="settings-row-label">Priority</span>
+            <div class="priority-options">
+              <button class="priority-btn" title="None">―</button>
+              <button class="priority-btn" title="Urgent">!</button>
+              <button class="priority-btn active" title="High">▮▮▮</button>
+              <button class="priority-btn" title="Medium">▮▮</button>
+              <button class="priority-btn" title="Low">▮</button>
+            </div>
+          </div>
+
+          <!-- Labels -->
+          <div class="settings-row" id="labelsRow">
+            <span class="settings-row-label">Labels</span>
+            <div class="selected-chips">
+              <span class="chip">
+                <span class="chip-dot" style="background: #4ade80"></span>
+                dex-v3
+                <span class="chip-remove">×</span>
+              </span>
+            </div>
+            <button class="add-btn" id="labelsBtn">
+              <span>+</span> Add label
+            </button>
+            <div class="inline-dropdown hidden" id="labelsDropdown">
+              <div class="dropdown-search">
+                <svg class="dropdown-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" placeholder="Search labels...">
+              </div>
+              <div class="dropdown-list">
+                <div class="dropdown-item selected">
+                  <span class="dropdown-item-dot" style="background: #4ade80"></span>
+                  <span>dex-v3</span>
+                  <svg class="dropdown-item-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                </div>
+                <div class="dropdown-item">
+                  <span class="dropdown-item-dot" style="background: #f87171"></span>
+                  <span>QA</span>
+                </div>
+                <div class="dropdown-item">
+                  <span class="dropdown-item-dot" style="background: #818cf8"></span>
+                  <span>tech-debt</span>
+                </div>
+                <div class="dropdown-item">
+                  <span class="dropdown-item-dot" style="background: #fb923c"></span>
+                  <span>chore</span>
+                </div>
+                <div class="dropdown-item">
+                  <span class="dropdown-item-dot" style="background: #4ade80"></span>
+                  <span>username</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assignee -->
+          <div class="settings-row" id="assigneeRow">
+            <span class="settings-row-label">Assignee</span>
+            <button class="selector-btn" id="assigneeBtn">
+              <span class="selector-placeholder">Unassigned</span>
+              <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="inline-dropdown hidden" id="assigneeDropdown">
+              <div class="dropdown-search">
+                <svg class="dropdown-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" placeholder="Search members...">
+              </div>
+              <div class="dropdown-list">
+                <div class="dropdown-item selected">
+                  <div class="dropdown-item-avatar">—</div>
+                  <span>Unassigned</span>
+                  <svg class="dropdown-item-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                </div>
+                <div class="dropdown-item">
+                  <div class="dropdown-item-avatar">A</div>
+                  <span>alessandro</span>
+                </div>
+                <div class="dropdown-item">
+                  <div class="dropdown-item-avatar">A</div>
+                  <span>andrew</span>
+                </div>
+                <div class="dropdown-item">
+                  <div class="dropdown-item-avatar">B</div>
+                  <span>beer-1</span>
+                </div>
+                <div class="dropdown-item">
+                  <div class="dropdown-item-avatar">B</div>
+                  <span>benz</span>
+                </div>
+                <div class="dropdown-item">
+                  <div class="dropdown-item-avatar">C</div>
+                  <span>cedo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const panelContent = document.getElementById('panelContent');
+
+    const teamBtn = document.getElementById('teamBtn');
+    const teamDropdown = document.getElementById('teamDropdown');
+
+    const labelsBtn = document.getElementById('labelsBtn');
+    const labelsDropdown = document.getElementById('labelsDropdown');
+
+    const assigneeBtn = document.getElementById('assigneeBtn');
+    const assigneeDropdown = document.getElementById('assigneeDropdown');
+
+    function closeAllDropdowns() {
+      teamDropdown.classList.add('hidden');
+      teamBtn.classList.remove('active');
+      labelsDropdown.classList.add('hidden');
+      labelsBtn.classList.remove('active');
+      assigneeDropdown.classList.add('hidden');
+      assigneeBtn.classList.remove('active');
+    }
+
+    function toggleDropdown(btn, dropdown) {
+      const isOpen = !dropdown.classList.contains('hidden');
+      closeAllDropdowns();
+
+      if (!isOpen) {
+        btn.classList.add('active');
+        dropdown.classList.remove('hidden');
+
+        // Auto-scroll to show the dropdown
+        setTimeout(() => {
+          dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
+      }
+    }
+
+    teamBtn.addEventListener('click', () => toggleDropdown(teamBtn, teamDropdown));
+    labelsBtn.addEventListener('click', () => toggleDropdown(labelsBtn, labelsDropdown));
+    assigneeBtn.addEventListener('click', () => toggleDropdown(assigneeBtn, assigneeDropdown));
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.settings-row')) {
+        closeAllDropdowns();
+      }
+    });
+  </script>
+</body>
+</html>

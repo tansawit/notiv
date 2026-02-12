@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BackgroundResponse } from '../shared/messages';
 import { maskAccessToken } from '../shared/linear-settings-client';
 import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
-import { MOTION } from '../shared/motion-tokens';
+import { STORAGE_KEYS } from '../shared/constants';
 
 function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.Element {
   return (
@@ -23,6 +23,7 @@ function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.E
 }
 
 type PopupView = 'home' | 'settings';
+type ThemePreference = 'system' | 'light' | 'dark';
 
 interface SitePermissionTarget {
   pattern: string;
@@ -112,6 +113,7 @@ function PopupApp(): React.JSX.Element {
   const [sitePermissionsBusy, setSitePermissionsBusy] = useState(false);
   const [currentSiteTarget, setCurrentSiteTarget] = useState<SitePermissionTarget | null>(null);
   const [currentSiteGranted, setCurrentSiteGranted] = useState(false);
+  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
   const {
     loading,
     authBusy,
@@ -182,6 +184,34 @@ function PopupApp(): React.JSX.Element {
     void refreshCurrentSitePermission();
   }, [refreshCurrentSitePermission]);
 
+  const applyTheme = useCallback((pref: ThemePreference) => {
+    document.documentElement.removeAttribute('data-theme');
+    if (pref === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else if (pref === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }, []);
+
+  useEffect(() => {
+    chrome.storage.local.get([STORAGE_KEYS.themePreference], (result) => {
+      const stored = result[STORAGE_KEYS.themePreference] as ThemePreference | undefined;
+      if (stored && ['system', 'light', 'dark'].includes(stored)) {
+        setThemePreference(stored);
+        applyTheme(stored);
+      }
+    });
+  }, [applyTheme]);
+
+  const cycleTheme = useCallback(() => {
+    const next: ThemePreference =
+      themePreference === 'system' ? 'light' :
+      themePreference === 'light' ? 'dark' : 'system';
+    setThemePreference(next);
+    applyTheme(next);
+    chrome.storage.local.set({ [STORAGE_KEYS.themePreference]: next });
+  }, [themePreference, applyTheme]);
+
   const toggleCurrentSitePermission = async (): Promise<void> => {
     if (!currentSiteTarget) {
       setFeedback(null, 'Current tab is not a regular http/https page.');
@@ -242,10 +272,36 @@ function PopupApp(): React.JSX.Element {
     return <div className="popup-shell"><div className="muted">Loading...</div></div>;
   }
 
+  /* ─────────────────────────────────────────────────────────
+   * VIEW TRANSITION
+   *
+   * Drill-down navigation: vertical fade, not horizontal slide.
+   * Forward (→ settings): fade out, new content rises in
+   * Back (→ home): fade out, content settles down
+   * ───────────────────────────────────────────────────────── */
   const viewVariants = {
-    initial: (direction: number) => ({ opacity: 0, x: direction * 10 }),
-    animate: { opacity: 1, x: 0 },
-    exit: (direction: number) => ({ opacity: 0, x: direction * -10 }),
+    initial: (direction: number) => ({
+      opacity: 0,
+      y: direction * 8,
+      scale: 0.98,
+    }),
+    animate: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+    },
+    exit: (direction: number) => ({
+      opacity: 0,
+      y: direction * -4,
+      scale: 0.98,
+    }),
+  };
+
+  const viewTransition = {
+    type: 'spring' as const,
+    stiffness: 500,
+    damping: 35,
+    mass: 0.8,
   };
 
   const homeView = (
@@ -256,7 +312,7 @@ function PopupApp(): React.JSX.Element {
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={{ duration: MOTION.duration.normal }}
+      transition={viewTransition}
     >
       <section className="popup-panel popup-panel-flat">
         <div className="popup-header-flat">
@@ -300,7 +356,7 @@ function PopupApp(): React.JSX.Element {
           <div className="popup-actions">
             {unifiedStatus.ready ? (
               <motion.button
-                className="button"
+                className="button primary"
                 onClick={() => void activatePicker()}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96, y: 1 }}
@@ -346,7 +402,7 @@ function PopupApp(): React.JSX.Element {
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={{ duration: MOTION.duration.normal }}
+      transition={viewTransition}
     >
       <section className="popup-panel popup-panel-flat">
         <div className="popup-header-flat">
@@ -458,6 +514,26 @@ function PopupApp(): React.JSX.Element {
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               >
                 {sitePermissionsBusy ? 'Working...' : currentSiteGranted ? 'Revoke' : 'Grant'}
+              </motion.button>
+            </div>
+          </div>
+
+          <div className="settings-divider" />
+
+          <div className="settings-section">
+            <span className="settings-section-label">Appearance</span>
+            <div className="settings-row-inline">
+              <span className="settings-value">
+                {themePreference === 'system' ? 'System' : themePreference === 'light' ? 'Light' : 'Dark'}
+              </span>
+              <motion.button
+                className="button"
+                onClick={cycleTheme}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
+                {themePreference === 'system' ? 'Use Light' : themePreference === 'light' ? 'Use Dark' : 'Use System'}
               </motion.button>
             </div>
           </div>
