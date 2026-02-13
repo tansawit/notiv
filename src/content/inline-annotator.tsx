@@ -474,6 +474,58 @@ export class InlineAnnotator {
     this.render();
   }
 
+  closeWithSuccess(anchorPoint: { x: number; y: number }): void {
+    this.showCaptureSuccess(anchorPoint);
+    this.close();
+  }
+
+  private showCaptureSuccess(point: { x: number; y: number }): void {
+    const indicator = document.createElement('div');
+    indicator.className = 'notiv-capture-success-indicator';
+    indicator.style.position = 'fixed';
+    indicator.style.left = `${point.x - 12}px`;
+    indicator.style.top = `${point.y - 12}px`;
+    indicator.style.width = '24px';
+    indicator.style.height = '24px';
+    indicator.style.borderRadius = '50%';
+    indicator.style.background = '#2d7a4f';
+    indicator.style.display = 'flex';
+    indicator.style.alignItems = 'center';
+    indicator.style.justifyContent = 'center';
+    indicator.style.pointerEvents = 'none';
+    indicator.style.zIndex = '2147483648';
+    indicator.style.boxShadow = '0 2px 8px rgba(45, 122, 79, 0.3)';
+
+    const checkSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    checkSvg.setAttribute('width', '14');
+    checkSvg.setAttribute('height', '14');
+    checkSvg.setAttribute('viewBox', '0 0 24 24');
+    checkSvg.setAttribute('fill', 'none');
+    checkSvg.style.color = 'white';
+
+    const checkPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    checkPath.setAttribute('d', 'M20 6L9 17l-5-5');
+    checkPath.setAttribute('stroke', 'currentColor');
+    checkPath.setAttribute('stroke-width', '2.5');
+    checkPath.setAttribute('stroke-linecap', 'round');
+    checkPath.setAttribute('stroke-linejoin', 'round');
+    checkSvg.appendChild(checkPath);
+    indicator.appendChild(checkSvg);
+
+    document.body.appendChild(indicator);
+
+    indicator.animate(
+      [
+        { opacity: 1, transform: 'scale(0.8)' },
+        { opacity: 1, transform: 'scale(1.1)' },
+        { opacity: 0, transform: 'scale(1.3)' }
+      ],
+      { duration: 400, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards' }
+    );
+
+    setTimeout(() => indicator.remove(), 450);
+  }
+
   isOpen(): boolean {
     return !!this.currentSelection;
   }
@@ -590,14 +642,25 @@ export class InlineAnnotator {
   private shake(): void {
     this.container?.animate(
       [
-        { transform: 'translateX(0)' },
-        { transform: 'translateX(-5px)' },
-        { transform: 'translateX(5px)' },
-        { transform: 'translateX(-3px)' },
-        { transform: 'translateX(0)' }
+        { transform: 'scale(1)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' },
+        { transform: 'scale(1.01)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 3px rgba(26, 24, 22, 0.08)' },
+        { transform: 'scale(1)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }
       ],
-      { duration: 220, easing: 'ease-out' }
+      { duration: 300, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
     );
+
+    const input = this.container?.shadowRoot?.querySelector('.notiv-inline-input') as HTMLInputElement | null;
+    if (input) {
+      input.animate(
+        [
+          { boxShadow: 'inset 0 0 0 1px transparent' },
+          { boxShadow: 'inset 0 0 0 1.5px var(--border, #1a1816)' },
+          { boxShadow: 'inset 0 0 0 1px transparent' }
+        ],
+        { duration: 500, easing: 'ease-out' }
+      );
+    }
+
     this.focusInput();
   }
 }

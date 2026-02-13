@@ -192,7 +192,8 @@ export async function prepareCaptureUi(input: {
     if (
       node.dataset.notivCaptureHighlight === 'true' ||
       node.dataset.notivCaptureComment === 'true' ||
-      node.dataset.notivCaptureRedaction === 'true'
+      node.dataset.notivCaptureRedaction === 'true' ||
+      node.dataset.notivCapturePreserve === 'true'
     ) {
       return;
     }

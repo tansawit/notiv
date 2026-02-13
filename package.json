@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "vite --config vite.mock.config.ts",
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",
     "lint": "eslint src --max-warnings=0",
@@ -16,12 +17,17 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
+    "@react-three/drei": "9.97.0",
+    "@react-three/fiber": "8.15.19",
+    "dialkit": "^0.2.0",
     "framer-motion": "^12.34.0",
+    "html2canvas": "^1.4.1",
     "lucide": "^0.563.0",
     "oauth4webapi": "^3.8.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sonner": "^2.0.7"
+    "sonner": "^2.0.7",
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.33",
@@ -29,6 +35,7 @@
     "@types/chrome": "^0.1.36",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@types/three": "^0.182.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9.22.0",
     "eslint-plugin-react-hooks": "^5.2.0",

@@ -177,9 +177,19 @@ export class QueuePanel {
   }
 
   setVisible(value: boolean): void {
+    const wasVisible = this.visible;
     this.visible = value;
     if (value) {
       this.ensureMounted();
+      if (!wasVisible && this.container) {
+        const panel = this.container.shadowRoot?.querySelector('.notiv-queue-panel') as HTMLElement | null;
+        if (panel) {
+          panel.classList.add('entering');
+          panel.addEventListener('animationend', () => {
+            panel.classList.remove('entering');
+          }, { once: true });
+        }
+      }
     }
     this.render();
   }
@@ -294,11 +304,11 @@ export class QueuePanel {
 
     const emptyText = document.createElement('div');
     emptyText.className = 'notiv-queue-empty-text';
-    emptyText.textContent = 'No notes yet';
+    emptyText.textContent = 'Ready when you are';
 
     const emptyHint = document.createElement('div');
     emptyHint.className = 'notiv-queue-empty-hint';
-    emptyHint.textContent = 'Select text or click anywhere to add one';
+    emptyHint.textContent = 'Highlight text or click anywhere to capture a thought';
 
     empty.appendChild(emptyIcon);
     empty.appendChild(emptyText);
@@ -367,7 +377,13 @@ export class QueuePanel {
     if (!this.visible) return;
 
     if (this.titleEl) {
-      this.titleEl.textContent = this.items.length > 0 ? `Notes (${this.items.length})` : 'Notes';
+      if (this.items.length === 0) {
+        this.titleEl.textContent = 'Notes';
+      } else if (this.items.length === 1) {
+        this.titleEl.textContent = '1 note captured';
+      } else {
+        this.titleEl.textContent = `${this.items.length} notes captured`;
+      }
     }
 
     if (this.submitBtn) {
@@ -393,20 +409,26 @@ export class QueuePanel {
   private renderList(): void {
     if (!this.listEl || !this.emptyEl) return;
 
+    const mode = getNotivThemeMode();
+    const isDark = mode === 'dark';
+
+    const currentIds = this.items.map((item) => item.id);
+    const previousIds = new Set(this.renderedItemIds);
+    const newIds = new Set(currentIds.filter((id) => !previousIds.has(id)));
+
     const existingRows = this.listEl.querySelectorAll('.notiv-queue-row');
     existingRows.forEach((row) => row.remove());
 
-    this.renderedItemIds = this.items.map((item) => item.id);
-
-    const mode = getNotivThemeMode();
-    const isDark = mode === 'dark';
+    this.renderedItemIds = currentIds;
 
     this.items.forEach((note, index) => {
       const colorPreset = getHighlightColorPreset(resolveHighlightColor(note.highlightColor));
       const isHovered = this.hoveredId === note.id;
+      const isNew = newIds.has(note.id);
 
       const row = document.createElement('div');
       row.className = 'notiv-queue-row';
+      if (isNew) row.classList.add('notiv-queue-row-new');
       row.setAttribute('data-note-id', note.id);
       row.style.display = 'grid';
       row.style.gridTemplateColumns = '14px minmax(0, 1fr) auto';
@@ -417,7 +439,6 @@ export class QueuePanel {
       row.style.background = isHovered ? (isDark ? 'rgba(240, 239, 237, 0.06)' : 'rgba(26, 24, 22, 0.05)') : 'transparent';
       row.style.cursor = 'pointer';
       row.style.transition = 'background 80ms ease';
-      row.style.animationDelay = `${index * 50}ms`;
 
       const indexChip = document.createElement('div');
       indexChip.textContent = String(index + 1);
@@ -545,6 +566,12 @@ export class QueuePanel {
 
       this.listEl!.appendChild(row);
     });
+
+    if (newIds.size > 0) {
+      requestAnimationFrame(() => {
+        this.listEl?.scrollTo({ top: this.listEl.scrollHeight, behavior: 'smooth' });
+      });
+    }
   }
 
   private renderSettings(): void {
@@ -559,39 +586,35 @@ export class QueuePanel {
     const bar = document.createElement('div');
     bar.className = 'notiv-queue-settings-bar';
 
-    const selectedTeam = this.resources.teams.find((t) => t.id === this.selectedTeamId) ?? this.resources.teams[0];
-    const teamBtn = document.createElement('button');
-    teamBtn.type = 'button';
-    teamBtn.className = 'notiv-queue-inline-btn notiv-queue-team-collapsed';
-    if (this.teamDropdownOpen) teamBtn.classList.add('active');
+    const optionsBtn = document.createElement('button');
+    optionsBtn.type = 'button';
+    optionsBtn.className = 'notiv-queue-options-toggle';
+    optionsBtn.textContent = this.settingsExpanded ? 'Less' : 'Options';
 
-    const teamArrow = document.createElement('span');
-    teamArrow.className = 'notiv-queue-inline-team-arrow';
-    teamArrow.textContent = '→';
-    teamBtn.appendChild(teamArrow);
+    const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chevron.setAttribute('width', '10');
+    chevron.setAttribute('height', '10');
+    chevron.setAttribute('viewBox', '0 0 24 24');
+    chevron.setAttribute('fill', 'none');
+    chevron.setAttribute('stroke', 'currentColor');
+    chevron.setAttribute('stroke-width', '2.5');
+    chevron.setAttribute('stroke-linecap', 'round');
+    chevron.setAttribute('stroke-linejoin', 'round');
+    chevron.innerHTML = this.settingsExpanded ? '<path d="M15 18l-6-6 6-6"/>' : '<path d="M9 18l6-6-6-6"/>';
+    optionsBtn.appendChild(chevron);
 
-    const teamKey = document.createElement('span');
-    teamKey.className = 'notiv-queue-inline-team-key';
-    teamKey.textContent = selectedTeam?.key ?? 'Team';
-    teamBtn.appendChild(teamKey);
-
-    teamBtn.innerHTML += this.createDropdownChevronHtml();
-    teamBtn.addEventListener('click', (e) => {
+    optionsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.teamDropdownOpen = !this.teamDropdownOpen;
+      const wasExpanded = this.settingsExpanded;
+      this.settingsExpanded = !this.settingsExpanded;
+      this.settingsJustExpanded = !wasExpanded && this.settingsExpanded;
       this.priorityDropdownOpen = false;
       this.labelsDropdownOpen = false;
       this.assigneeDropdownOpen = false;
-      this.teamSearchQuery = '';
+      void this.saveSettings();
       this.renderSettings();
     });
-    bar.appendChild(teamBtn);
-
-    if (this.teamDropdownOpen && this.shadowRoot) {
-      const dropdown = this.createTeamDropdown();
-      this.shadowRoot.appendChild(dropdown);
-      requestAnimationFrame(() => this.positionDropdown(dropdown, teamBtn));
-    }
+    bar.appendChild(optionsBtn);
 
     if (this.settingsExpanded) {
       const shouldAnimate = this.settingsJustExpanded;
@@ -756,35 +779,39 @@ export class QueuePanel {
     spacer.style.flex = '1';
     bar.appendChild(spacer);
 
-    const optionsBtn = document.createElement('button');
-    optionsBtn.type = 'button';
-    optionsBtn.className = 'notiv-queue-options-toggle';
-    optionsBtn.textContent = this.settingsExpanded ? 'Less' : 'Options';
+    const selectedTeam = this.resources.teams.find((t) => t.id === this.selectedTeamId) ?? this.resources.teams[0];
+    const teamBtn = document.createElement('button');
+    teamBtn.type = 'button';
+    teamBtn.className = 'notiv-queue-inline-btn notiv-queue-team-collapsed';
+    if (this.teamDropdownOpen) teamBtn.classList.add('active');
 
-    const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    chevron.setAttribute('width', '10');
-    chevron.setAttribute('height', '10');
-    chevron.setAttribute('viewBox', '0 0 24 24');
-    chevron.setAttribute('fill', 'none');
-    chevron.setAttribute('stroke', 'currentColor');
-    chevron.setAttribute('stroke-width', '2.5');
-    chevron.setAttribute('stroke-linecap', 'round');
-    chevron.setAttribute('stroke-linejoin', 'round');
-    chevron.innerHTML = this.settingsExpanded ? '<path d="M15 18l-6-6 6-6"/>' : '<path d="M6 9l6 6 6-6"/>';
-    optionsBtn.appendChild(chevron);
+    const teamArrow = document.createElement('span');
+    teamArrow.className = 'notiv-queue-inline-team-arrow';
+    teamArrow.textContent = '→';
+    teamBtn.appendChild(teamArrow);
 
-    optionsBtn.addEventListener('click', (e) => {
+    const teamKey = document.createElement('span');
+    teamKey.className = 'notiv-queue-inline-team-key';
+    teamKey.textContent = selectedTeam?.key ?? 'Team';
+    teamBtn.appendChild(teamKey);
+
+    teamBtn.innerHTML += this.createDropdownChevronHtml();
+    teamBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const wasExpanded = this.settingsExpanded;
-      this.settingsExpanded = !this.settingsExpanded;
-      this.settingsJustExpanded = !wasExpanded && this.settingsExpanded;
+      this.teamDropdownOpen = !this.teamDropdownOpen;
       this.priorityDropdownOpen = false;
       this.labelsDropdownOpen = false;
       this.assigneeDropdownOpen = false;
-      void this.saveSettings();
+      this.teamSearchQuery = '';
       this.renderSettings();
     });
-    bar.appendChild(optionsBtn);
+    bar.appendChild(teamBtn);
+
+    if (this.teamDropdownOpen && this.shadowRoot) {
+      const dropdown = this.createTeamDropdown();
+      this.shadowRoot.appendChild(dropdown);
+      requestAnimationFrame(() => this.positionDropdown(dropdown, teamBtn));
+    }
 
     this.settingsEl.appendChild(bar);
   }

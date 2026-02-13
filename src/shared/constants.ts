@@ -13,7 +13,8 @@ export const STORAGE_KEYS = {
   submitTriage: 'submitTriage',
   submitLabelIds: 'submitLabelIds',
   submitSettingsExpanded: 'submitSettingsExpanded',
-  themePreference: 'themePreference'
+  themePreference: 'themePreference',
+  sessionNoteCount: 'sessionNoteCount'
 } as const;
 
 export const LEGACY_STORAGE_KEYS = {

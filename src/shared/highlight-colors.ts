@@ -15,7 +15,7 @@ export const DEFAULT_HIGHLIGHT_COLOR: HighlightColor = 'blue';
 export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   {
     id: 'blue',
-    label: 'Slate',
+    label: 'Thoughtful',
     border: '#4a5568',
     fill: 'rgba(74, 85, 104, 0.12)',
     outline: 'rgba(45, 55, 72, 0.55)',
@@ -24,7 +24,7 @@ export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   },
   {
     id: 'yellow',
-    label: 'Amber',
+    label: 'Important',
     border: '#b7861b',
     fill: 'rgba(183, 134, 27, 0.14)',
     outline: 'rgba(146, 106, 20, 0.55)',
@@ -33,7 +33,7 @@ export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   },
   {
     id: 'green',
-    label: 'Sage',
+    label: 'Good idea',
     border: '#5a7a60',
     fill: 'rgba(90, 122, 96, 0.14)',
     outline: 'rgba(66, 95, 72, 0.55)',
@@ -42,7 +42,7 @@ export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   },
   {
     id: 'red',
-    label: 'Coral',
+    label: 'Needs fixing',
     border: '#c25850',
     fill: 'rgba(194, 88, 80, 0.12)',
     outline: 'rgba(153, 68, 62, 0.55)',
@@ -51,7 +51,7 @@ export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   },
   {
     id: 'purple',
-    label: 'Violet',
+    label: 'Curious',
     border: '#7c6a9a',
     fill: 'rgba(124, 106, 154, 0.14)',
     outline: 'rgba(98, 82, 124, 0.55)',
@@ -60,7 +60,7 @@ export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   },
   {
     id: 'orange',
-    label: 'Rust',
+    label: 'Revisit later',
     border: '#a86240',
     fill: 'rgba(168, 98, 64, 0.14)',
     outline: 'rgba(134, 78, 50, 0.55)',
@@ -69,7 +69,7 @@ export const HIGHLIGHT_COLOR_PRESETS: HighlightColorPreset[] = [
   },
   {
     id: 'light-blue',
-    label: 'Steel',
+    label: 'Quick note',
     border: '#5a7088',
     fill: 'rgba(90, 112, 136, 0.14)',
     outline: 'rgba(68, 86, 106, 0.55)',

@@ -20,11 +20,20 @@ export class FloatingBadge {
   private nextEl: HTMLSpanElement | null = null;
   private emptyIcon: SVGSVGElement | null = null;
   private savedOverlay: HTMLDivElement | null = null;
+  private successContent: HTMLDivElement | null = null;
+  private spinnerEl: SVGSVGElement | null = null;
+  private errorContent: HTMLDivElement | null = null;
   private count = 0;
   private prevCount = 0;
   private visible = false;
   private animating = false;
   private queuePanelOpen = false;
+  private successPillActive = false;
+  private errorPillActive = false;
+  private submitting = false;
+  private successPillTimeout: ReturnType<typeof setTimeout> | null = null;
+  private errorPillTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pendingIssueUrl: string | null = null;
   private readonly systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
   private readonly themeChangeHandler = (): void => {
     this.applyThemeMode();
@@ -118,10 +127,152 @@ export class FloatingBadge {
     }, 800);
   }
 
+  showSuccessPill(issue?: { identifier?: string; url?: string }): void {
+    if (!this.badge || !this.successContent) return;
+
+    if (this.successPillTimeout) {
+      clearTimeout(this.successPillTimeout);
+      this.successPillTimeout = null;
+    }
+
+    this.pendingIssueUrl = issue?.url ?? null;
+    this.successPillActive = true;
+
+    const textEl = this.successContent.querySelector('.notiv-badge-success-text');
+    if (textEl) {
+      textEl.textContent = issue?.identifier ? `${issue.identifier} created` : 'Ticket created';
+    }
+
+    const arrowEl = this.successContent.querySelector('.notiv-badge-success-arrow') as HTMLElement | null;
+    if (arrowEl) {
+      arrowEl.style.display = this.pendingIssueUrl ? 'block' : 'none';
+    }
+
+    this.badge.classList.remove('submit-success', 'success-pill-exit', 'empty', 'has-notes', 'breathing');
+    void this.badge.offsetWidth;
+    this.badge.classList.add('success-pill');
+
+    const checkPath = this.successContent.querySelector('.notiv-badge-success-check path');
+    if (checkPath) {
+      checkPath.setAttribute('style', '');
+      void (checkPath as SVGPathElement).getBoundingClientRect();
+    }
+
+    this.successPillTimeout = setTimeout(() => {
+      this.dismissSuccessPill();
+    }, 2200);
+  }
+
+  private dismissSuccessPill(): void {
+    if (!this.badge || !this.successPillActive) return;
+
+    this.successPillActive = false;
+    this.pendingIssueUrl = null;
+
+    if (this.successPillTimeout) {
+      clearTimeout(this.successPillTimeout);
+      this.successPillTimeout = null;
+    }
+
+    this.badge.classList.remove('success-pill');
+    this.badge.classList.add('success-pill-exit');
+
+    setTimeout(() => {
+      if (!this.badge) return;
+      this.badge.classList.remove('success-pill-exit');
+      this.render();
+    }, 300);
+  }
+
+  private handleSuccessPillClick(): void {
+    if (!this.successPillActive) return;
+
+    if (this.pendingIssueUrl) {
+      window.open(this.pendingIssueUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    this.dismissSuccessPill();
+  }
+
+  showSubmitting(): void {
+    if (!this.badge) return;
+    this.submitting = true;
+    this.badge.classList.remove('success-pill', 'error-pill', 'celebrate', 'breathing');
+    this.badge.classList.add('submitting');
+  }
+
+  hideSubmitting(): void {
+    if (!this.badge) return;
+    this.submitting = false;
+    this.badge.classList.remove('submitting');
+  }
+
+  showErrorPill(message: string): void {
+    if (!this.badge || !this.errorContent) return;
+
+    this.hideSubmitting();
+
+    if (this.errorPillTimeout) {
+      clearTimeout(this.errorPillTimeout);
+      this.errorPillTimeout = null;
+    }
+
+    this.errorPillActive = true;
+
+    const textEl = this.errorContent.querySelector('.notiv-badge-error-text');
+    if (textEl) {
+      const shortMessage = message.length > 24 ? message.slice(0, 22) + '…' : message;
+      textEl.textContent = shortMessage;
+      textEl.setAttribute('title', message);
+    }
+
+    this.badge.classList.remove('submitting', 'success-pill', 'empty', 'has-notes', 'breathing');
+    void this.badge.offsetWidth;
+    this.badge.classList.add('error-pill');
+
+    this.errorPillTimeout = setTimeout(() => {
+      this.dismissErrorPill();
+    }, 4000);
+  }
+
+  private dismissErrorPill(): void {
+    if (!this.badge || !this.errorPillActive) return;
+
+    this.errorPillActive = false;
+
+    if (this.errorPillTimeout) {
+      clearTimeout(this.errorPillTimeout);
+      this.errorPillTimeout = null;
+    }
+
+    this.badge.classList.remove('error-pill');
+    this.badge.classList.add('error-pill-exit');
+
+    setTimeout(() => {
+      if (!this.badge) return;
+      this.badge.classList.remove('error-pill-exit');
+      this.render();
+    }, 300);
+  }
+
+  private handleErrorPillClick(): void {
+    if (!this.errorPillActive) return;
+    this.dismissErrorPill();
+  }
+
   private updateBreathingState(): void {
     if (!this.badge) return;
     const shouldBreathe = this.count > 0 && !this.queuePanelOpen;
     this.badge.classList.toggle('breathing', shouldBreathe);
+
+    this.badge.classList.remove('eager', 'busy');
+    if (shouldBreathe) {
+      if (this.count >= 5) {
+        this.badge.classList.add('busy');
+      } else if (this.count >= 2) {
+        this.badge.classList.add('eager');
+      }
+    }
   }
 
   private triggerCelebration(): void {
@@ -143,6 +294,14 @@ export class FloatingBadge {
   }
 
   destroy(): void {
+    if (this.successPillTimeout) {
+      clearTimeout(this.successPillTimeout);
+      this.successPillTimeout = null;
+    }
+    if (this.errorPillTimeout) {
+      clearTimeout(this.errorPillTimeout);
+      this.errorPillTimeout = null;
+    }
     this.systemThemeQuery.removeEventListener('change', this.themeChangeHandler);
     window.removeEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
     this.container?.remove();
@@ -152,6 +311,9 @@ export class FloatingBadge {
     this.nextEl = null;
     this.emptyIcon = null;
     this.savedOverlay = null;
+    this.successContent = null;
+    this.spinnerEl = null;
+    this.errorContent = null;
   }
 
   private ensureMounted(): void {
@@ -177,9 +339,6 @@ export class FloatingBadge {
     badge.className = 'notiv-floating-badge empty';
     badge.title = 'Open notes queue';
     badge.setAttribute('aria-label', 'Open notes queue');
-    badge.addEventListener('click', () => {
-      this.callbacks.onClick();
-    });
 
     const flipContainer = document.createElement('div');
     flipContainer.className = 'notiv-badge-flip-container';
@@ -215,11 +374,94 @@ export class FloatingBadge {
     savedCheck.appendChild(savedCheckPath);
     savedOverlay.appendChild(savedCheck);
 
+    const successContent = document.createElement('div');
+    successContent.className = 'notiv-badge-success-content';
+
+    const successCheck = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    successCheck.setAttribute('class', 'notiv-badge-success-check');
+    successCheck.setAttribute('viewBox', '0 0 24 24');
+    successCheck.setAttribute('fill', 'none');
+    successCheck.setAttribute('stroke', 'currentColor');
+    successCheck.setAttribute('stroke-width', '2.5');
+    successCheck.setAttribute('stroke-linecap', 'round');
+    successCheck.setAttribute('stroke-linejoin', 'round');
+    const successCheckPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    successCheckPath.setAttribute('d', 'M20 6L9 17l-5-5');
+    successCheck.appendChild(successCheckPath);
+
+    const successText = document.createElement('span');
+    successText.className = 'notiv-badge-success-text';
+    successText.textContent = 'Ticket created';
+
+    const successArrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    successArrow.setAttribute('class', 'notiv-badge-success-arrow');
+    successArrow.setAttribute('viewBox', '0 0 24 24');
+    successArrow.setAttribute('fill', 'none');
+    successArrow.setAttribute('stroke', 'currentColor');
+    successArrow.setAttribute('stroke-width', '2');
+    successArrow.setAttribute('stroke-linecap', 'round');
+    successArrow.setAttribute('stroke-linejoin', 'round');
+    const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    arrowPath.setAttribute('d', 'M7 17L17 7M17 7H7M17 7v10');
+    successArrow.appendChild(arrowPath);
+
+    successContent.appendChild(successCheck);
+    successContent.appendChild(successText);
+    successContent.appendChild(successArrow);
+
+    const spinner = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    spinner.setAttribute('class', 'notiv-badge-spinner');
+    spinner.setAttribute('viewBox', '0 0 24 24');
+    spinner.setAttribute('fill', 'none');
+    spinner.setAttribute('stroke', 'currentColor');
+    spinner.setAttribute('stroke-width', '2.5');
+    spinner.setAttribute('stroke-linecap', 'round');
+    const spinnerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    spinnerCircle.setAttribute('d', 'M12 2a10 10 0 0 1 10 10');
+    spinner.appendChild(spinnerCircle);
+
+    const errorContent = document.createElement('div');
+    errorContent.className = 'notiv-badge-error-content';
+
+    const errorIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    errorIcon.setAttribute('class', 'notiv-badge-error-icon');
+    errorIcon.setAttribute('viewBox', '0 0 24 24');
+    errorIcon.setAttribute('fill', 'none');
+    errorIcon.setAttribute('stroke', 'currentColor');
+    errorIcon.setAttribute('stroke-width', '2.5');
+    errorIcon.setAttribute('stroke-linecap', 'round');
+    errorIcon.setAttribute('stroke-linejoin', 'round');
+    const errorIconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    errorIconPath.setAttribute('d', 'M12 9v4m0 4h.01M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z');
+    errorIcon.appendChild(errorIconPath);
+
+    const errorText = document.createElement('span');
+    errorText.className = 'notiv-badge-error-text';
+    errorText.textContent = 'Error';
+
+    const errorDismiss = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    errorDismiss.setAttribute('class', 'notiv-badge-error-dismiss');
+    errorDismiss.setAttribute('viewBox', '0 0 24 24');
+    errorDismiss.setAttribute('fill', 'none');
+    errorDismiss.setAttribute('stroke', 'currentColor');
+    errorDismiss.setAttribute('stroke-width', '2.5');
+    errorDismiss.setAttribute('stroke-linecap', 'round');
+    const dismissPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    dismissPath.setAttribute('d', 'M18 6L6 18M6 6l12 12');
+    errorDismiss.appendChild(dismissPath);
+
+    errorContent.appendChild(errorIcon);
+    errorContent.appendChild(errorText);
+    errorContent.appendChild(errorDismiss);
+
     flipContainer.appendChild(currentEl);
     flipContainer.appendChild(nextEl);
     badge.appendChild(flipContainer);
     badge.appendChild(emptyIcon);
     badge.appendChild(savedOverlay);
+    badge.appendChild(successContent);
+    badge.appendChild(spinner);
+    badge.appendChild(errorContent);
     shadow.appendChild(badge);
 
     document.documentElement.appendChild(container);
@@ -232,6 +474,19 @@ export class FloatingBadge {
     this.nextEl = nextEl;
     this.emptyIcon = emptyIcon;
     this.savedOverlay = savedOverlay;
+    this.successContent = successContent;
+    this.spinnerEl = spinner;
+    this.errorContent = errorContent;
+
+    badge.addEventListener('click', () => {
+      if (this.successPillActive) {
+        this.handleSuccessPillClick();
+      } else if (this.errorPillActive) {
+        this.handleErrorPillClick();
+      } else if (!this.submitting) {
+        this.callbacks.onClick();
+      }
+    });
   }
 
   private applyThemeMode(): void {

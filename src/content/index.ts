@@ -1,6 +1,5 @@
 import { InlineAnnotator, type InlineAnnotatorDraft } from './inline-annotator';
-import { FloatingBadge } from './floating-badge';
-import { QueuePanel, type QueueNoteSummary } from './queue-panel';
+import { UnifiedBadge, type QueueNoteSummary } from './unified-badge';
 import {
   detectBrowser,
   detectOS,
@@ -19,13 +18,7 @@ import {
   resolveFocusBoundingBox,
   resolveLiveBoundingBoxFromElement
 } from './focus-resolver';
-import {
-  dismissToast,
-  showSubmittingTicketToast,
-  showTicketCreateErrorToast,
-  showTicketCreatedToast,
-  showToast
-} from './toast';
+import { showToast } from './toast';
 import { createLinearAuthTooltipController } from './linear-auth-tooltip';
 import type { BackgroundResponse, BackgroundToContentMessage } from '../shared/messages';
 import type {
@@ -185,7 +178,7 @@ const draftMarkers = new DraftMarkers({
     setDrafts(draftAnnotations.filter((note) => note.id !== id));
   },
   onHover: (id) => {
-    queuePanel.setHoveredId(id);
+    unifiedBadge.setHoveredId(id);
     setHoveredDraftId(id);
   }
 });
@@ -281,7 +274,7 @@ async function loadResources(): Promise<void> {
   if (!settingsState.accessToken.trim()) {
     settingsState.resources = EMPTY_RESOURCES;
     inlineAnnotator.setTeams([]);
-    queuePanel.setResources({ teams: [], labels: [], users: [] });
+    unifiedBadge.setResources({ teams: [], labels: [], users: [] });
     return;
   }
 
@@ -297,11 +290,11 @@ async function loadResources(): Promise<void> {
     const nextResources = (response.data as LinearWorkspaceResources | undefined) ?? EMPTY_RESOURCES;
     settingsState.resources = nextResources;
     inlineAnnotator.setTeams(nextResources.teams);
-    queuePanel.setResources({ teams: nextResources.teams, labels: nextResources.labels, users: nextResources.users });
+    unifiedBadge.setResources({ teams: nextResources.teams, labels: nextResources.labels, users: nextResources.users });
   } catch (resourceError) {
     settingsState.resources = EMPTY_RESOURCES;
     inlineAnnotator.setTeams([]);
-    queuePanel.setResources({ teams: [], labels: [], users: [] });
+    unifiedBadge.setResources({ teams: [], labels: [], users: [] });
     settingsState.error = resourceError instanceof Error ? resourceError.message : 'Could not load workspace data.';
   } finally {
     settingsState.loadingResources = false;
@@ -350,8 +343,7 @@ function setDrafts(nextDrafts: DraftAnnotation[]): void {
     editingDraftId = null;
     annotatorFocusTarget = null;
   }
-  floatingBadge.setCount(nextDrafts.length);
-  queuePanel.setItems(toQueueItems(nextDrafts));
+  unifiedBadge.setItems(toQueueItems(nextDrafts));
   draftMarkers.setNotes(
     nextDrafts.map((note) => ({
       target: note.elementLabel ?? note.componentName ?? note.reactComponents?.[0] ?? note.element,
@@ -394,7 +386,7 @@ function setPickerActive(active: boolean): void {
 
 function setToolbarVisible(visible: boolean): void {
   toolbarVisible = visible;
-  floatingBadge.setVisible(visible);
+  unifiedBadge.setVisible(visible);
   syncDraftMarkerVisibility();
 
   if (visible) {
@@ -405,8 +397,7 @@ function setToolbarVisible(visible: boolean): void {
     linearAuthTooltip.clear();
     setPickerActive(false);
     inlineAnnotator.close();
-    queuePanel.setVisible(false);
-    floatingBadge.setQueuePanelOpen(false);
+    unifiedBadge.closeQueue();
     annotatorFocusTarget = null;
     editingDraftId = null;
     selectedElement = null;
@@ -429,11 +420,7 @@ async function submitDrafts(): Promise<void> {
     return;
   }
 
-  const notePositions = queuePanel.getNotePositions();
-  floatingBadge.playFlyingDotsAnimation(notePositions);
-
-  queuePanel.setSubmitting(true);
-  const submittingToastId = showSubmittingTicketToast();
+  unifiedBadge.setSubmitting(true);
 
   try {
     const storedTeamId = await getLocalStorageItems<Record<string, unknown>>([STORAGE_KEYS.submitTeamId])
@@ -447,7 +434,7 @@ async function submitDrafts(): Promise<void> {
       throw new Error('No Linear team found for this workspace.');
     }
 
-    const submissionSettings = queuePanel.getSettings();
+    const submissionSettings = unifiedBadge.getSettings();
     const response = await sendRuntimeMessage<BackgroundResponse>({
       type: 'captureAndCreateGroupedIssue',
       payload: {
@@ -468,17 +455,12 @@ async function submitDrafts(): Promise<void> {
     const issue = (response.data as { identifier?: string; url?: string } | undefined) ?? {};
 
     setDrafts([]);
-    queuePanel.setVisible(false);
-    floatingBadge.setQueuePanelOpen(false);
-    queuePanel.resetPriority();
-    dismissToast(submittingToastId);
-    floatingBadge.playSubmitSuccessAnimation();
-    showTicketCreatedToast(issue);
+    unifiedBadge.resetPriority();
+    unifiedBadge.showSuccessPill(issue);
   } catch (error) {
-    dismissToast(submittingToastId);
-    showTicketCreateErrorToast(`Failed to submit notes: ${error instanceof Error ? error.message : 'Unexpected error.'}`);
+    unifiedBadge.showErrorPill(error instanceof Error ? error.message : 'Unexpected error');
   } finally {
-    queuePanel.setSubmitting(false);
+    unifiedBadge.hideSubmitting();
   }
 }
 
@@ -541,7 +523,6 @@ function handleAnnotatorSubmit(
     if (pickerActive && toolbarVisible) {
       detector.start();
     }
-    showToast('Note updated.');
     return;
   }
 
@@ -596,7 +577,6 @@ function handleAnnotatorSubmit(
   refreshFocusedComponentHighlight();
   selectedElement = null;
   selectedClickPoint = null;
-  floatingBadge.showSavedConfirmation();
   if (pickerActive && toolbarVisible) {
     detector.start();
   }
@@ -626,36 +606,29 @@ function handleAnnotatorCancel(): void {
 
 const inlineAnnotator = new InlineAnnotator(handleAnnotatorSubmit, handleAnnotatorCancel);
 
-const floatingBadge = new FloatingBadge({
-  onClick: () => {
+const unifiedBadge = new UnifiedBadge({
+  onBadgeClick: () => {
     if (!pickerActive) {
       setPickerActive(true);
       void syncPickerState(true);
       void ensureSettingsLoaded();
     }
-    const willBeVisible = !queuePanel.isVisible();
-    queuePanel.setVisible(willBeVisible);
-    floatingBadge.setQueuePanelOpen(willBeVisible);
-  }
-});
-
-const queuePanel = new QueuePanel({
+  },
   onSubmit: () => {
     void submitDrafts();
   },
   onClear: () => {
     setDrafts([]);
   },
-  onDelete: (id) => {
+  onDelete: (id: string) => {
     setDrafts(draftAnnotations.filter((note) => note.id !== id));
   },
-  onHover: (id) => {
+  onHover: (id: string | null) => {
     draftMarkers.setHoveredNoteId(id);
     setHoveredDraftId(id);
   },
-  onEdit: (id) => {
-    queuePanel.setVisible(false);
-    floatingBadge.setQueuePanelOpen(false);
+  onEdit: (id: string) => {
+    unifiedBadge.closeQueue();
     draftMarkers.requestEdit(id);
   }
 });
@@ -692,9 +665,8 @@ window.addEventListener('keydown', (event) => {
     return;
   }
 
-  if (queuePanel.isVisible()) {
-    queuePanel.setVisible(false);
-    floatingBadge.setQueuePanelOpen(false);
+  if (unifiedBadge.isQueueVisible()) {
+    unifiedBadge.closeQueue();
     return;
   }
 
@@ -759,7 +731,8 @@ chrome.runtime.onMessage.addListener((message: BackgroundToContentMessage, _send
   }
 
   if (message.type === 'issueCreated') {
-    showTicketCreatedToast({
+    unifiedBadge.setVisible(true);
+    unifiedBadge.showSuccessPill({
       identifier: message.payload.identifier,
       url: message.payload.url
     });
@@ -768,7 +741,8 @@ chrome.runtime.onMessage.addListener((message: BackgroundToContentMessage, _send
   }
 
   if (message.type === 'issueCreationFailed') {
-    showTicketCreateErrorToast(`Failed to submit feedback: ${message.payload.message}`);
+    unifiedBadge.setVisible(true);
+    unifiedBadge.showErrorPill(message.payload.message);
     sendResponse({ ok: true });
     return;
   }
