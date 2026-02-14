@@ -93,6 +93,10 @@ export class UnifiedBadge {
   private changeStage(newStage: Stage): void {
     this.prevStage = this.stage;
     this.stage = newStage;
+    if (newStage !== 'queue') {
+      this.closeAllDropdowns();
+      this.takeoverMode = null;
+    }
     this.render();
   }
 
