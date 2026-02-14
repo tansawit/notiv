@@ -91,6 +91,19 @@ export function createArrowRightIcon(size = 16): SVGSVGElement {
   return createStrokeIcon(size, size, 'M5 12h14M13 5l7 7-7 7', 2);
 }
 
+export function createCopyIcon(size = 14): SVGSVGElement {
+  const svg = createSvg(size, size, '0 0 24 24', {
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 2,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+  });
+  svg.appendChild(createRect(9, 9, 13, 13, { rx: 2, ry: 2 }));
+  svg.appendChild(createPath('M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'));
+  return svg;
+}
+
 export function createPlusIcon(size = 20): SVGSVGElement {
   return createStrokeIcon(size, size, 'M12 5v14M5 12h14', 2);
 }

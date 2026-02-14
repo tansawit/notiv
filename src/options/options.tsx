@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { maskAccessToken } from '../shared/linear-settings-client';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
-import { useCaptureRedaction, useOptionsSitePermissions } from './hooks';
+import { useCaptureRedaction, useOptionsSitePermissions, useShowNoteText } from './hooks';
 
 function getRedactionButtonText(busy: boolean, enabled: boolean): string {
   if (busy) return 'Working...';
@@ -51,6 +51,11 @@ function SettingsApp(): React.JSX.Element {
     captureRedactionBusy,
     toggleCaptureRedaction
   } = useCaptureRedaction({ setFeedback });
+  const {
+    showNoteTextEnabled,
+    showNoteTextBusy,
+    toggleShowNoteText
+  } = useShowNoteText({ setFeedback });
 
   const oauthRedirectUrl = useMemo(() => chrome.identity.getRedirectURL('linear'), []);
 
@@ -253,6 +258,25 @@ function SettingsApp(): React.JSX.Element {
         </div>
         <div className="meta-line">
           Redaction status: <strong>{captureRedactionEnabled ? 'Enabled' : 'Disabled'}</strong>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-head">
+          <strong>Screenshot options</strong>
+        </div>
+        <div className="meta-line">Show note text directly on screenshots when capturing.</div>
+        <div className="actions">
+          <button
+            className="button"
+            disabled={showNoteTextBusy}
+            onClick={() => void toggleShowNoteText()}
+          >
+            {showNoteTextBusy ? 'Working...' : showNoteTextEnabled ? 'Disable note text' : 'Enable note text'}
+          </button>
+        </div>
+        <div className="meta-line">
+          Note text in screenshots: <strong>{showNoteTextEnabled ? 'Enabled' : 'Disabled'}</strong>
         </div>
       </section>
 

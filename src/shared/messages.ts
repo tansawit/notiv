@@ -16,6 +16,12 @@ export type ContentToBackgroundMessage =
       };
     }
   | {
+      type: 'captureAndCopyScreenshot';
+      payload: {
+        annotations: Array<Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'>>;
+      };
+    }
+  | {
       type: 'linearAuthStart';
     }
   | {

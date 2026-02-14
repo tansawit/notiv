@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
   themePreference: 'themePreference',
   sessionNoteCount: 'sessionNoteCount',
   captureSoundEnabled: 'captureSoundEnabled',
+  showNoteTextInScreenshot: 'showNoteTextInScreenshot',
   submissionHistory: 'submissionHistory',
   onboardingCompleted: 'onboardingCompleted',
   badgeIntroShown: 'badgeIntroShown'

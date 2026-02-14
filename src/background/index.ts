@@ -627,6 +627,61 @@ async function dispatchRuntimeMessage(
 
       return toIssueCreateResponse(issue);
     }
+    case 'captureAndCopyScreenshot': {
+      const tabId = getSenderTabId(sender, 'capture');
+      const windowId = sender.tab?.windowId;
+      const annotations = message.payload.annotations;
+      if (annotations.length === 0) {
+        throw new Error('No notes to capture.');
+      }
+
+      const fullScreenshot = await withCapturePreparation(
+        tabId,
+        {
+          highlights: annotations
+            .map((annotation) =>
+              annotation.boundingBox ? { ...annotation.boundingBox, color: annotation.highlightColor } : null
+            )
+            .filter(
+              (box): box is { x: number; y: number; width: number; height: number; color: Annotation['highlightColor'] } =>
+                Boolean(box)
+            ),
+          markers: annotations.map((annotation, index) => ({
+            x: annotation.x,
+            y: annotation.y,
+            text: annotation.comment,
+            index: index + 1,
+            color: annotation.highlightColor
+          }))
+        },
+        async () => {
+          const groupedBounds = computeGroupedCaptureBounds(annotations);
+          if (groupedBounds) {
+            return captureRegionScreenshot({
+              windowId,
+              boundingBox: groupedBounds,
+              devicePixelRatio: annotations[0]?.viewport?.devicePixelRatio ?? 1
+            });
+          }
+          return captureVisibleScreenshot({ windowId });
+        }
+      );
+
+      const base64Data = fullScreenshot.replace(/^data:image\/\w+;base64,/, '');
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+      ]);
+
+      return { ok: true };
+    }
     default:
       return { ok: false, error: 'Unsupported message type.' };
   }

@@ -13,6 +13,7 @@ export interface QueueNoteSummary {
 export interface UnifiedBadgeCallbacks {
   onBadgeClick: () => void;
   onSubmit: () => void;
+  onCopyScreenshot: () => void;
   onClear: () => void;
   onDelete: (id: string) => void;
   onHover: (id: string | null) => void;

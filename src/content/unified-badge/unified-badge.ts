@@ -9,6 +9,7 @@ import {
   createUserIcon,
   createPlusIcon,
   createArrowRightIcon,
+  createCopyIcon,
   createSettingsIcon,
   createEmptyStateIcon,
   createArcSpinnerIcon,
@@ -71,6 +72,7 @@ export class UnifiedBadge {
   private emptyEl: HTMLDivElement | null = null;
   private titleEl: HTMLSpanElement | null = null;
   private submitBtn: HTMLButtonElement | null = null;
+  private copyBtn: HTMLButtonElement | null = null;
   private clearBtn: HTMLButtonElement | null = null;
   private settingsEl: HTMLDivElement | null = null;
   private backdrop: HTMLDivElement | null = null;
@@ -529,6 +531,14 @@ export class UnifiedBadge {
     clearBtn.addEventListener('click', () => this.callbacks.onClear());
     this.addButtonPressEffect(clearBtn);
 
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'notis-unified-btn notis-unified-btn-ghost';
+    copyBtn.title = 'Copy screenshot';
+    copyBtn.appendChild(createCopyIcon(14));
+    copyBtn.addEventListener('click', () => this.callbacks.onCopyScreenshot());
+    this.addButtonPressEffect(copyBtn);
+
     const submitBtn = document.createElement('button');
     submitBtn.type = 'button';
     submitBtn.className = 'notis-unified-btn notis-unified-btn-submit';
@@ -539,6 +549,7 @@ export class UnifiedBadge {
 
     actions.appendChild(settingsBtn);
     actions.appendChild(clearBtn);
+    actions.appendChild(copyBtn);
     actions.appendChild(submitBtn);
     header.appendChild(title);
     header.appendChild(actions);
@@ -579,6 +590,7 @@ export class UnifiedBadge {
     this.emptyEl = empty;
     this.titleEl = title;
     this.submitBtn = submitBtn;
+    this.copyBtn = copyBtn;
     this.clearBtn = clearBtn;
     this.settingsEl = settings;
   }
@@ -780,7 +792,9 @@ export class UnifiedBadge {
       this.backdrop.classList.toggle('visible', this.stage === 'queue');
     }
 
+    const collapsingFromQueue = this.stage === 'badge' && this.prevStage === 'queue';
     this.badgeContent?.classList.toggle('active', this.stage === 'badge');
+    this.badgeContent?.classList.toggle('from-queue', collapsingFromQueue);
     this.queueContent?.classList.toggle('active', this.stage === 'queue');
     this.loadingContent?.classList.toggle('active', this.stage === 'loading');
     this.successContent?.classList.toggle('active', this.stage === 'success');
@@ -1009,6 +1023,10 @@ export class UnifiedBadge {
 
     if (this.submitBtn) {
       this.submitBtn.disabled = this.items.length === 0 || this.submitting;
+    }
+
+    if (this.copyBtn) {
+      this.copyBtn.disabled = this.items.length === 0 || this.submitting;
     }
 
     if (this.clearBtn) {

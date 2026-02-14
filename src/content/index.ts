@@ -499,6 +499,34 @@ async function submitDrafts(): Promise<void> {
   }
 }
 
+async function copyScreenshot(): Promise<void> {
+  if (draftAnnotations.length === 0) {
+    showToast('No notes to capture yet.', undefined, 'error');
+    return;
+  }
+
+  unifiedBadge.setSubmitting(true);
+
+  try {
+    const response = await sendRuntimeMessage<BackgroundResponse>({
+      type: 'captureAndCopyScreenshot',
+      payload: {
+        annotations: draftAnnotations.map((note) => toSubmissionAnnotation(note))
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(response.error);
+    }
+
+    showToast('Screenshot copied to clipboard');
+  } catch (error) {
+    showToast(error instanceof Error ? error.message : 'Failed to copy screenshot', undefined, 'error');
+  } finally {
+    unifiedBadge.hideSubmitting();
+  }
+}
+
 const detector = new ElementDetector({
   onHover: () => {
     return;
@@ -646,6 +674,9 @@ const unifiedBadge = new UnifiedBadge({
   },
   onSubmit: () => {
     void submitDrafts();
+  },
+  onCopyScreenshot: () => {
+    void copyScreenshot();
   },
   onClear: () => {
     setDrafts([]);
