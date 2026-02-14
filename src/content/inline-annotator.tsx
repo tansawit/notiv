@@ -10,6 +10,7 @@ import {
 import { getNotivThemeMode } from './theme-mode';
 import { loadLastHighlightColor, saveLastHighlightColor } from './color-persistence';
 import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
+import { Icon } from '../shared/components/Icon';
 
 export interface InlineAnnotatorDraft {
   comment: string;
@@ -69,21 +70,6 @@ async function prepareAttachment(file: File): Promise<AnnotationAttachment> {
   context.drawImage(image, 0, 0, width, height);
   const compressed = canvas.toDataURL('image/jpeg', 0.86);
   return { name: file.name, dataUrl: compressed };
-}
-
-function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.Element {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d={path}
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
 }
 
 function InlineAnnotatorPanel({

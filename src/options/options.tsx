@@ -4,21 +4,12 @@ import { maskAccessToken } from '../shared/linear-settings-client';
 import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
 import { STORAGE_KEYS } from '../shared/constants';
 import { useLinearConnection } from '../shared/use-linear-connection';
-
-function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.Element {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d={path}
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
+import { Icon } from '../shared/components/Icon';
+import {
+  getAllPermissions,
+  requestOriginPermission,
+  removeOriginPermission
+} from '../shared/chrome-api';
 
 const REQUIRED_ORIGINS = new Set(['https://api.linear.app/*', 'https://linear.app/*']);
 
@@ -58,45 +49,6 @@ function normalizeSiteOriginInput(value: string): { pattern: string; label: stri
     pattern: `${parsed.protocol}//${parsed.hostname}/*`,
     label: parsed.origin
   };
-}
-
-function getAllPermissions(): Promise<chrome.permissions.Permissions> {
-  return new Promise((resolve, reject) => {
-    chrome.permissions.getAll((permissions) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(permissions);
-    });
-  });
-}
-
-function requestOriginPermission(origin: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    chrome.permissions.request({ origins: [origin] }, (granted) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(Boolean(granted));
-    });
-  });
-}
-
-function removeOriginPermission(origin: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    chrome.permissions.remove({ origins: [origin] }, (removed) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(Boolean(removed));
-    });
-  });
 }
 
 async function loadCaptureRedactionEnabled(): Promise<boolean> {

@@ -1,97 +1,41 @@
 import styles from './styles.css?inline';
 import { UI_IDS, STORAGE_KEYS } from '../shared/constants';
 import { getNotivThemeMode } from './theme-mode';
-import type { HighlightColor, LinearLabel, LinearTeam, LinearUser } from '../shared/types';
+import type { LinearLabel } from '../shared/types';
 import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highlight-colors';
 import { FONT_STACK_MONO, FONT_STACK_SANS } from '../shared/visual-tokens';
 import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
+import {
+  createPriorityIcon,
+  createUserIcon,
+  createTrashIcon,
+  getChevronSvgHtml as createChevronHtml,
+} from '../shared/svg-builder';
+import {
+  type Stage,
+  type QueueNoteSummary,
+  type UnifiedBadgeCallbacks,
+  type SubmissionSettings,
+  type NotePosition,
+  type UnifiedBadgeResources,
+  BADGE_SIZE,
+  QUEUE_WIDTH,
+  SUCCESS_WIDTH,
+  ERROR_WIDTH,
+  HEADER_HEIGHT,
+  SETTINGS_HEIGHT,
+  ROW_HEIGHT,
+  TIMING,
+  EASING,
+} from './unified-badge-types';
 
-/* ─────────────────────────────────────────────────────────────
- * UNIFIED BADGE
- *
- * The badge IS the queue. One morphing container, four shapes.
- *
- * Stage: BADGE (collapsed)
- *        44×44 circle, shows note count or "+"
- *        Click → expands to QUEUE (250ms, cubic-bezier)
- *
- * Stage: QUEUE (expanded panel)
- *        280×dynamic rounded rect, shows notes list + submit
- *        Click Submit → shrinks to LOADING (200ms, cubic-bezier)
- *
- * Stage: LOADING (collapsed)
- *        44×44 circle, spinning indicator
- *        On response → expands to RESULT
- *          - SUCCESS: spring-like (300ms with overshoot)
- *          - ERROR: cubic-bezier (errors shouldn't bounce)
- *
- * Stage: SUCCESS / ERROR (pill)
- *        ~160×44 pill, green/red with ticket ID or error
- *        After timeout → shrinks to BADGE (200ms, cubic-bezier)
- *
- * HYBRID ANIMATION APPROACH:
- * - Cubic-bezier for functional transitions (precise, tool-like)
- * - Spring-like for success (moment of earned delight)
- * ─────────────────────────────────────────────────────────── */
-
-type Stage = 'badge' | 'queue' | 'loading' | 'success' | 'error';
-
-export interface QueueNoteSummary {
-  id: string;
-  comment: string;
-  target: string;
-  attachmentsCount?: number;
-  highlightColor: HighlightColor;
-}
-
-export interface UnifiedBadgeCallbacks {
-  onBadgeClick: () => void;
-  onSubmit: () => void;
-  onClear: () => void;
-  onDelete: (id: string) => void;
-  onHover: (id: string | null) => void;
-  onEdit: (id: string) => void;
-}
-
-export interface SubmissionSettings {
-  priority: number | null;
-  labelIds: string[];
-  assigneeId: string | null;
-}
-
-export interface NotePosition {
-  x: number;
-  y: number;
-  color: string;
-}
-
-export interface UnifiedBadgeResources {
-  teams: LinearTeam[];
-  labels: LinearLabel[];
-  users: LinearUser[];
-}
-
-const BADGE_SIZE = 36;
-const QUEUE_WIDTH = 320;
-const SUCCESS_WIDTH = 200;
-const ERROR_WIDTH = 220;
-const HEADER_HEIGHT = 48;
-const SETTINGS_HEIGHT = 36;
-const ROW_HEIGHT = 52;
-
-const TIMING = {
-  expand: 250,
-  collapse: 200,
-  successExpand: 300,
-  pillVisible: 2200,
-  contentStagger: 20,
-  contentDuration: 120,
-};
-
-const EASING = {
-  precise: 'cubic-bezier(0.32, 0.72, 0, 1)',
-  successSpring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-};
+export type {
+  QueueNoteSummary,
+  UnifiedBadgeCallbacks,
+  SubmissionSettings,
+  NotePosition,
+  UnifiedBadgeResources,
+} from './unified-badge-types';
 
 export class UnifiedBadge {
   private container: HTMLDivElement | null = null;
@@ -969,7 +913,7 @@ export class UnifiedBadge {
       deleteBtn.style.transition = 'opacity 80ms ease';
       deleteBtn.disabled = this.submitting;
 
-      const icon = this.createTrashIcon();
+      const icon = createTrashIcon();
       deleteBtn.appendChild(icon);
 
       deleteBtn.addEventListener('click', (e) => {
@@ -1071,8 +1015,8 @@ export class UnifiedBadge {
     const priorityBtn = document.createElement('button');
     priorityBtn.type = 'button';
     priorityBtn.className = 'notiv-unified-inline-btn takeover-trigger';
-    priorityBtn.appendChild(this.createPriorityIcon(this.settings.priority));
-    priorityBtn.innerHTML += this.createChevronHtml();
+    priorityBtn.appendChild(createPriorityIcon(this.settings.priority));
+    priorityBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
 
     priorityBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1104,7 +1048,7 @@ export class UnifiedBadge {
     teamKey.className = 'notiv-unified-team-key';
     teamKey.textContent = selectedTeam?.key ?? 'Team';
     teamBtn.appendChild(teamKey);
-    teamBtn.innerHTML += this.createChevronHtml();
+    teamBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
 
     teamBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1148,9 +1092,9 @@ export class UnifiedBadge {
         assigneeBtn.appendChild(placeholder);
       }
     } else {
-      assigneeBtn.appendChild(this.createUserIcon());
+      assigneeBtn.appendChild(createUserIcon());
     }
-    assigneeBtn.innerHTML += this.createChevronHtml();
+    assigneeBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
 
     assigneeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1200,7 +1144,7 @@ export class UnifiedBadge {
       placeholder.textContent = 'Labels';
       labelsBtn.appendChild(placeholder);
     }
-    labelsBtn.innerHTML += this.createChevronHtml();
+    labelsBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
 
     labelsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1337,7 +1281,7 @@ export class UnifiedBadge {
       chip.className = 'notiv-unified-takeover-chip priority-chip';
       chip.title = p.label;
       if (this.settings.priority === p.value) chip.classList.add('selected');
-      chip.appendChild(this.createPriorityIcon(p.value));
+      chip.appendChild(createPriorityIcon(p.value));
 
       chip.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1551,95 +1495,4 @@ export class UnifiedBadge {
     this.labelsDropdownOpen = false;
   }
 
-  private createChevronHtml(): string {
-    return `<svg class="notiv-unified-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
-  }
-
-  private createPriorityIcon(priority: number | null): SVGSVGElement {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '14');
-    svg.setAttribute('height', '14');
-    svg.setAttribute('viewBox', '0 0 16 16');
-
-    if (priority === 1) {
-      svg.setAttribute('fill', 'none');
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('x', '1');
-      rect.setAttribute('y', '1');
-      rect.setAttribute('width', '14');
-      rect.setAttribute('height', '14');
-      rect.setAttribute('rx', '3');
-      rect.setAttribute('fill', '#f76b6b');
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      line.setAttribute('d', 'M8 4v5');
-      line.setAttribute('stroke', 'white');
-      line.setAttribute('stroke-width', '2');
-      line.setAttribute('stroke-linecap', 'round');
-      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      dot.setAttribute('cx', '8');
-      dot.setAttribute('cy', '11.5');
-      dot.setAttribute('r', '1');
-      dot.setAttribute('fill', 'white');
-      svg.appendChild(rect);
-      svg.appendChild(line);
-      svg.appendChild(dot);
-    } else if (priority === 2 || priority === 3 || priority === 4) {
-      svg.setAttribute('fill', 'currentColor');
-      const filledBars = priority === 2 ? 3 : priority === 3 ? 2 : 1;
-      const heights = [4, 7, 10];
-      heights.forEach((height, i) => {
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', String(2 + i * 4.5));
-        rect.setAttribute('y', String(13 - height));
-        rect.setAttribute('width', '3');
-        rect.setAttribute('height', String(height));
-        rect.setAttribute('rx', '1');
-        rect.setAttribute('opacity', i < filledBars ? '1' : '0.25');
-        svg.appendChild(rect);
-      });
-    } else {
-      svg.setAttribute('fill', 'currentColor');
-      [1, 6.5, 12].forEach((x) => {
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', String(x));
-        rect.setAttribute('y', '7');
-        rect.setAttribute('width', '3');
-        rect.setAttribute('height', '2');
-        rect.setAttribute('rx', '0.5');
-        svg.appendChild(rect);
-      });
-    }
-
-    return svg;
-  }
-
-  private createUserIcon(): SVGSVGElement {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '14');
-    svg.setAttribute('height', '14');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '1.5');
-    svg.innerHTML = '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>';
-    return svg;
-  }
-
-  private createTrashIcon(): SVGSVGElement {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '12');
-    svg.setAttribute('height', '12');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '1.5');
-    svg.setAttribute('stroke-linecap', 'round');
-    svg.setAttribute('stroke-linejoin', 'round');
-
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M3 6h18M8 6V4h8v2M5 6l1 14h12l1-14');
-    svg.appendChild(path);
-
-    return svg;
-  }
 }

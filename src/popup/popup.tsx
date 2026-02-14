@@ -6,21 +6,25 @@ import { maskAccessToken } from '../shared/linear-settings-client';
 import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { STORAGE_KEYS } from '../shared/constants';
-
-function Icon({ path, size = 16 }: { path: string; size?: number }): React.JSX.Element {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d={path}
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
+import { Icon } from '../shared/components/Icon';
+import {
+  getActiveTab,
+  containsOriginPermission,
+  requestOriginPermission,
+  removeOriginPermission
+} from '../shared/chrome-api';
+import {
+  springTransition,
+  buttonHoverScale,
+  buttonTapScale,
+  buttonTapScaleWithY,
+  iconButtonHoverScale,
+  iconButtonTapScale,
+  createDisabledButtonHover,
+  createDisabledButtonTap,
+  viewVariants,
+  viewTransition,
+} from '../shared/motion-presets';
 
 type PopupView = 'home' | 'settings';
 type ThemePreference = 'system' | 'light' | 'dark';
@@ -53,58 +57,6 @@ function resolveSitePermissionTarget(urlValue: string | undefined): SitePermissi
     pattern: `${parsed.protocol}//${parsed.hostname}/*`,
     label: parsed.origin
   };
-}
-
-function getActiveTab(): Promise<chrome.tabs.Tab | null> {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(tabs[0] ?? null);
-    });
-  });
-}
-
-function containsOriginPermission(origin: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    chrome.permissions.contains({ origins: [origin] }, (granted) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(Boolean(granted));
-    });
-  });
-}
-
-function requestOriginPermission(origin: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    chrome.permissions.request({ origins: [origin] }, (granted) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(Boolean(granted));
-    });
-  });
-}
-
-function removeOriginPermission(origin: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    chrome.permissions.remove({ origins: [origin] }, (removed) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(Boolean(removed));
-    });
-  });
 }
 
 function PopupApp(): React.JSX.Element {
@@ -279,31 +231,6 @@ function PopupApp(): React.JSX.Element {
    * Forward (→ settings): fade out, new content rises in
    * Back (→ home): fade out, content settles down
    * ───────────────────────────────────────────────────────── */
-  const viewVariants = {
-    initial: (direction: number) => ({
-      opacity: 0,
-      y: direction * 8,
-      scale: 0.98,
-    }),
-    animate: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-    },
-    exit: (direction: number) => ({
-      opacity: 0,
-      y: direction * -4,
-      scale: 0.98,
-    }),
-  };
-
-  const viewTransition = {
-    type: 'spring' as const,
-    stiffness: 500,
-    damping: 35,
-    mass: 0.8,
-  };
-
   const homeView = (
     <motion.div
       key="home"
@@ -321,9 +248,9 @@ function PopupApp(): React.JSX.Element {
             <motion.button
               className="button-ghost"
               onClick={() => setView('settings')}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              whileHover={buttonHoverScale}
+              whileTap={buttonTapScale}
+              transition={springTransition}
             >
               Settings
             </motion.button>
@@ -358,9 +285,9 @@ function PopupApp(): React.JSX.Element {
               <motion.button
                 className="button primary"
                 onClick={() => void activatePicker()}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96, y: 1 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileHover={buttonHoverScale}
+                whileTap={buttonTapScaleWithY}
+                transition={springTransition}
               >
                 Start Annotating
               </motion.button>
@@ -369,9 +296,9 @@ function PopupApp(): React.JSX.Element {
                 className="button"
                 onClick={() => void connectWithOAuth()}
                 disabled={authBusy}
-                whileHover={{ scale: authBusy ? 1 : 1.02 }}
-                whileTap={{ scale: authBusy ? 1 : 0.96, y: authBusy ? 0 : 1 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileHover={createDisabledButtonHover(authBusy)}
+                whileTap={createDisabledButtonTap(authBusy, true)}
+                transition={springTransition}
               >
                 {authBusy ? 'Connecting...' : 'Connect Linear'}
               </motion.button>
@@ -380,9 +307,9 @@ function PopupApp(): React.JSX.Element {
                 className="button"
                 onClick={() => void toggleCurrentSitePermission()}
                 disabled={sitePermissionsBusy}
-                whileHover={{ scale: sitePermissionsBusy ? 1 : 1.02 }}
-                whileTap={{ scale: sitePermissionsBusy ? 1 : 0.96, y: sitePermissionsBusy ? 0 : 1 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileHover={createDisabledButtonHover(sitePermissionsBusy)}
+                whileTap={createDisabledButtonTap(sitePermissionsBusy, true)}
+                transition={springTransition}
               >
                 {sitePermissionsBusy ? 'Granting...' : 'Grant Access'}
               </motion.button>
@@ -412,9 +339,9 @@ function PopupApp(): React.JSX.Element {
               onClick={() => setView('home')}
               aria-label="Back"
               title="Back"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              whileHover={iconButtonHoverScale}
+              whileTap={iconButtonTapScale}
+              transition={springTransition}
             >
               <Icon path="M15 18l-6-6 6-6" size={14} />
             </motion.button>
@@ -425,7 +352,7 @@ function PopupApp(): React.JSX.Element {
             onClick={() => void openMainSettingsPage()}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            transition={springTransition}
           >
             Open
           </motion.button>
@@ -450,9 +377,9 @@ function PopupApp(): React.JSX.Element {
                 className="button"
                 disabled={authBusy}
                 onClick={() => void connectWithOAuth()}
-                whileHover={{ scale: authBusy ? 1 : 1.02 }}
-                whileTap={{ scale: authBusy ? 1 : 0.96 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileHover={createDisabledButtonHover(authBusy)}
+                whileTap={createDisabledButtonTap(authBusy)}
+                transition={springTransition}
               >
                 {authBusy ? 'Working...' : connected ? 'Reconnect' : 'Connect'}
               </motion.button>
@@ -462,9 +389,9 @@ function PopupApp(): React.JSX.Element {
                     className="button"
                     disabled={authBusy || loadingResources}
                     onClick={() => void refreshResources()}
-                    whileHover={{ scale: (authBusy || loadingResources) ? 1 : 1.02 }}
-                    whileTap={{ scale: (authBusy || loadingResources) ? 1 : 0.96 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    whileHover={createDisabledButtonHover(authBusy || loadingResources)}
+                    whileTap={createDisabledButtonTap(authBusy || loadingResources)}
+                    transition={springTransition}
                   >
                     {loadingResources ? '...' : 'Refresh'}
                   </motion.button>
@@ -474,7 +401,7 @@ function PopupApp(): React.JSX.Element {
                     onClick={() => void disconnect()}
                     whileHover={{ scale: authBusy ? 1 : 1.02 }}
                     whileTap={{ scale: authBusy ? 1 : 0.96 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    transition={springTransition}
                   >
                     Disconnect
                   </motion.button>
@@ -509,9 +436,9 @@ function PopupApp(): React.JSX.Element {
                 className="button"
                 disabled={sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget}
                 onClick={() => void toggleCurrentSitePermission()}
-                whileHover={{ scale: (sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget) ? 1 : 1.02 }}
-                whileTap={{ scale: (sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget) ? 1 : 0.96 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileHover={createDisabledButtonHover(sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget)}
+                whileTap={createDisabledButtonTap(sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget)}
+                transition={springTransition}
               >
                 {sitePermissionsBusy ? 'Working...' : currentSiteGranted ? 'Revoke' : 'Grant'}
               </motion.button>
@@ -531,7 +458,7 @@ function PopupApp(): React.JSX.Element {
                 onClick={cycleTheme}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                transition={springTransition}
               >
                 {themePreference === 'system' ? 'Use Light' : themePreference === 'light' ? 'Use Dark' : 'Use System'}
               </motion.button>
@@ -560,7 +487,7 @@ function PopupApp(): React.JSX.Element {
                         onClick={() => void saveToken()}
                         whileHover={{ scale: authBusy ? 1 : 1.02 }}
                         whileTap={{ scale: authBusy ? 1 : 0.96 }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        transition={springTransition}
                       >
                         Save
                       </motion.button>
@@ -571,7 +498,7 @@ function PopupApp(): React.JSX.Element {
                           onClick={() => { setTokenEditing(false); setTokenDraft(settings.accessToken); }}
                           whileHover={{ scale: authBusy ? 1 : 1.02 }}
                           whileTap={{ scale: authBusy ? 1 : 0.96 }}
-                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          transition={springTransition}
                         >
                           Cancel
                         </motion.button>
@@ -588,7 +515,7 @@ function PopupApp(): React.JSX.Element {
                       title="Edit"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      transition={springTransition}
                     >
                       <Icon path="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z" size={12} />
                     </motion.button>
