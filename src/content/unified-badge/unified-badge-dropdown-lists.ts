@@ -1,4 +1,4 @@
-import type { LinearLabel, LinearTeam, LinearUser } from '../shared/types';
+import type { LinearLabel, LinearTeam, LinearUser } from '../../shared/types';
 import { appendSelectedCheckIcon } from './unified-badge-dropdown';
 
 function renderEmptyState(listEl: HTMLDivElement, message: string): void {

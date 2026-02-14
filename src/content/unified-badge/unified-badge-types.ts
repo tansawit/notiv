@@ -1,4 +1,4 @@
-import type { HighlightColor, LinearLabel, LinearTeam, LinearUser } from '../shared/types';
+import type { HighlightColor, LinearLabel, LinearTeam, LinearUser } from '../../shared/types';
 
 export type Stage = 'badge' | 'queue' | 'loading' | 'success' | 'error';
 

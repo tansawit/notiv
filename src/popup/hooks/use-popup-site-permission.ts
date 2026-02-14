@@ -4,9 +4,9 @@ import {
   getActiveTab,
   removeOriginPermission,
   requestOriginPermission
-} from '../shared/chrome-api';
-import type { SiteOriginPermission } from '../shared/site-origin';
-import { resolveSiteOriginPermission } from '../shared/site-origin';
+} from '../../shared/chrome-api';
+import type { SiteOriginPermission } from '../../shared/site-origin';
+import { resolveSiteOriginPermission } from '../../shared/site-origin';
 
 interface UsePopupSitePermissionOptions {
   setFeedback: (notice: string | null, error: string | null) => void;

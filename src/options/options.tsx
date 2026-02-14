@@ -3,8 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { maskAccessToken } from '../shared/linear-settings-client';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
-import { useOptionsSitePermissions } from './use-options-site-permissions';
-import { useCaptureRedaction } from './use-capture-redaction';
+import { useCaptureRedaction, useOptionsSitePermissions } from './hooks';
 
 function SettingsApp(): React.JSX.Element {
   const {

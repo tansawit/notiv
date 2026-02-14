@@ -1,14 +1,14 @@
-import styles from './styles.css?inline';
-import { UI_IDS, STORAGE_KEYS } from '../shared/constants';
-import { getNotivThemeMode } from './theme-mode';
-import type { LinearLabel } from '../shared/types';
-import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highlight-colors';
-import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
+import styles from '../styles.css?inline';
+import { UI_IDS, STORAGE_KEYS } from '../../shared/constants';
+import { getNotivThemeMode } from '../theme-mode';
+import type { LinearLabel } from '../../shared/types';
+import { getHighlightColorPreset, resolveHighlightColor } from '../../shared/highlight-colors';
+import { getLocalStorageItems, setLocalStorageItems } from '../../shared/chrome-storage';
 import {
   createPriorityIcon,
   createUserIcon,
   getChevronSvgHtml as createChevronHtml,
-} from '../shared/svg-builder';
+} from '../../shared/svg-builder';
 import {
   type Stage,
   type QueueNoteSummary,

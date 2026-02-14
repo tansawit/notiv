@@ -6,8 +6,7 @@ import { maskAccessToken } from '../shared/linear-settings-client';
 import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
-import { usePopupSitePermission } from './use-popup-site-permission';
-import { usePopupTheme } from './use-popup-theme';
+import { usePopupSitePermission, usePopupTheme } from './hooks';
 import {
   springTransition,
   buttonHoverScale,

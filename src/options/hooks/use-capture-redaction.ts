@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
-import { STORAGE_KEYS } from '../shared/constants';
+import { getLocalStorageItems, setLocalStorageItems } from '../../shared/chrome-storage';
+import { STORAGE_KEYS } from '../../shared/constants';
 
 interface UseCaptureRedactionOptions {
   setFeedback: (notice: string | null, error: string | null) => void;

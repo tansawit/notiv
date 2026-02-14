@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getAllPermissions, removeOriginPermission, requestOriginPermission } from '../shared/chrome-api';
-import { normalizeSiteOriginInput, stripOriginPatternSuffix } from '../shared/site-origin';
+import { getAllPermissions, removeOriginPermission, requestOriginPermission } from '../../shared/chrome-api';
+import { normalizeSiteOriginInput, stripOriginPatternSuffix } from '../../shared/site-origin';
 
 const REQUIRED_ORIGINS = new Set(['https://api.linear.app/*', 'https://linear.app/*']);
 

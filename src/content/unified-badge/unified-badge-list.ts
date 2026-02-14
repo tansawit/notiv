@@ -1,6 +1,6 @@
-import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highlight-colors';
-import { FONT_STACK_MONO, FONT_STACK_SANS } from '../shared/visual-tokens';
-import { createTrashIcon } from '../shared/svg-builder';
+import { getHighlightColorPreset, resolveHighlightColor } from '../../shared/highlight-colors';
+import { FONT_STACK_MONO, FONT_STACK_SANS } from '../../shared/visual-tokens';
+import { createTrashIcon } from '../../shared/svg-builder';
 import type { QueueNoteSummary } from './unified-badge-types';
 
 export interface RenderUnifiedBadgeRowsInput {

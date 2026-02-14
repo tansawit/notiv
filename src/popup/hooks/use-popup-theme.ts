@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { STORAGE_KEYS } from '../shared/constants';
+import { STORAGE_KEYS } from '../../shared/constants';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
