@@ -9,7 +9,7 @@ import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
 import { OnboardingWizard } from './OnboardingWizard';
-import { usePopupSitePermission, usePopupTheme, useCaptureSound, useSubmissionHistory } from './hooks';
+import { usePopupSitePermission, usePopupTheme, useCaptureSound } from './hooks';
 import {
   springTransition,
   buttonHoverScale,
@@ -71,23 +71,8 @@ function getNextThemeLabel(preference: ThemePreference): string {
   return 'Use System';
 }
 
-function formatRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(timestamp).toLocaleDateString();
-}
-
 function PopupApp(): React.JSX.Element {
   const [view, setView] = useState<PopupView>('home');
-  const [historyCollapsed, setHistoryCollapsed] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const {
     loading,
@@ -119,7 +104,6 @@ function PopupApp(): React.JSX.Element {
   } = usePopupSitePermission({ setFeedback });
   const { themePreference, cycleTheme } = usePopupTheme();
   const { soundEnabled, toggleSound } = useCaptureSound();
-  const { history } = useSubmissionHistory();
 
   useEffect(() => {
     const loadOnboardingState = async (): Promise<void> => {
@@ -283,49 +267,6 @@ function PopupApp(): React.JSX.Element {
           </div>
         </div>
       </section>
-
-      {history.length > 0 && (
-        <section className="popup-panel popup-panel-flat">
-          <div className="history-section">
-            <div className="history-header">
-              <span className="history-header-label">Recent</span>
-              <button
-                className={`history-toggle ${historyCollapsed ? 'collapsed' : ''}`}
-                onClick={() => setHistoryCollapsed(!historyCollapsed)}
-                aria-label={historyCollapsed ? 'Expand history' : 'Collapse history'}
-              >
-                <Icon path="M6 9l6 6 6-6" size={12} />
-              </button>
-            </div>
-            <div className={`history-list ${historyCollapsed ? 'collapsed' : ''}`}>
-              {history.slice(0, 5).map((item) => (
-                <div
-                  key={item.id}
-                  className="history-item"
-                  onClick={() => window.open(item.url, '_blank')}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      window.open(item.url, '_blank');
-                    }
-                  }}
-                >
-                  <span className="history-item-badge">{item.identifier}</span>
-                  <div className="history-item-details">
-                    <span className="history-item-preview">
-                      {item.firstNotePreview || `${item.noteCount} note${item.noteCount > 1 ? 's' : ''}`}
-                    </span>
-                    <span className="history-item-meta">
-                      {item.pageDomain} · {formatRelativeTime(item.timestamp)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {error ? <div className="error">{error}</div> : null}
     </motion.div>
