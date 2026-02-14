@@ -264,7 +264,6 @@ body {
   border-color: var(--ink);
   background: var(--ink);
   color: var(--notis-accent-ink);
-  border-radius: 999px;
 }
 
 .button.primary:hover:not(:disabled) {

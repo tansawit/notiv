@@ -64,14 +64,14 @@
      ───────────────────────────────────────────── */
 
   --dark-bg: rgba(28, 28, 28, 0.97);
-  --dark-surface: rgba(36, 36, 36, 0.96);
+  --dark-surface: rgba(42, 42, 42, 0.96);
   --dark-text: #f0efed;
-  --dark-text-muted: #a8a6a2;
+  --dark-text-muted: #b0aea9;
   --dark-text-subtle: #8a8884;
-  --dark-border: #e0dfdd;
-  --dark-border-soft: rgba(240, 239, 237, 0.12);
-  --dark-shadow: rgba(0, 0, 0, 0.35);
-  --dark-focus-ring: rgba(240, 239, 237, 0.3);
+  --dark-border: rgba(240, 239, 237, 0.24);
+  --dark-border-soft: rgba(240, 239, 237, 0.10);
+  --dark-shadow: rgba(0, 0, 0, 0.45);
+  --dark-focus-ring: rgba(240, 239, 237, 0.4);
   --dark-hover-bg: rgba(240, 239, 237, 0.08);
 
   --dark-btn-bg: rgba(36, 36, 36, 0.96);
@@ -1474,20 +1474,27 @@
 @keyframes notis-badge-receive {
   0% {
     transform: scale(1);
+    box-shadow: 0 2px 8px var(--shadow);
   }
-  30% {
-    transform: scale(1.12);
+  20% {
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px var(--shadow), 0 0 0 4px rgba(26, 24, 22, 0.08);
   }
-  60% {
-    transform: scale(0.94);
+  50% {
+    transform: scale(0.92);
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  70% {
+    transform: scale(1.04);
   }
   100% {
     transform: scale(1);
+    box-shadow: 0 2px 8px var(--shadow);
   }
 }
 
 .notis-floating-badge.receive {
-  animation: notis-badge-receive 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: notis-badge-receive 500ms var(--spring-bounce);
 }
 
 @keyframes notis-badge-submit-success {
@@ -1557,33 +1564,90 @@
   }
 }
 
-/* Flying dots */
+/* Flying dots with trail effect */
 .notis-flying-dot {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--dot-color, #1a1816);
   left: 50%;
   top: 50%;
   transform: translate(var(--start-x, 0), var(--start-y, 0));
-  animation: notis-fly-to-badge 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: notis-fly-to-badge 450ms var(--spring-smooth) forwards;
   pointer-events: none;
   z-index: 10;
+  box-shadow:
+    0 0 0 2px rgba(var(--dot-rgb, 26, 24, 22), 0.3),
+    0 0 8px 2px rgba(var(--dot-rgb, 26, 24, 22), 0.2);
+}
+
+.notis-flying-dot::before,
+.notis-flying-dot::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+  opacity: 0.5;
+  animation: notis-trail-particle 450ms var(--spring-smooth) forwards;
+}
+
+.notis-flying-dot::before {
+  width: 6px;
+  height: 6px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 30ms;
+}
+
+.notis-flying-dot::after {
+  width: 4px;
+  height: 4px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 60ms;
+}
+
+@keyframes notis-trail-particle {
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
 }
 
 @keyframes notis-fly-to-badge {
   0% {
     transform: translate(var(--start-x), var(--start-y)) scale(1);
     opacity: 1;
+    filter: blur(0);
   }
-  70% {
-    transform: translate(0, 0) scale(0.8);
+  20% {
+    transform: translate(
+      calc(var(--start-x) * 0.75),
+      calc(var(--start-y) * 0.75)
+    ) scale(1.1);
+  }
+  60% {
+    transform: translate(
+      calc(var(--start-x) * 0.1),
+      calc(var(--start-y) * 0.1)
+    ) scale(0.9);
     opacity: 1;
+  }
+  85% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 0.8;
   }
   100% {
     transform: translate(0, 0) scale(0);
     opacity: 0;
+    filter: blur(2px);
   }
 }
 
@@ -2039,13 +2103,8 @@
   box-shadow: 0 1px 4px var(--shadow);
   overflow: hidden;
   cursor: pointer;
-  transition: width 250ms cubic-bezier(0.32, 0.72, 0, 1),
-              height 250ms cubic-bezier(0.32, 0.72, 0, 1),
-              border-radius 250ms cubic-bezier(0.32, 0.72, 0, 1),
-              background 200ms ease,
-              border-color 200ms ease,
-              box-shadow 200ms ease;
   transform-origin: bottom right;
+  will-change: width, height, border-radius;
 }
 
 .notis-unified-morph[data-stage="badge"]:hover {
@@ -2088,7 +2147,48 @@
   background: #2d9a5d;
   border-color: #2d9a5d;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
+  animation: notis-success-burst 600ms var(--spring-bounce);
+}
+
+.notis-unified-morph[data-stage="success"]::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: transparent;
+  border: 2px solid rgba(45, 154, 93, 0.4);
+  animation: notis-success-ring 800ms ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes notis-success-burst {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 4px 12px rgba(45, 154, 93, 0.2);
+  }
+  30% {
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(45, 154, 93, 0.35);
+  }
+  60% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(45, 154, 93, 0.2);
+  }
+}
+
+@keyframes notis-success-ring {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
 }
 
 .notis-unified-morph[data-stage="error"] {
@@ -2106,7 +2206,6 @@
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 120ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .notis-unified-content.active {
@@ -2191,6 +2290,24 @@
   color: #c94a4a;
 }
 
+.notis-unified-btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notis-unified-btn-icon:hover:not(:disabled) {
+  background: var(--btn-hover-bg);
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
 .notis-unified-btn-submit {
   width: 28px;
   height: 28px;
@@ -2231,6 +2348,18 @@
   gap: 4px;
   padding: 16px 8px;
   text-align: center;
+  animation: notis-empty-fade-in 200ms cubic-bezier(0.0, 0.0, 0.2, 1) both;
+}
+
+@keyframes notis-empty-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .notis-unified-empty-icon {
@@ -2258,7 +2387,7 @@
 }
 
 .notis-unified-row-new {
-  animation: notis-unified-row-enter 180ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: notis-unified-row-new-enter 200ms cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 @keyframes notis-unified-row-enter {
@@ -2269,6 +2398,17 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes notis-unified-row-new-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -2951,6 +3091,52 @@
   transform: translateX(-50%) translateY(0);
 }
 
+/* Intro Tooltip */
+.notis-unified-intro-tooltip {
+  position: fixed;
+  bottom: 68px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 250ms ease-out, transform 250ms ease-out;
+  z-index: 1;
+}
+
+.notis-unified-intro-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notis-unified-intro-tooltip kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  background: rgba(26, 24, 22, 0.06);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
 /* Dark Theme */
 :host([data-notis-theme="dark"]) .notis-unified-morph {
   background: var(--dark-bg);
@@ -3001,6 +3187,15 @@
 :host([data-notis-theme="dark"]) .notis-unified-btn-ghost:hover:not(:disabled) {
   background: rgba(240, 100, 100, 0.15);
   color: #f07070;
+}
+
+:host([data-notis-theme="dark"]) .notis-unified-btn-icon {
+  color: var(--dark-text-subtle);
+}
+
+:host([data-notis-theme="dark"]) .notis-unified-btn-icon:hover:not(:disabled) {
+  background: var(--dark-btn-hover-bg);
+  color: var(--dark-text-muted);
 }
 
 :host([data-notis-theme="dark"]) .notis-unified-btn-submit:hover:not(:disabled) {
@@ -3058,6 +3253,19 @@
   color: var(--dark-text);
 }
 
+:host([data-notis-theme="dark"]) .notis-unified-intro-tooltip {
+  background: var(--dark-surface);
+  border-color: var(--dark-border-soft);
+  color: var(--dark-text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+:host([data-notis-theme="dark"]) .notis-unified-intro-tooltip kbd {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--dark-border-soft);
+  color: var(--dark-text-muted);
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   .notis-unified-morph {
@@ -3077,6 +3285,10 @@
   }
 
   .notis-unified-tooltip {
+    transition: none !important;
+  }
+
+  .notis-unified-intro-tooltip {
     transition: none !important;
   }
 
