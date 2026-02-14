@@ -1,7 +1,7 @@
 import { getHighlightColorPreset, resolveHighlightColor } from '../../shared/highlight-colors';
 import { FONT_STACK_MONO, FONT_STACK_SANS } from '../../shared/visual-tokens';
 import { createTrashIcon } from '../../shared/svg-builder';
-import type { QueueNoteSummary } from './unified-badge-types';
+import { type QueueNoteSummary, ROW_HEIGHT } from './unified-badge-types';
 
 export interface RenderUnifiedBadgeRowsInput {
   listEl: HTMLDivElement;
@@ -183,4 +183,59 @@ export function updateUnifiedBadgeRowHighlight(
       }
     }
   }
+}
+
+/* ─────────────────────────────────────────────────────────
+ * ANIMATION STORYBOARD — iOS-Style Row Deletion
+ *
+ * Single fluid motion: swipe + collapse happen together
+ *
+ *    0ms   deleted row slides left (-40px) + fades to 0
+ *    0ms   rows below slide up by ROW_HEIGHT simultaneously
+ *  200ms   all animations complete, cleanup triggered
+ *
+ * Emil Kowalski best practices applied:
+ *   - Duration under 300ms for snappy UI (200ms)
+ *   - Custom cubic-bezier over built-in CSS ease
+ *   - Only transform + opacity (GPU-accelerated)
+ *   - Interruptible CSS transitions (not keyframes)
+ * ───────────────────────────────────────────────────────── */
+
+const DELETE_ANIMATION = {
+  duration: 200,
+  swipeDistance: 40,
+  easing: 'cubic-bezier(0.32, 0.72, 0, 1)',
+};
+
+export interface AnimateRowDeletionInput {
+  listEl: HTMLDivElement;
+  deleteId: string;
+  onComplete: () => void;
+}
+
+export function animateRowDeletion(input: AnimateRowDeletionInput): void {
+  const { listEl, deleteId, onComplete } = input;
+  const { duration, swipeDistance, easing } = DELETE_ANIMATION;
+
+  const deletedRow = listEl.querySelector(`[data-note-id="${deleteId}"]`) as HTMLElement | null;
+  if (!deletedRow) {
+    onComplete();
+    return;
+  }
+
+  const allRows = Array.from(listEl.querySelectorAll('.notis-unified-row')) as HTMLElement[];
+  const deletedIndex = allRows.indexOf(deletedRow);
+  const rowsBelow = allRows.slice(deletedIndex + 1);
+
+  deletedRow.style.pointerEvents = 'none';
+  deletedRow.style.transition = `opacity ${duration}ms ${easing}, transform ${duration}ms ${easing}`;
+  deletedRow.style.opacity = '0';
+  deletedRow.style.transform = `translateX(-${swipeDistance}px)`;
+
+  rowsBelow.forEach((row) => {
+    row.style.transition = `transform ${duration}ms ${easing}`;
+    row.style.transform = `translateY(-${ROW_HEIGHT}px)`;
+  });
+
+  setTimeout(onComplete, duration);
 }

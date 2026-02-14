@@ -1,12 +1,14 @@
 import type { BackgroundResponse, BackgroundToContentMessage, ContentToBackgroundMessage } from '../shared/messages';
 import type { Annotation, BoundingBox, LinearSettings } from '../shared/types';
 import { ALLOW_LINEAR_PAT_FALLBACK } from '../shared/feature-flags';
-import { getSessionStorageItems, setSessionStorageItems } from '../shared/chrome-storage';
+import { STORAGE_KEYS } from '../shared/constants';
+import { getLocalStorageItems, getSessionStorageItems, setSessionStorageItems } from '../shared/chrome-storage';
 import { EMPTY_LINEAR_RESOURCES } from '../shared/linear-resources';
 import { resolveSiteOriginPermission } from '../shared/site-origin';
 import { createLinearGroupedIssue, createLinearIssue, getLinearWorkspaceResources, runLinearOAuthFlow } from './linear';
 import { captureElementScreenshot, captureRegionScreenshot, captureVisibleScreenshot } from './screenshot';
 import { clearLinearAuth, getLinearSettings, saveLinearSettings } from './storage';
+import { addToSubmissionHistory } from './submission-history';
 
 const activePickerTabs = new Set<number>();
 const activeToolbarTabs = new Set<number>();
@@ -371,6 +373,71 @@ function computeGroupedCaptureBounds(
 
 void hydrateRuntimeState();
 
+async function isDirectActivationReady(): Promise<boolean> {
+  const data = await getLocalStorageItems<Record<string, unknown>>([
+    STORAGE_KEYS.linearAccessToken
+  ]);
+
+  const accessToken = data[STORAGE_KEYS.linearAccessToken];
+  const hasAccessToken = Boolean(
+    typeof accessToken === 'string' && accessToken.trim()
+  );
+
+  if (!hasAccessToken) {
+    return false;
+  }
+
+  const permissions = await chrome.permissions.getAll();
+  const hasGrantedOrigins = (permissions.origins ?? []).some(
+    (origin) => origin !== 'https://api.linear.app/*' && origin !== 'https://linear.app/*'
+  );
+
+  return hasGrantedOrigins;
+}
+
+async function updateActionPopupState(): Promise<void> {
+  const ready = await isDirectActivationReady();
+  if (ready) {
+    await chrome.action.setPopup({ popup: '' });
+  } else {
+    await chrome.action.setPopup({ popup: 'src/popup/index.html' });
+  }
+}
+
+void updateActionPopupState();
+
+chrome.action.onClicked.addListener(async (tab) => {
+  if (!tab.id) return;
+
+  try {
+    await ensureSiteAccessForTab(tab.id);
+    await setToolbar(tab.id, true);
+    await togglePicker(tab.id);
+  } catch {
+    await chrome.action.setPopup({ popup: 'src/popup/index.html' });
+    await chrome.action.openPopup();
+  }
+});
+
+chrome.permissions.onAdded.addListener(() => {
+  void updateActionPopupState();
+});
+
+chrome.permissions.onRemoved.addListener(() => {
+  void updateActionPopupState();
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') return;
+
+  if (
+    STORAGE_KEYS.linearAccessToken in changes ||
+    STORAGE_KEYS.onboardingCompleted in changes
+  ) {
+    void updateActionPopupState();
+  }
+});
+
 chrome.commands.onCommand.addListener(async (command) => {
   if (command !== 'activate') {
     return;
@@ -425,6 +492,14 @@ async function dispatchRuntimeMessage(
     case 'openSettingsPage': {
       await chrome.runtime.openOptionsPage();
       return { ok: true };
+    }
+    case 'refreshActionPopupState': {
+      await updateActionPopupState();
+      return { ok: true };
+    }
+    case 'checkDirectActivationReady': {
+      const ready = await isDirectActivationReady();
+      return { ok: true, data: { ready } };
     }
     case 'linearSettingsGet': {
       const settings = await getLinearSettings();
@@ -534,6 +609,22 @@ async function dispatchRuntimeMessage(
 
       const settings = await getLinearSettings();
       const issue = await createLinearGroupedIssue(annotations, fullScreenshot, settings, message.payload.overrides);
+
+      const tab = await chrome.tabs.get(tabId);
+      const pageDomain = tab.url ? new URL(tab.url).hostname : 'unknown';
+      const firstNote = annotations[0];
+      const firstNotePreview = firstNote?.comment?.slice(0, 60) || '';
+
+      void addToSubmissionHistory({
+        id: issue.id,
+        identifier: issue.identifier,
+        url: issue.url,
+        timestamp: Date.now(),
+        noteCount: annotations.length,
+        firstNotePreview,
+        pageDomain
+      });
+
       return toIssueCreateResponse(issue);
     }
     default:

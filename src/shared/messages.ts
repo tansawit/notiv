@@ -54,6 +54,12 @@ export type ContentToBackgroundMessage =
     }
   | {
       type: 'openSettingsPage';
+    }
+  | {
+      type: 'refreshActionPopupState';
+    }
+  | {
+      type: 'checkDirectActivationReady';
     };
 
 export type BackgroundToContentMessage =

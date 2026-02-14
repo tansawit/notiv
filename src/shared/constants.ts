@@ -14,7 +14,11 @@ export const STORAGE_KEYS = {
   submitLabelIds: 'submitLabelIds',
   submitSettingsExpanded: 'submitSettingsExpanded',
   themePreference: 'themePreference',
-  sessionNoteCount: 'sessionNoteCount'
+  sessionNoteCount: 'sessionNoteCount',
+  captureSoundEnabled: 'captureSoundEnabled',
+  submissionHistory: 'submissionHistory',
+  onboardingCompleted: 'onboardingCompleted',
+  badgeIntroShown: 'badgeIntroShown'
 } as const;
 
 export const LEGACY_STORAGE_KEYS = {

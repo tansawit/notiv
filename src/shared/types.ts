@@ -128,3 +128,13 @@ export interface LinearWorkspaceResources {
   labels: LinearLabel[];
   users: LinearUser[];
 }
+
+export interface SubmissionHistoryItem {
+  id: string;
+  identifier: string;
+  url: string;
+  timestamp: number;
+  noteCount: number;
+  firstNotePreview: string;
+  pageDomain: string;
+}

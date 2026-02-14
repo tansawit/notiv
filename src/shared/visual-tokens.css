@@ -59,13 +59,13 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --notis-paper: #1c1c1c;
-    --notis-surface: #242424;
+    --notis-surface: #2a2a2a;
     --notis-ink: #f0efed;
-    --notis-ink-muted: #a8a6a2;
+    --notis-ink-muted: #b0aea9;
     --notis-ink-tertiary: #8a8884;
-    --notis-line: #e0dfdd;
+    --notis-line: rgba(240, 239, 237, 0.24);
     --notis-line-strong: #e0dfdd;
-    --notis-border-light: rgba(240, 239, 237, 0.12);
+    --notis-border-light: rgba(240, 239, 237, 0.10);
     --notis-accent: #e0dfdd;
     --notis-accent-ink: #1c1c1c;
     --notis-accent-stamp: #e85a50;
@@ -159,13 +159,13 @@
 
 :root[data-theme="dark"] {
   --notis-paper: #1c1c1c;
-  --notis-surface: #242424;
+  --notis-surface: #2a2a2a;
   --notis-ink: #f0efed;
-  --notis-ink-muted: #a8a6a2;
+  --notis-ink-muted: #b0aea9;
   --notis-ink-tertiary: #8a8884;
-  --notis-line: #e0dfdd;
+  --notis-line: rgba(240, 239, 237, 0.24);
   --notis-line-strong: #e0dfdd;
-  --notis-border-light: rgba(240, 239, 237, 0.12);
+  --notis-border-light: rgba(240, 239, 237, 0.10);
   --notis-accent: #e0dfdd;
   --notis-accent-ink: #1c1c1c;
   --notis-accent-stamp: #e85a50;

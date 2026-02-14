@@ -17,6 +17,7 @@ export interface UnifiedBadgeCallbacks {
   onDelete: (id: string) => void;
   onHover: (id: string | null) => void;
   onEdit: (id: string) => void;
+  onOpenSettings: () => void;
 }
 
 export interface SubmissionSettings {
@@ -39,22 +40,64 @@ export interface UnifiedBadgeResources {
 
 export const BADGE_SIZE = 36;
 export const QUEUE_WIDTH = 320;
-export const SUCCESS_WIDTH = 200;
+export const SUCCESS_WIDTH = 240;
 export const ERROR_WIDTH = 220;
 export const HEADER_HEIGHT = 48;
 export const SETTINGS_HEIGHT = 36;
 export const ROW_HEIGHT = 52;
 
+/* ─────────────────────────────────────────────────────────
+ * ANIMATION STORYBOARD — Queue Expand / Collapse
+ *
+ * EXPAND (badge → queue):
+ *    0ms   morph container starts expanding
+ *   60ms   header fades in, slides down
+ *  100ms   settings bar fades in, slides up
+ *  120ms   rows begin staggered entrance (slide from left)
+ *  280ms   morph expansion completes
+ *
+ * COLLAPSE (queue → badge):
+ *    0ms   rows begin staggered exit (slide left, fade)
+ *   40ms   settings bar fades out, slides down
+ *   80ms   header fades out, slides up
+ *  120ms   morph container starts collapsing
+ *  280ms   morph collapse completes
+ * ───────────────────────────────────────────────────────── */
+
 export const TIMING = {
-  expand: 250,
-  collapse: 200,
+  expand: 280,
+  collapse: 160,
   successExpand: 300,
-  pillVisible: 2200,
-  contentStagger: 20,
-  contentDuration: 120,
+  pillVisible: 3500,
+  collapseDelay: 120,
+
+  enter: {
+    header: 60,
+    settings: 100,
+    rowsStart: 120,
+    rowStagger: 35,
+    duration: 180,
+  },
+
+  exit: {
+    rowStagger: 25,
+    settings: 40,
+    header: 80,
+    duration: 120,
+  },
+
+  rowAdd: {
+    expandDuration: 220,
+    enterDuration: 200,
+    enterDelay: 60,
+  },
 };
 
+
 export const EASING = {
-  precise: 'cubic-bezier(0.32, 0.72, 0, 1)',
+  expandMorph: 'cubic-bezier(0.34, 1.2, 0.64, 1)',
+  collapseMorph: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  contentIn: 'cubic-bezier(0.0, 0.0, 0.2, 1)',
+  contentOut: 'cubic-bezier(0.4, 0, 1, 1)',
   successSpring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
 };
