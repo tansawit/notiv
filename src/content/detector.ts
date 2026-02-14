@@ -14,7 +14,7 @@ interface DetectorCallbacks {
 }
 
 function isExtensionUiElement(target: Element | null): boolean {
-  return !!target?.closest('[data-notiv-ui="true"]');
+  return !!target?.closest('[data-notis-ui="true"]');
 }
 
 function getAccessibilityInfo(element: Element): { role?: string; label?: string } {

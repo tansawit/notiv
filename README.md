@@ -1,6 +1,6 @@
-# Notiv Extension
+# Notis Extension
 
-Notiv is a Chrome extension for collecting visual feedback on web pages and creating Linear issues with annotated screenshots.
+Notis is a Chrome extension for collecting visual feedback on web pages and creating Linear issues with annotated screenshots.
 
 ## Current status
 
@@ -8,7 +8,7 @@ This project is pre-1.0 and intended for staging-review workflows.
 
 ## Distribution channels
 
-- Official channel: GitHub Releases (`notiv-extension-<version>.zip`) published from tagged builds.
+- Official channel: GitHub Releases (`notis-extension-<version>.zip`) published from tagged builds.
 - Self-host channel: local unpacked build from source.
 
 ## Features
@@ -37,7 +37,7 @@ See `PRIVACY.md` for data handling details, retention expectations, and user con
 
 ### 1) Download release artifact
 
-- Download the latest `notiv-extension-<version>.zip` from GitHub Releases.
+- Download the latest `notis-extension-<version>.zip` from GitHub Releases.
 - Unzip it.
 
 ### 2) Load in Chrome
@@ -113,7 +113,7 @@ pnpm run build
 pnpm run package
 ```
 
-This writes `notiv-extension-<version>.zip` in the project root.
+This writes `notis-extension-<version>.zip` in the project root.
 
 ## Scripts
 

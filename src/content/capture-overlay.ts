@@ -27,8 +27,8 @@ function ensureCaptureHighlightOverlay(): HTMLDivElement {
   }
 
   const overlay = document.createElement('div');
-  overlay.setAttribute('data-notiv-ui', 'true');
-  overlay.setAttribute('data-notiv-capture-highlight', 'true');
+  overlay.setAttribute('data-notis-ui', 'true');
+  overlay.setAttribute('data-notis-capture-highlight', 'true');
   overlay.style.position = 'fixed';
   overlay.style.left = '0';
   overlay.style.top = '0';
@@ -49,8 +49,8 @@ function ensureCaptureCommentOverlay(): HTMLDivElement {
   }
 
   const container = document.createElement('div');
-  container.setAttribute('data-notiv-ui', 'true');
-  container.setAttribute('data-notiv-capture-comment', 'true');
+  container.setAttribute('data-notis-ui', 'true');
+  container.setAttribute('data-notis-capture-comment', 'true');
   container.style.position = 'fixed';
   container.style.left = '0';
   container.style.top = '0';
@@ -70,8 +70,8 @@ function ensureCaptureRedactionOverlay(): HTMLDivElement {
   }
 
   const overlay = document.createElement('div');
-  overlay.setAttribute('data-notiv-ui', 'true');
-  overlay.setAttribute('data-notiv-capture-redaction', 'true');
+  overlay.setAttribute('data-notis-ui', 'true');
+  overlay.setAttribute('data-notis-capture-redaction', 'true');
   overlay.style.position = 'fixed';
   overlay.style.left = '0';
   overlay.style.top = '0';
@@ -100,7 +100,7 @@ function shouldRedactElement(element: HTMLElement): boolean {
   const ariaLabelValue = element.getAttribute('aria-label')?.toLowerCase() ?? '';
   const placeholderValue = element.getAttribute('placeholder')?.toLowerCase() ?? '';
 
-  if (element.getAttribute('data-notiv-redact') === 'true') {
+  if (element.getAttribute('data-notis-redact') === 'true') {
     return true;
   }
 
@@ -187,13 +187,13 @@ export async function prepareCaptureUi(input: {
   redactSensitiveFields?: boolean;
 }): Promise<void> {
   hiddenUiNodes = [];
-  const nodes = document.querySelectorAll<HTMLElement>('[data-notiv-ui="true"]');
+  const nodes = document.querySelectorAll<HTMLElement>('[data-notis-ui="true"]');
   nodes.forEach((node) => {
     if (
-      node.dataset.notivCaptureHighlight === 'true' ||
-      node.dataset.notivCaptureComment === 'true' ||
-      node.dataset.notivCaptureRedaction === 'true' ||
-      node.dataset.notivCapturePreserve === 'true'
+      node.dataset.notisCaptureHighlight === 'true' ||
+      node.dataset.notisCaptureComment === 'true' ||
+      node.dataset.notisCaptureRedaction === 'true' ||
+      node.dataset.notisCapturePreserve === 'true'
     ) {
       return;
     }

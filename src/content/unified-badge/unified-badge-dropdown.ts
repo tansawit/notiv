@@ -1,5 +1,5 @@
 const SELECTED_CHECK_ICON_HTML =
-  '<svg class="notiv-unified-dropdown-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
+  '<svg class="notis-unified-dropdown-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
 
 export interface SearchDropdownShell {
   dropdown: HTMLDivElement;
@@ -9,19 +9,19 @@ export interface SearchDropdownShell {
 
 export function createSearchDropdownShell(placeholder: string, value: string): SearchDropdownShell {
   const dropdown = document.createElement('div');
-  dropdown.className = 'notiv-unified-dropdown';
+  dropdown.className = 'notis-unified-dropdown';
 
   const searchRow = document.createElement('div');
-  searchRow.className = 'notiv-unified-dropdown-search';
+  searchRow.className = 'notis-unified-dropdown-search';
 
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
-  searchInput.className = 'notiv-unified-dropdown-input';
+  searchInput.className = 'notis-unified-dropdown-input';
   searchInput.placeholder = placeholder;
   searchInput.value = value;
 
   const listEl = document.createElement('div');
-  listEl.className = 'notiv-unified-dropdown-list';
+  listEl.className = 'notis-unified-dropdown-list';
 
   searchRow.appendChild(searchInput);
   dropdown.appendChild(searchRow);

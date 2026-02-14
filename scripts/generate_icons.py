@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Notiv icon assets in multiple sizes.
+"""Generate Notis icon assets in multiple sizes.
 
 Design direction:
 - Geometric "N" with yellow highlight stripe

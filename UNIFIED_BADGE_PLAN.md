@@ -63,7 +63,7 @@ Replace separate `floating-badge.ts` and `queue-panel.ts` with single unified co
 File: `src/content/styles.css`
 
 Add unified badge styles:
-- `.notiv-unified-badge` base styles
+- `.notis-unified-badge` base styles
 - Stage-specific dimensions via CSS custom properties or data attributes
 - Content animation keyframes
 - Button press feedback (`:active` states)

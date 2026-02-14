@@ -1,6 +1,6 @@
 import type { HighlightColor } from '../shared/types';
 import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highlight-colors';
-import { getNotivThemeMode } from './theme-mode';
+import { getNotisThemeMode } from './theme-mode';
 import { FONT_STACK_MONO, FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 
 interface DraftMarkerNote {
@@ -64,8 +64,8 @@ export class DraftMarkers {
   constructor(private readonly callbacks: DraftMarkerCallbacks) {
     this.ensureMarkerStyles();
     const container = document.createElement('div');
-    container.setAttribute('data-notiv-ui', 'true');
-    container.setAttribute('data-notiv-draft-markers', 'true');
+    container.setAttribute('data-notis-ui', 'true');
+    container.setAttribute('data-notis-draft-markers', 'true');
     container.style.position = 'fixed';
     container.style.left = '0';
     container.style.top = '0';
@@ -83,7 +83,7 @@ export class DraftMarkers {
     window.addEventListener('scroll', this.handleWindowUpdate, true);
     window.addEventListener('resize', this.handleWindowUpdate, true);
     this.systemThemeQuery.addEventListener('change', this.themeChangeHandler);
-    window.addEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.addEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
   }
 
   setNotes(notes: DraftMarkerNote[]): void {
@@ -136,7 +136,7 @@ export class DraftMarkers {
     window.removeEventListener('scroll', this.handleWindowUpdate, true);
     window.removeEventListener('resize', this.handleWindowUpdate, true);
     this.systemThemeQuery.removeEventListener('change', this.themeChangeHandler);
-    window.removeEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.removeEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
     this.container.remove();
   }
 
@@ -270,7 +270,7 @@ export class DraftMarkers {
     }
 
     this.container.style.display = 'block';
-    const darkMode = getNotivThemeMode() === 'dark';
+    const darkMode = getNotisThemeMode() === 'dark';
     const visualTokens = getVisualModeTokens(darkMode ? 'dark' : 'light');
     const markerTokens = visualTokens.markerBubble;
 
@@ -290,7 +290,7 @@ export class DraftMarkers {
 
       const marker = document.createElement('div');
       marker.style.position = 'absolute';
-      marker.setAttribute('data-notiv-draft-marker', 'true');
+      marker.setAttribute('data-notis-draft-marker', 'true');
       marker.style.left = `${anchorX}px`;
       marker.style.top = `${anchorY}px`;
       marker.style.transform = 'translate(-12px, -12px)';
@@ -299,7 +299,7 @@ export class DraftMarkers {
       marker.style.pointerEvents = 'auto';
       marker.style.cursor = 'pointer';
       if (this.animateOnRender) {
-        marker.style.animation = `notiv-marker-in 160ms cubic-bezier(0.22, 1, 0.36, 1) ${index * 18}ms both`;
+        marker.style.animation = `notis-marker-in 160ms cubic-bezier(0.22, 1, 0.36, 1) ${index * 18}ms both`;
       }
 
       const handleMarkerActivation = (): void => {
@@ -326,7 +326,7 @@ export class DraftMarkers {
       });
 
       const pin = document.createElement('div');
-      pin.setAttribute('data-notiv-draft-pin', 'true');
+      pin.setAttribute('data-notis-draft-pin', 'true');
       pin.style.width = '24px';
       pin.style.height = '24px';
       pin.style.borderRadius = '50% 50% 50% 0';
@@ -358,7 +358,7 @@ export class DraftMarkers {
       });
 
       const bubble = document.createElement('div');
-      bubble.setAttribute('data-notiv-note-bubble', 'true');
+      bubble.setAttribute('data-notis-note-bubble', 'true');
       bubble.style.position = 'absolute';
       bubble.style.left = '0';
       bubble.style.top = '0';
@@ -444,52 +444,52 @@ export class DraftMarkers {
   }
 
   private ensureMarkerStyles(): void {
-    if (document.getElementById('notiv-marker-motion-style')) {
+    if (document.getElementById('notis-marker-motion-style')) {
       return;
     }
     const style = document.createElement('style');
-    style.id = 'notiv-marker-motion-style';
+    style.id = 'notis-marker-motion-style';
     style.textContent = `
-      @keyframes notiv-marker-in {
+      @keyframes notis-marker-in {
         from { opacity: 0; transform: translate(-12px, -6px) scale(0.84); }
         to { opacity: 1; transform: translate(-12px, -12px) scale(1); }
       }
-      @keyframes notiv-bubble-in {
+      @keyframes notis-bubble-in {
         from { opacity: 0; transform: translateY(-50%) translateX(-4px) scale(0.98); }
         to { opacity: 1; transform: translateY(-50%) translateX(0) scale(1); }
       }
-      @keyframes notiv-bubble-in-flat {
+      @keyframes notis-bubble-in-flat {
         from { opacity: 0; transform: translateX(-4px) scale(0.98); }
         to { opacity: 1; transform: none; }
       }
-      @keyframes notiv-pin-pulse {
+      @keyframes notis-pin-pulse {
         0%, 100% { transform: rotate(-45deg) scale(1); }
         50% { transform: rotate(-45deg) scale(1.12); }
       }
-      @keyframes notiv-pin-hover-pulse {
+      @keyframes notis-pin-hover-pulse {
         0% { transform: rotate(-45deg) scale(1.08); }
         50% { transform: rotate(-45deg) scale(1.14); }
         100% { transform: rotate(-45deg) scale(1.08); }
       }
-      [data-notiv-draft-marker="true"] {
+      [data-notis-draft-marker="true"] {
         transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
       }
-      [data-notiv-draft-marker="true"]:hover {
+      [data-notis-draft-marker="true"]:hover {
         transform: translate(-12px, -14px) rotate(2deg);
       }
-      [data-notiv-draft-pin="true"] {
+      [data-notis-draft-pin="true"] {
         transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 120ms ease;
       }
-      [data-notiv-draft-marker="true"]:hover [data-notiv-draft-pin="true"] {
-        animation: notiv-pin-hover-pulse 800ms ease-in-out infinite;
+      [data-notis-draft-marker="true"]:hover [data-notis-draft-pin="true"] {
+        animation: notis-pin-hover-pulse 800ms ease-in-out infinite;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
-      [data-notiv-draft-marker="true"]:hover [data-notiv-note-bubble="true"] {
+      [data-notis-draft-marker="true"]:hover [data-notis-note-bubble="true"] {
         opacity: 1 !important;
         pointer-events: auto !important;
       }
-      [data-notiv-draft-pin="true"].pulse-once {
-        animation: notiv-pin-pulse 400ms ease-in-out;
+      [data-notis-draft-pin="true"].pulse-once {
+        animation: notis-pin-pulse 400ms ease-in-out;
       }
     `;
     document.head.appendChild(style);

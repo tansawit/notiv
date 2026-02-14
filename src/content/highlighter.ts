@@ -1,7 +1,7 @@
 import type { BoundingBox } from '../shared/types';
 import { DEFAULT_HIGHLIGHT_COLOR, getHighlightColorPreset } from '../shared/highlight-colors';
 import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
-import { getNotivThemeMode } from './theme-mode';
+import { getNotisThemeMode } from './theme-mode';
 
 interface HighlighterOptions {
   overlayZIndex?: number;
@@ -22,7 +22,7 @@ export class Highlighter {
 
     const defaultHighlight = getHighlightColorPreset(DEFAULT_HIGHLIGHT_COLOR);
     this.overlay = document.createElement('div');
-    this.overlay.setAttribute('data-notiv-ui', 'true');
+    this.overlay.setAttribute('data-notis-ui', 'true');
     this.overlay.style.position = 'fixed';
     this.overlay.style.border = `2px solid ${defaultHighlight.border}`;
     this.overlay.style.borderRadius = '4px';
@@ -36,7 +36,7 @@ export class Highlighter {
     this.overlay.style.transition = 'all 80ms ease-out';
 
     this.tooltip = document.createElement('div');
-    this.tooltip.setAttribute('data-notiv-ui', 'true');
+    this.tooltip.setAttribute('data-notis-ui', 'true');
     this.tooltip.style.position = 'fixed';
     this.tooltip.style.left = '0';
     this.tooltip.style.top = '0';
@@ -61,7 +61,7 @@ export class Highlighter {
   }
 
   private applyTooltipTheme(): void {
-    const visualTokens = getVisualModeTokens(getNotivThemeMode());
+    const visualTokens = getVisualModeTokens(getNotisThemeMode());
     this.tooltip.style.background = visualTokens.floatingTooltip.background;
     this.tooltip.style.color = visualTokens.floatingTooltip.color;
     this.tooltip.style.border = `1.25px solid ${visualTokens.floatingTooltip.border}`;

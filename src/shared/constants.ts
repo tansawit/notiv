@@ -25,6 +25,6 @@ export const LEGACY_STORAGE_KEYS = {
 } as const;
 
 export const UI_IDS = {
-  rootContainer: 'notiv-extension-root',
-  styleTag: 'notiv-extension-style'
+  rootContainer: 'notis-extension-root',
+  styleTag: 'notis-extension-style'
 } as const;

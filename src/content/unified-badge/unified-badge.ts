@@ -1,6 +1,6 @@
 import styles from '../styles.css?inline';
 import { UI_IDS, STORAGE_KEYS } from '../../shared/constants';
-import { getNotivThemeMode } from '../theme-mode';
+import { getNotisThemeMode } from '../theme-mode';
 import type { LinearLabel } from '../../shared/types';
 import { getHighlightColorPreset, resolveHighlightColor } from '../../shared/highlight-colors';
 import { getLocalStorageItems, setLocalStorageItems } from '../../shared/chrome-storage';
@@ -129,7 +129,7 @@ export class UnifiedBadge {
   setSubmitting(value: boolean): void {
     this.submitting = value;
     if (value) {
-      this.container?.setAttribute('data-notiv-capture-preserve', 'true');
+      this.container?.setAttribute('data-notis-capture-preserve', 'true');
       this.changeStage('loading');
     }
   }
@@ -146,7 +146,7 @@ export class UnifiedBadge {
   getNotePositions(): NotePosition[] {
     if (!this.listEl) return [];
     const positions: NotePosition[] = [];
-    const rows = this.listEl.querySelectorAll('.notiv-unified-row');
+    const rows = this.listEl.querySelectorAll('.notis-unified-row');
     rows.forEach((row, index) => {
       const rect = row.getBoundingClientRect();
       const note = this.items[index];
@@ -175,7 +175,7 @@ export class UnifiedBadge {
     this.pendingIssueUrl = issue?.url ?? null;
 
     if (this.successContent) {
-      const textEl = this.successContent.querySelector('.notiv-unified-success-text');
+      const textEl = this.successContent.querySelector('.notis-unified-success-text');
       if (textEl) {
         textEl.textContent = issue?.identifier ? `${issue.identifier} created` : 'Ticket created';
       }
@@ -208,7 +208,7 @@ export class UnifiedBadge {
     }
 
     if (this.errorContent) {
-      const textEl = this.errorContent.querySelector('.notiv-unified-error-text');
+      const textEl = this.errorContent.querySelector('.notis-unified-error-text');
       if (textEl) {
         const shortMessage = message.length > 24 ? message.slice(0, 22) + '…' : message;
         textEl.textContent = shortMessage;
@@ -236,7 +236,7 @@ export class UnifiedBadge {
 
   hideSubmitting(): void {
     this.submitting = false;
-    this.container?.removeAttribute('data-notiv-capture-preserve');
+    this.container?.removeAttribute('data-notis-capture-preserve');
   }
 
   getPosition(): { x: number; y: number; width: number; height: number } | null {
@@ -284,7 +284,7 @@ export class UnifiedBadge {
       this.errorPillTimeout = null;
     }
     this.systemThemeQuery.removeEventListener('change', this.themeChangeHandler);
-    window.removeEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.removeEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
     this.container?.remove();
     this.container = null;
   }
@@ -340,12 +340,12 @@ export class UnifiedBadge {
 
     const container = document.createElement('div');
     container.id = `${UI_IDS.rootContainer}-unified`;
-    container.setAttribute('data-notiv-ui', 'true');
+    container.setAttribute('data-notis-ui', 'true');
     container.style.position = 'fixed';
     container.style.zIndex = '2147483645';
     container.style.right = '20px';
     container.style.bottom = '20px';
-    container.setAttribute('data-notiv-theme', getNotivThemeMode());
+    container.setAttribute('data-notis-theme', getNotisThemeMode());
 
     const shadow = container.attachShadow({ mode: 'open' });
     const styleTag = document.createElement('style');
@@ -354,7 +354,7 @@ export class UnifiedBadge {
     shadow.appendChild(styleTag);
 
     const backdrop = document.createElement('div');
-    backdrop.className = 'notiv-unified-backdrop';
+    backdrop.className = 'notis-unified-backdrop';
     backdrop.addEventListener('click', () => {
       if (this.stage === 'queue') {
         this.changeStage('badge');
@@ -364,7 +364,7 @@ export class UnifiedBadge {
     this.backdrop = backdrop;
 
     const morphContainer = document.createElement('div');
-    morphContainer.className = 'notiv-unified-morph';
+    morphContainer.className = 'notis-unified-morph';
     morphContainer.setAttribute('data-stage', 'badge');
 
     this.buildBadgeContent(morphContainer);
@@ -374,7 +374,7 @@ export class UnifiedBadge {
     this.buildErrorContent(morphContainer);
 
     const tooltip = document.createElement('div');
-    tooltip.className = 'notiv-unified-tooltip';
+    tooltip.className = 'notis-unified-tooltip';
     tooltip.textContent = 'Submitting to Linear...';
     morphContainer.appendChild(tooltip);
     this.tooltip = tooltip;
@@ -385,21 +385,21 @@ export class UnifiedBadge {
 
     document.documentElement.appendChild(container);
     this.systemThemeQuery.addEventListener('change', this.themeChangeHandler);
-    window.addEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.addEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
 
     this.container = container;
   }
 
   private buildBadgeContent(parent: HTMLElement): void {
     const content = document.createElement('div');
-    content.className = 'notiv-unified-content notiv-unified-badge-content';
+    content.className = 'notis-unified-content notis-unified-badge-content';
 
     const countEl = document.createElement('span');
-    countEl.className = 'notiv-unified-badge-count';
+    countEl.className = 'notis-unified-badge-count';
     countEl.textContent = '+';
 
     const emptyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    emptyIcon.setAttribute('class', 'notiv-unified-badge-icon');
+    emptyIcon.setAttribute('class', 'notis-unified-badge-icon');
     emptyIcon.setAttribute('viewBox', '0 0 24 24');
     emptyIcon.setAttribute('fill', 'none');
     emptyIcon.setAttribute('stroke', 'currentColor');
@@ -427,29 +427,29 @@ export class UnifiedBadge {
 
   private buildQueueContent(parent: HTMLElement): void {
     const content = document.createElement('div');
-    content.className = 'notiv-unified-content notiv-unified-queue-content';
+    content.className = 'notis-unified-content notis-unified-queue-content';
     content.addEventListener('click', (e) => e.stopPropagation());
 
     const header = document.createElement('div');
-    header.className = 'notiv-unified-header';
+    header.className = 'notis-unified-header';
 
     const title = document.createElement('span');
-    title.className = 'notiv-unified-title';
+    title.className = 'notis-unified-title';
     title.textContent = 'Notes';
 
     const actions = document.createElement('div');
-    actions.className = 'notiv-unified-actions';
+    actions.className = 'notis-unified-actions';
 
     const clearBtn = document.createElement('button');
     clearBtn.type = 'button';
-    clearBtn.className = 'notiv-unified-btn notiv-unified-btn-ghost';
+    clearBtn.className = 'notis-unified-btn notis-unified-btn-ghost';
     clearBtn.textContent = 'Clear';
     clearBtn.addEventListener('click', () => this.callbacks.onClear());
     this.addButtonPressEffect(clearBtn);
 
     const submitBtn = document.createElement('button');
     submitBtn.type = 'button';
-    submitBtn.className = 'notiv-unified-btn notiv-unified-btn-submit';
+    submitBtn.className = 'notis-unified-btn notis-unified-btn-submit';
     submitBtn.title = 'Submit to Linear';
     const submitIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     submitIcon.setAttribute('width', '14');
@@ -473,14 +473,14 @@ export class UnifiedBadge {
     header.appendChild(actions);
 
     const list = document.createElement('div');
-    list.className = 'notiv-unified-list';
+    list.className = 'notis-unified-list';
 
     const empty = document.createElement('div');
-    empty.className = 'notiv-unified-empty';
+    empty.className = 'notis-unified-empty';
     empty.style.display = 'none';
 
     const emptyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    emptyIcon.setAttribute('class', 'notiv-unified-empty-icon');
+    emptyIcon.setAttribute('class', 'notis-unified-empty-icon');
     emptyIcon.setAttribute('viewBox', '0 0 24 24');
     emptyIcon.setAttribute('fill', 'none');
     emptyIcon.setAttribute('stroke', 'currentColor');
@@ -492,11 +492,11 @@ export class UnifiedBadge {
     emptyIcon.appendChild(iconPath);
 
     const emptyText = document.createElement('div');
-    emptyText.className = 'notiv-unified-empty-text';
+    emptyText.className = 'notis-unified-empty-text';
     emptyText.textContent = 'Ready when you are';
 
     const emptyHint = document.createElement('div');
-    emptyHint.className = 'notiv-unified-empty-hint';
+    emptyHint.className = 'notis-unified-empty-hint';
     emptyHint.textContent = 'Highlight text or click anywhere to capture a thought';
 
     empty.appendChild(emptyIcon);
@@ -505,7 +505,7 @@ export class UnifiedBadge {
     list.appendChild(empty);
 
     const settings = document.createElement('div');
-    settings.className = 'notiv-unified-settings';
+    settings.className = 'notis-unified-settings';
 
     content.appendChild(header);
     content.appendChild(list);
@@ -523,10 +523,10 @@ export class UnifiedBadge {
 
   private buildLoadingContent(parent: HTMLElement): void {
     const content = document.createElement('div');
-    content.className = 'notiv-unified-content notiv-unified-loading-content';
+    content.className = 'notis-unified-content notis-unified-loading-content';
 
     const spinner = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    spinner.setAttribute('class', 'notiv-unified-spinner');
+    spinner.setAttribute('class', 'notis-unified-spinner');
     spinner.setAttribute('viewBox', '0 0 24 24');
     spinner.setAttribute('fill', 'none');
     spinner.setAttribute('stroke', 'currentColor');
@@ -548,10 +548,10 @@ export class UnifiedBadge {
 
   private buildSuccessContent(parent: HTMLElement): void {
     const content = document.createElement('div');
-    content.className = 'notiv-unified-content notiv-unified-success-content';
+    content.className = 'notis-unified-content notis-unified-success-content';
 
     const checkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    checkIcon.setAttribute('class', 'notiv-unified-success-check');
+    checkIcon.setAttribute('class', 'notis-unified-success-check');
     checkIcon.setAttribute('width', '16');
     checkIcon.setAttribute('height', '16');
     checkIcon.setAttribute('viewBox', '0 0 24 24');
@@ -565,11 +565,11 @@ export class UnifiedBadge {
     checkIcon.appendChild(checkPath);
 
     const textEl = document.createElement('span');
-    textEl.className = 'notiv-unified-success-text';
+    textEl.className = 'notis-unified-success-text';
     textEl.textContent = 'Ticket created';
 
     const arrowIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    arrowIcon.setAttribute('class', 'notiv-unified-success-arrow');
+    arrowIcon.setAttribute('class', 'notis-unified-success-arrow');
     arrowIcon.setAttribute('width', '14');
     arrowIcon.setAttribute('height', '14');
     arrowIcon.setAttribute('viewBox', '0 0 24 24');
@@ -599,10 +599,10 @@ export class UnifiedBadge {
 
   private buildErrorContent(parent: HTMLElement): void {
     const content = document.createElement('div');
-    content.className = 'notiv-unified-content notiv-unified-error-content';
+    content.className = 'notis-unified-content notis-unified-error-content';
 
     const errorIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    errorIcon.setAttribute('class', 'notiv-unified-error-icon');
+    errorIcon.setAttribute('class', 'notis-unified-error-icon');
     errorIcon.setAttribute('width', '16');
     errorIcon.setAttribute('height', '16');
     errorIcon.setAttribute('viewBox', '0 0 24 24');
@@ -616,7 +616,7 @@ export class UnifiedBadge {
     errorIcon.appendChild(errorPath);
 
     const textEl = document.createElement('span');
-    textEl.className = 'notiv-unified-error-text';
+    textEl.className = 'notis-unified-error-text';
     textEl.textContent = 'Failed to submit';
 
     content.appendChild(errorIcon);
@@ -654,7 +654,7 @@ export class UnifiedBadge {
 
   private applyThemeMode(): void {
     if (!this.container) return;
-    this.container.setAttribute('data-notiv-theme', getNotivThemeMode());
+    this.container.setAttribute('data-notis-theme', getNotisThemeMode());
   }
 
   private getQueueHeight(): number {
@@ -742,8 +742,8 @@ export class UnifiedBadge {
   private updateBadgeCount(): void {
     if (!this.badgeContent) return;
 
-    const countEl = this.badgeContent.querySelector('.notiv-unified-badge-count') as HTMLElement;
-    const iconEl = this.badgeContent.querySelector('.notiv-unified-badge-icon') as HTMLElement;
+    const countEl = this.badgeContent.querySelector('.notis-unified-badge-count') as HTMLElement;
+    const iconEl = this.badgeContent.querySelector('.notis-unified-badge-icon') as HTMLElement;
 
     if (this.items.length > 0) {
       countEl.textContent = String(this.items.length);
@@ -758,10 +758,10 @@ export class UnifiedBadge {
   private animateQueueContentIn(): void {
     if (!this.queueContent || this.prefersReducedMotion) return;
 
-    const header = this.queueContent.querySelector('.notiv-unified-header') as HTMLElement;
-    const settings = this.queueContent.querySelector('.notiv-unified-settings') as HTMLElement;
+    const header = this.queueContent.querySelector('.notis-unified-header') as HTMLElement;
+    const settings = this.queueContent.querySelector('.notis-unified-settings') as HTMLElement;
     const empty = this.emptyEl;
-    const rows = this.listEl?.querySelectorAll('.notiv-unified-row');
+    const rows = this.listEl?.querySelectorAll('.notis-unified-row');
 
     if (header) {
       header.style.opacity = '0';
@@ -807,7 +807,7 @@ export class UnifiedBadge {
   private renderQueueContent(): void {
     if (!this.listEl || !this.emptyEl) return;
 
-    const mode = getNotivThemeMode();
+    const mode = getNotisThemeMode();
     const isDark = mode === 'dark';
 
     if (this.titleEl) {
@@ -838,7 +838,7 @@ export class UnifiedBadge {
     const previousIds = new Set(this.renderedItemIds);
     const newIds = new Set(currentIds.filter((id) => !previousIds.has(id)));
 
-    const existingRows = this.listEl.querySelectorAll('.notiv-unified-row');
+    const existingRows = this.listEl.querySelectorAll('.notis-unified-row');
     existingRows.forEach((row) => row.remove());
 
     this.renderedItemIds = currentIds;
@@ -866,29 +866,29 @@ export class UnifiedBadge {
 
   private updateRowHighlights(prevId: string | null, newId: string | null): void {
     if (!this.listEl) return;
-    updateUnifiedBadgeRowHighlight(this.listEl, prevId, newId, getNotivThemeMode() === 'dark');
+    updateUnifiedBadgeRowHighlight(this.listEl, prevId, newId, getNotisThemeMode() === 'dark');
   }
 
   private renderSettings(): void {
     if (!this.settingsEl || !this.shadowRoot) return;
 
-    this.shadowRoot.querySelectorAll('.notiv-unified-dropdown').forEach((el) => el.remove());
+    this.shadowRoot.querySelectorAll('.notis-unified-dropdown').forEach((el) => el.remove());
     this.settingsEl.innerHTML = '';
 
     const bar = document.createElement('div');
-    bar.className = 'notiv-unified-settings-bar';
+    bar.className = 'notis-unified-settings-bar';
     if (this.takeoverMode) {
       bar.classList.add('selecting', `selecting-${this.takeoverMode}`);
     }
 
     const resting = document.createElement('div');
-    resting.className = 'notiv-unified-bar-resting';
+    resting.className = 'notis-unified-bar-resting';
 
     const priorityBtn = document.createElement('button');
     priorityBtn.type = 'button';
-    priorityBtn.className = 'notiv-unified-inline-btn takeover-trigger';
+    priorityBtn.className = 'notis-unified-inline-btn takeover-trigger';
     priorityBtn.appendChild(createPriorityIcon(this.settings.priority));
-    priorityBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
+    priorityBtn.insertAdjacentHTML('beforeend', createChevronHtml('notis-unified-chevron'));
 
     priorityBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -903,24 +903,24 @@ export class UnifiedBadge {
     resting.appendChild(spacer);
 
     const teamAnchor = document.createElement('div');
-    teamAnchor.className = 'notiv-unified-dropdown-anchor';
+    teamAnchor.className = 'notis-unified-dropdown-anchor';
 
     const selectedTeam = this.resources.teams.find((t) => t.id === this.selectedTeamId) ?? this.resources.teams[0];
     const teamBtn = document.createElement('button');
     teamBtn.type = 'button';
-    teamBtn.className = 'notiv-unified-inline-btn';
+    teamBtn.className = 'notis-unified-inline-btn';
     if (this.teamDropdownOpen) teamBtn.classList.add('active');
 
     const teamArrow = document.createElement('span');
-    teamArrow.className = 'notiv-unified-team-arrow';
+    teamArrow.className = 'notis-unified-team-arrow';
     teamArrow.textContent = '→';
     teamBtn.appendChild(teamArrow);
 
     const teamKey = document.createElement('span');
-    teamKey.className = 'notiv-unified-team-key';
+    teamKey.className = 'notis-unified-team-key';
     teamKey.textContent = selectedTeam?.key ?? 'Team';
     teamBtn.appendChild(teamKey);
-    teamBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
+    teamBtn.insertAdjacentHTML('beforeend', createChevronHtml('notis-unified-chevron'));
 
     teamBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -937,31 +937,31 @@ export class UnifiedBadge {
     resting.appendChild(teamAnchor);
 
     const assigneeAnchor = document.createElement('div');
-    assigneeAnchor.className = 'notiv-unified-dropdown-anchor';
+    assigneeAnchor.className = 'notis-unified-dropdown-anchor';
 
     const selectedUser = this.resources.users.find((u) => u.id === this.settings.assigneeId);
     const assigneeBtn = document.createElement('button');
     assigneeBtn.type = 'button';
-    assigneeBtn.className = 'notiv-unified-inline-btn';
+    assigneeBtn.className = 'notis-unified-inline-btn';
     if (this.assigneeDropdownOpen) assigneeBtn.classList.add('active');
 
     if (selectedUser) {
       if (selectedUser.avatarUrl) {
         const avatar = document.createElement('img');
-        avatar.className = 'notiv-unified-avatar';
+        avatar.className = 'notis-unified-avatar';
         avatar.src = selectedUser.avatarUrl;
         avatar.alt = '';
         assigneeBtn.appendChild(avatar);
       } else {
         const placeholder = document.createElement('span');
-        placeholder.className = 'notiv-unified-avatar-placeholder';
+        placeholder.className = 'notis-unified-avatar-placeholder';
         placeholder.textContent = selectedUser.name.charAt(0).toUpperCase();
         assigneeBtn.appendChild(placeholder);
       }
     } else {
       assigneeBtn.appendChild(createUserIcon());
     }
-    assigneeBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
+    assigneeBtn.insertAdjacentHTML('beforeend', createChevronHtml('notis-unified-chevron'));
 
     assigneeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -978,7 +978,7 @@ export class UnifiedBadge {
     resting.appendChild(assigneeAnchor);
 
     const labelsAnchor = document.createElement('div');
-    labelsAnchor.className = 'notiv-unified-dropdown-anchor';
+    labelsAnchor.className = 'notis-unified-dropdown-anchor';
 
     const selectedLabels = this.settings.labelIds
       .map((id) => this.resources.labels.find((l) => l.id === id))
@@ -986,14 +986,14 @@ export class UnifiedBadge {
 
     const labelsBtn = document.createElement('button');
     labelsBtn.type = 'button';
-    labelsBtn.className = 'notiv-unified-inline-btn';
+    labelsBtn.className = 'notis-unified-inline-btn';
     if (this.labelsDropdownOpen) labelsBtn.classList.add('active');
 
     if (selectedLabels.length > 0) {
       const chip = document.createElement('span');
-      chip.className = 'notiv-unified-label-chip';
+      chip.className = 'notis-unified-label-chip';
       const dot = document.createElement('span');
-      dot.className = 'notiv-unified-label-dot';
+      dot.className = 'notis-unified-label-dot';
       dot.style.background = selectedLabels[0].color;
       chip.appendChild(dot);
       const name = document.createElement('span');
@@ -1002,11 +1002,11 @@ export class UnifiedBadge {
       labelsBtn.appendChild(chip);
     } else {
       const placeholder = document.createElement('span');
-      placeholder.className = 'notiv-unified-placeholder';
+      placeholder.className = 'notis-unified-placeholder';
       placeholder.textContent = 'Labels';
       labelsBtn.appendChild(placeholder);
     }
-    labelsBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
+    labelsBtn.insertAdjacentHTML('beforeend', createChevronHtml('notis-unified-chevron'));
 
     labelsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1090,12 +1090,12 @@ export class UnifiedBadge {
 
   private createPriorityTakeover(): HTMLDivElement {
     const takeover = document.createElement('div');
-    takeover.className = 'notiv-unified-bar-takeover';
+    takeover.className = 'notis-unified-bar-takeover';
     takeover.dataset.mode = 'priority';
 
     const cancelBtn = document.createElement('button');
     cancelBtn.type = 'button';
-    cancelBtn.className = 'notiv-unified-takeover-cancel';
+    cancelBtn.className = 'notis-unified-takeover-cancel';
     cancelBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
     cancelBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1105,12 +1105,12 @@ export class UnifiedBadge {
     takeover.appendChild(cancelBtn);
 
     const options = document.createElement('div');
-    options.className = 'notiv-unified-takeover-options';
+    options.className = 'notis-unified-takeover-options';
 
     PRIORITY_OPTIONS.forEach((p) => {
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'notiv-unified-takeover-chip priority-chip';
+      chip.className = 'notis-unified-takeover-chip priority-chip';
       chip.title = p.label;
       if (this.settings.priority === p.value) chip.classList.add('selected');
       chip.appendChild(createPriorityIcon(p.value));

@@ -58,7 +58,7 @@ export type ContentToBackgroundMessage =
 
 export type BackgroundToContentMessage =
   | {
-      type: 'notivPing';
+      type: 'notisPing';
     }
   | {
       type: 'pickerActivationChanged';

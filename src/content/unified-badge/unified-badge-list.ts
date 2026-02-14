@@ -28,9 +28,9 @@ export function renderUnifiedBadgeRows(input: RenderUnifiedBadgeRowsInput): void
     const isNew = input.newIds.has(note.id);
 
     const row = document.createElement('div');
-    row.className = 'notiv-unified-row';
+    row.className = 'notis-unified-row';
     if (isNew) {
-      row.classList.add('notiv-unified-row-new');
+      row.classList.add('notis-unified-row-new');
     }
     row.setAttribute('data-note-id', note.id);
     row.style.display = 'grid';

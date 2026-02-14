@@ -1,5 +1,5 @@
 {
-  "name": "notiv-extension",
+  "name": "notis-extension",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "lint": "eslint src --max-warnings=0",
     "format": "prettier --write \"*.{md,json}\" \".github/workflows/*.yml\"",
     "format:check": "prettier --check \"*.{md,json}\" \".github/workflows/*.yml\"",
-    "package": "rm -f notiv-extension-$npm_package_version.zip && cd dist && zip -r ../notiv-extension-$npm_package_version.zip .",
+    "package": "rm -f notis-extension-$npm_package_version.zip && cd dist && zip -r ../notis-extension-$npm_package_version.zip .",
     "test": "vitest",
     "test:run": "vitest run"
   },

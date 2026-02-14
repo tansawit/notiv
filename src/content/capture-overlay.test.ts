@@ -10,7 +10,7 @@ vi.mock('../shared/chrome-storage', () => ({
 describe('capture overlay redaction', () => {
   afterEach(() => {
     document.body.innerHTML = '';
-    document.querySelectorAll('[data-notiv-ui="true"]').forEach((node) => node.remove());
+    document.querySelectorAll('[data-notis-ui="true"]').forEach((node) => node.remove());
     vi.clearAllMocks();
   });
 
@@ -38,7 +38,7 @@ describe('capture overlay redaction', () => {
 
     await prepareCaptureUi({});
 
-    const redactionLayer = document.querySelector('[data-notiv-capture-redaction="true"]');
+    const redactionLayer = document.querySelector('[data-notis-capture-redaction="true"]');
     expect(redactionLayer).toBeTruthy();
     expect(redactionLayer?.childElementCount).toBe(1);
   });
@@ -67,7 +67,7 @@ describe('capture overlay redaction', () => {
 
     await prepareCaptureUi({});
 
-    const redactionLayer = document.querySelector('[data-notiv-capture-redaction="true"]') as HTMLDivElement | null;
+    const redactionLayer = document.querySelector('[data-notis-capture-redaction="true"]') as HTMLDivElement | null;
     if (redactionLayer) {
       expect(redactionLayer.style.display).toBe('none');
       expect(redactionLayer.childElementCount).toBe(0);
@@ -101,7 +101,7 @@ describe('capture overlay redaction', () => {
     await prepareCaptureUi({});
     restoreCaptureUi();
 
-    const redactionLayer = document.querySelector('[data-notiv-capture-redaction="true"]') as HTMLDivElement | null;
+    const redactionLayer = document.querySelector('[data-notis-capture-redaction="true"]') as HTMLDivElement | null;
     expect(redactionLayer).toBeTruthy();
     expect(redactionLayer?.style.display).toBe('none');
     expect(redactionLayer?.childElementCount).toBe(0);

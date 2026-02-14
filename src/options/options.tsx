@@ -68,7 +68,7 @@ function SettingsApp(): React.JSX.Element {
   return (
     <div className="settings-shell">
       <header className="page-head">
-        <h1 className="page-title">Notiv Settings</h1>
+        <h1 className="page-title">Notis Settings</h1>
         <p className="page-subtitle">Linear connection and site permissions.</p>
       </header>
 
@@ -181,7 +181,7 @@ function SettingsApp(): React.JSX.Element {
           <strong>Site access</strong>
           <span className="status-badge">{grantedSiteOrigins.length} granted</span>
         </div>
-        <div className="meta-line">Notiv only runs on sites you explicitly allow.</div>
+        <div className="meta-line">Notis only runs on sites you explicitly allow.</div>
         <label className="label">
           Grant site access
           <input

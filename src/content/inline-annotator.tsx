@@ -7,7 +7,7 @@ import {
   DEFAULT_HIGHLIGHT_COLOR,
   HIGHLIGHT_COLOR_PRESETS
 } from '../shared/highlight-colors';
-import { getNotivThemeMode } from './theme-mode';
+import { getNotisThemeMode } from './theme-mode';
 import { loadLastHighlightColor, saveLastHighlightColor } from './color-persistence';
 import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
 import { Icon } from '../shared/components/Icon';
@@ -184,15 +184,15 @@ function InlineAnnotatorPanel({
 
   return (
     <div
-      className="notiv-inline-annotator"
+      className="notis-inline-annotator"
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="notiv-inline-main-row">
+      <div className="notis-inline-main-row">
         {isEditing && onDelete && (
           <button
             type="button"
-            className="notiv-inline-delete-btn"
+            className="notis-inline-delete-btn"
             onClick={onDelete}
             title="Delete note"
             aria-label="Delete note"
@@ -204,7 +204,7 @@ function InlineAnnotatorPanel({
         <input
           ref={inputRef}
           type="text"
-          className="notiv-inline-input"
+          className="notis-inline-input"
           placeholder="Add a note..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -235,14 +235,14 @@ function InlineAnnotatorPanel({
         />
 
         {attachments.length > 0 && (
-          <span className="notiv-inline-attachment-count" title={`${attachments.length} image(s) attached`}>
+          <span className="notis-inline-attachment-count" title={`${attachments.length} image(s) attached`}>
             {attachments.length}
           </span>
         )}
 
         <button
           type="button"
-          className="notiv-inline-attach-btn"
+          className="notis-inline-attach-btn"
           onClick={() => fileInputRef.current?.click()}
           disabled={attachments.length >= 3}
           title={attachments.length >= 3 ? '3 images max' : 'Attach image (or paste)'}
@@ -253,7 +253,7 @@ function InlineAnnotatorPanel({
 
         <button
           type="button"
-          className="notiv-inline-submit-btn"
+          className="notis-inline-submit-btn"
           onClick={() => handleSubmit(false)}
           disabled={!canSubmit}
           title="Save note (Enter)"
@@ -263,19 +263,19 @@ function InlineAnnotatorPanel({
         </button>
       </div>
 
-      <div className="notiv-inline-footer">
-        <div className="notiv-inline-picker-row">
+      <div className="notis-inline-footer">
+        <div className="notis-inline-picker-row">
           {HIGHLIGHT_COLOR_PRESETS.map((preset) => (
             <button
               key={preset.id}
               type="button"
-              className={`notiv-inline-picker-dot${preset.id === highlightColor ? ' active' : ''}`}
+              className={`notis-inline-picker-dot${preset.id === highlightColor ? ' active' : ''}`}
               style={{ background: preset.pinFill }}
               onClick={() => setHighlightColor(preset.id)}
               title={preset.label}
               aria-label={preset.label}
             >
-              <svg className="notiv-inline-picker-check" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <svg className="notis-inline-picker-check" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                 <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -283,32 +283,32 @@ function InlineAnnotatorPanel({
         </div>
 
         {selectedTeam && (
-          <div className="notiv-inline-team-picker" ref={teamPickerRef}>
+          <div className="notis-inline-team-picker" ref={teamPickerRef}>
             <button
               type="button"
-              className={`notiv-inline-team-btn${teamDropdownOpen ? ' active' : ''}`}
+              className={`notis-inline-team-btn${teamDropdownOpen ? ' active' : ''}`}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}
               title={`Submitting to ${selectedTeam.name}`}
             >
-              <span className="notiv-inline-team-arrow">→</span>
-              <span className="notiv-inline-team-key">{selectedTeam.key}</span>
-              <svg className="notiv-inline-team-chevron" width="8" height="8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <span className="notis-inline-team-arrow">→</span>
+              <span className="notis-inline-team-key">{selectedTeam.key}</span>
+              <svg className="notis-inline-team-chevron" width="8" height="8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
 
             {teamDropdownOpen && (
-              <div className="notiv-inline-team-dropdown">
+              <div className="notis-inline-team-dropdown">
                 {teams.length > 5 && (
-                  <div className="notiv-inline-team-dropdown-search">
-                    <svg className="notiv-inline-team-dropdown-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <div className="notis-inline-team-dropdown-search">
+                    <svg className="notis-inline-team-dropdown-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <input
                       ref={teamSearchRef}
                       type="text"
-                      className="notiv-inline-team-dropdown-search-input"
+                      className="notis-inline-team-dropdown-search-input"
                       placeholder="Search teams..."
                       value={teamSearch}
                       onChange={(e) => setTeamSearch(e.target.value)}
@@ -321,24 +321,24 @@ function InlineAnnotatorPanel({
                     />
                   </div>
                 )}
-                <div className="notiv-inline-team-dropdown-list">
+                <div className="notis-inline-team-dropdown-list">
                   {filteredTeams.length === 0 ? (
-                    <div className="notiv-inline-team-dropdown-empty">No teams found</div>
+                    <div className="notis-inline-team-dropdown-empty">No teams found</div>
                   ) : (
                     filteredTeams.map((team) => (
                       <button
                         key={team.id}
                         type="button"
-                        className={`notiv-inline-team-dropdown-item${team.id === selectedTeam.id ? ' selected' : ''}`}
+                        className={`notis-inline-team-dropdown-item${team.id === selectedTeam.id ? ' selected' : ''}`}
                         onClick={() => {
                           onTeamChange(team.id);
                           setTeamDropdownOpen(false);
                         }}
                       >
-                        <span className="notiv-inline-team-dropdown-prefix">{team.key}</span>
-                        <span className="notiv-inline-team-dropdown-name">{team.name}</span>
+                        <span className="notis-inline-team-dropdown-prefix">{team.key}</span>
+                        <span className="notis-inline-team-dropdown-name">{team.name}</span>
                         {team.id === selectedTeam.id && (
-                          <svg className="notiv-inline-team-dropdown-check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <svg className="notis-inline-team-dropdown-check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
@@ -351,13 +351,13 @@ function InlineAnnotatorPanel({
           </div>
         )}
 
-        <div className="notiv-inline-hint">
-          <span className="notiv-inline-hint-key">↵</span>
-          <span className="notiv-inline-hint-label">Save</span>
-          <span className="notiv-inline-hint-sep">·</span>
-          <span className="notiv-inline-hint-key">⌘</span>
-          <span className="notiv-inline-hint-key">↵</span>
-          <span className="notiv-inline-hint-label">Submit</span>
+        <div className="notis-inline-hint">
+          <span className="notis-inline-hint-key">↵</span>
+          <span className="notis-inline-hint-label">Save</span>
+          <span className="notis-inline-hint-sep">·</span>
+          <span className="notis-inline-hint-key">⌘</span>
+          <span className="notis-inline-hint-key">↵</span>
+          <span className="notis-inline-hint-label">Submit</span>
         </div>
       </div>
     </div>
@@ -392,7 +392,7 @@ export class InlineAnnotator {
     const target = event.target;
     if (!(target instanceof Node)) return;
     if (this.container.contains(target)) return;
-    if (target instanceof Element && target.closest('[data-notiv-ui="true"]')) return;
+    if (target instanceof Element && target.closest('[data-notis-ui="true"]')) return;
     event.preventDefault();
     event.stopPropagation();
     this.shake();
@@ -467,7 +467,7 @@ export class InlineAnnotator {
 
   private showCaptureSuccess(point: { x: number; y: number }): void {
     const indicator = document.createElement('div');
-    indicator.className = 'notiv-capture-success-indicator';
+    indicator.className = 'notis-capture-success-indicator';
     indicator.style.position = 'fixed';
     indicator.style.left = `${point.x - 12}px`;
     indicator.style.top = `${point.y - 12}px`;
@@ -519,7 +519,7 @@ export class InlineAnnotator {
   destroy(): void {
     document.removeEventListener('pointerdown', this.outsidePointerHandler, true);
     this.systemThemeQuery.removeEventListener('change', this.themeChangeHandler);
-    window.removeEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.removeEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
     this.reactRoot?.unmount();
     this.container?.remove();
     this.container = null;
@@ -532,10 +532,10 @@ export class InlineAnnotator {
 
     const container = document.createElement('div');
     container.id = `${UI_IDS.rootContainer}-inline`;
-    container.setAttribute('data-notiv-ui', 'true');
+    container.setAttribute('data-notis-ui', 'true');
     container.style.position = 'fixed';
     container.style.zIndex = '2147483647';
-    container.setAttribute('data-notiv-theme', getNotivThemeMode());
+    container.setAttribute('data-notis-theme', getNotisThemeMode());
 
     const shadow = container.attachShadow({ mode: 'open' });
     const styleTag = document.createElement('style');
@@ -549,7 +549,7 @@ export class InlineAnnotator {
     document.documentElement.appendChild(container);
     document.addEventListener('pointerdown', this.outsidePointerHandler, true);
     this.systemThemeQuery.addEventListener('change', this.themeChangeHandler);
-    window.addEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.addEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
 
     this.container = container;
     this.reactRoot = createRoot(rootTarget);
@@ -557,7 +557,7 @@ export class InlineAnnotator {
 
   private applyThemeMode(): void {
     if (!this.container) return;
-    this.container.setAttribute('data-notiv-theme', getNotivThemeMode());
+    this.container.setAttribute('data-notis-theme', getNotisThemeMode());
   }
 
   private position(anchorPoint: { x: number; y: number }): void {
@@ -635,7 +635,7 @@ export class InlineAnnotator {
       { duration: 300, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
     );
 
-    const input = this.container?.shadowRoot?.querySelector('.notiv-inline-input') as HTMLInputElement | null;
+    const input = this.container?.shadowRoot?.querySelector('.notis-inline-input') as HTMLInputElement | null;
     if (input) {
       input.animate(
         [

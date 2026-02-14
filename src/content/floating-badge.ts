@@ -1,6 +1,6 @@
 import styles from './styles.css?inline';
 import { UI_IDS } from '../shared/constants';
-import { getNotivThemeMode } from './theme-mode';
+import { getNotisThemeMode } from './theme-mode';
 
 export interface FloatingBadgeCallbacks {
   onClick: () => void;
@@ -89,7 +89,7 @@ export class FloatingBadge {
 
     sourcePositions.forEach((source, index) => {
       const dot = document.createElement('div');
-      dot.className = 'notiv-flying-dot';
+      dot.className = 'notis-flying-dot';
       dot.style.setProperty('--dot-color', source.color);
       dot.style.setProperty('--start-x', `${source.x - badgePos.x}px`);
       dot.style.setProperty('--start-y', `${source.y - badgePos.y}px`);
@@ -138,12 +138,12 @@ export class FloatingBadge {
     this.pendingIssueUrl = issue?.url ?? null;
     this.successPillActive = true;
 
-    const textEl = this.successContent.querySelector('.notiv-badge-success-text');
+    const textEl = this.successContent.querySelector('.notis-badge-success-text');
     if (textEl) {
       textEl.textContent = issue?.identifier ? `${issue.identifier} created` : 'Ticket created';
     }
 
-    const arrowEl = this.successContent.querySelector('.notiv-badge-success-arrow') as HTMLElement | null;
+    const arrowEl = this.successContent.querySelector('.notis-badge-success-arrow') as HTMLElement | null;
     if (arrowEl) {
       arrowEl.style.display = this.pendingIssueUrl ? 'block' : 'none';
     }
@@ -152,7 +152,7 @@ export class FloatingBadge {
     void this.badge.offsetWidth;
     this.badge.classList.add('success-pill');
 
-    const checkPath = this.successContent.querySelector('.notiv-badge-success-check path');
+    const checkPath = this.successContent.querySelector('.notis-badge-success-check path');
     if (checkPath) {
       checkPath.setAttribute('style', '');
       void (checkPath as SVGPathElement).getBoundingClientRect();
@@ -219,7 +219,7 @@ export class FloatingBadge {
 
     this.errorPillActive = true;
 
-    const textEl = this.errorContent.querySelector('.notiv-badge-error-text');
+    const textEl = this.errorContent.querySelector('.notis-badge-error-text');
     if (textEl) {
       const shortMessage = message.length > 24 ? message.slice(0, 22) + '…' : message;
       textEl.textContent = shortMessage;
@@ -303,7 +303,7 @@ export class FloatingBadge {
       this.errorPillTimeout = null;
     }
     this.systemThemeQuery.removeEventListener('change', this.themeChangeHandler);
-    window.removeEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.removeEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
     this.container?.remove();
     this.container = null;
     this.badge = null;
@@ -321,12 +321,12 @@ export class FloatingBadge {
 
     const container = document.createElement('div');
     container.id = `${UI_IDS.rootContainer}-badge`;
-    container.setAttribute('data-notiv-ui', 'true');
+    container.setAttribute('data-notis-ui', 'true');
     container.style.position = 'fixed';
     container.style.zIndex = '2147483600';
     container.style.right = '20px';
     container.style.bottom = '20px';
-    container.setAttribute('data-notiv-theme', getNotivThemeMode());
+    container.setAttribute('data-notis-theme', getNotisThemeMode());
 
     const shadow = container.attachShadow({ mode: 'open' });
     const styleTag = document.createElement('style');
@@ -336,21 +336,21 @@ export class FloatingBadge {
 
     const badge = document.createElement('button');
     badge.type = 'button';
-    badge.className = 'notiv-floating-badge empty';
+    badge.className = 'notis-floating-badge empty';
     badge.title = 'Open notes queue';
     badge.setAttribute('aria-label', 'Open notes queue');
 
     const flipContainer = document.createElement('div');
-    flipContainer.className = 'notiv-badge-flip-container';
+    flipContainer.className = 'notis-badge-flip-container';
 
     const currentEl = document.createElement('span');
-    currentEl.className = 'notiv-badge-flip-number current';
+    currentEl.className = 'notis-badge-flip-number current';
 
     const nextEl = document.createElement('span');
-    nextEl.className = 'notiv-badge-flip-number next';
+    nextEl.className = 'notis-badge-flip-number next';
 
     const emptyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    emptyIcon.setAttribute('class', 'notiv-badge-empty-icon');
+    emptyIcon.setAttribute('class', 'notis-badge-empty-icon');
     emptyIcon.setAttribute('viewBox', '0 0 24 24');
     emptyIcon.setAttribute('fill', 'none');
     emptyIcon.setAttribute('stroke', 'currentColor');
@@ -361,7 +361,7 @@ export class FloatingBadge {
     emptyIcon.appendChild(plusPath);
 
     const savedOverlay = document.createElement('div');
-    savedOverlay.className = 'notiv-badge-saved-overlay';
+    savedOverlay.className = 'notis-badge-saved-overlay';
     const savedCheck = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     savedCheck.setAttribute('viewBox', '0 0 24 24');
     savedCheck.setAttribute('fill', 'none');
@@ -375,10 +375,10 @@ export class FloatingBadge {
     savedOverlay.appendChild(savedCheck);
 
     const successContent = document.createElement('div');
-    successContent.className = 'notiv-badge-success-content';
+    successContent.className = 'notis-badge-success-content';
 
     const successCheck = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    successCheck.setAttribute('class', 'notiv-badge-success-check');
+    successCheck.setAttribute('class', 'notis-badge-success-check');
     successCheck.setAttribute('viewBox', '0 0 24 24');
     successCheck.setAttribute('fill', 'none');
     successCheck.setAttribute('stroke', 'currentColor');
@@ -390,11 +390,11 @@ export class FloatingBadge {
     successCheck.appendChild(successCheckPath);
 
     const successText = document.createElement('span');
-    successText.className = 'notiv-badge-success-text';
+    successText.className = 'notis-badge-success-text';
     successText.textContent = 'Ticket created';
 
     const successArrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    successArrow.setAttribute('class', 'notiv-badge-success-arrow');
+    successArrow.setAttribute('class', 'notis-badge-success-arrow');
     successArrow.setAttribute('viewBox', '0 0 24 24');
     successArrow.setAttribute('fill', 'none');
     successArrow.setAttribute('stroke', 'currentColor');
@@ -410,7 +410,7 @@ export class FloatingBadge {
     successContent.appendChild(successArrow);
 
     const spinner = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    spinner.setAttribute('class', 'notiv-badge-spinner');
+    spinner.setAttribute('class', 'notis-badge-spinner');
     spinner.setAttribute('viewBox', '0 0 24 24');
     spinner.setAttribute('fill', 'none');
     spinner.setAttribute('stroke', 'currentColor');
@@ -421,10 +421,10 @@ export class FloatingBadge {
     spinner.appendChild(spinnerCircle);
 
     const errorContent = document.createElement('div');
-    errorContent.className = 'notiv-badge-error-content';
+    errorContent.className = 'notis-badge-error-content';
 
     const errorIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    errorIcon.setAttribute('class', 'notiv-badge-error-icon');
+    errorIcon.setAttribute('class', 'notis-badge-error-icon');
     errorIcon.setAttribute('viewBox', '0 0 24 24');
     errorIcon.setAttribute('fill', 'none');
     errorIcon.setAttribute('stroke', 'currentColor');
@@ -436,11 +436,11 @@ export class FloatingBadge {
     errorIcon.appendChild(errorIconPath);
 
     const errorText = document.createElement('span');
-    errorText.className = 'notiv-badge-error-text';
+    errorText.className = 'notis-badge-error-text';
     errorText.textContent = 'Error';
 
     const errorDismiss = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    errorDismiss.setAttribute('class', 'notiv-badge-error-dismiss');
+    errorDismiss.setAttribute('class', 'notis-badge-error-dismiss');
     errorDismiss.setAttribute('viewBox', '0 0 24 24');
     errorDismiss.setAttribute('fill', 'none');
     errorDismiss.setAttribute('stroke', 'currentColor');
@@ -466,7 +466,7 @@ export class FloatingBadge {
 
     document.documentElement.appendChild(container);
     this.systemThemeQuery.addEventListener('change', this.themeChangeHandler);
-    window.addEventListener('notiv-theme-change', this.themeChangeHandler as EventListener);
+    window.addEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
 
     this.container = container;
     this.badge = badge;
@@ -491,7 +491,7 @@ export class FloatingBadge {
 
   private applyThemeMode(): void {
     if (!this.container) return;
-    this.container.setAttribute('data-notiv-theme', getNotivThemeMode());
+    this.container.setAttribute('data-notis-theme', getNotisThemeMode());
   }
 
   private render(): void {
@@ -510,8 +510,8 @@ export class FloatingBadge {
         this.animateFlip(this.prevCount, this.count);
       } else {
         this.currentEl.textContent = String(this.count);
-        this.currentEl.className = 'notiv-badge-flip-number current';
-        this.nextEl.className = 'notiv-badge-flip-number next';
+        this.currentEl.className = 'notis-badge-flip-number current';
+        this.nextEl.className = 'notis-badge-flip-number next';
         this.nextEl.textContent = '';
       }
     } else {
@@ -520,8 +520,8 @@ export class FloatingBadge {
       this.badge.title = 'Open notes queue';
       this.currentEl.textContent = '';
       this.nextEl.textContent = '';
-      this.currentEl.className = 'notiv-badge-flip-number current';
-      this.nextEl.className = 'notiv-badge-flip-number next';
+      this.currentEl.className = 'notis-badge-flip-number current';
+      this.nextEl.className = 'notis-badge-flip-number next';
     }
 
     this.updateBreathingState();
@@ -537,16 +537,16 @@ export class FloatingBadge {
     const goingUp = to > from;
 
     this.currentEl.textContent = String(from);
-    this.currentEl.className = 'notiv-badge-flip-number current';
+    this.currentEl.className = 'notis-badge-flip-number current';
 
     this.nextEl.textContent = String(to);
-    this.nextEl.className = `notiv-badge-flip-number ${goingUp ? 'below' : 'above'}`;
+    this.nextEl.className = `notis-badge-flip-number ${goingUp ? 'below' : 'above'}`;
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (!this.currentEl || !this.nextEl) return;
-        this.currentEl.className = `notiv-badge-flip-number ${goingUp ? 'exit-up' : 'exit-down'}`;
-        this.nextEl.className = 'notiv-badge-flip-number current';
+        this.currentEl.className = `notis-badge-flip-number ${goingUp ? 'exit-up' : 'exit-down'}`;
+        this.nextEl.className = 'notis-badge-flip-number current';
       });
     });
 
@@ -555,10 +555,10 @@ export class FloatingBadge {
 
       this.currentEl.style.transition = 'none';
       this.currentEl.textContent = String(to);
-      this.currentEl.className = 'notiv-badge-flip-number current';
+      this.currentEl.className = 'notis-badge-flip-number current';
 
       this.nextEl.style.transition = 'none';
-      this.nextEl.className = 'notiv-badge-flip-number next';
+      this.nextEl.className = 'notis-badge-flip-number next';
       this.nextEl.textContent = '';
 
       requestAnimationFrame(() => {

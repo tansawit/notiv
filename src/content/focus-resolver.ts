@@ -36,7 +36,7 @@ function resolveElementFromPoint(pointX: number, pointY: number): HTMLElement | 
     if (!(candidate instanceof HTMLElement)) {
       continue;
     }
-    if (candidate.closest('[data-notiv-ui="true"]')) {
+    if (candidate.closest('[data-notis-ui="true"]')) {
       continue;
     }
     let current: HTMLElement | null = candidate;
@@ -45,7 +45,7 @@ function resolveElementFromPoint(pointX: number, pointY: number): HTMLElement | 
       if (!(deeper instanceof HTMLElement) || deeper === current) {
         break;
       }
-      if (deeper.closest('[data-notiv-ui="true"]')) {
+      if (deeper.closest('[data-notis-ui="true"]')) {
         break;
       }
       current = deeper;

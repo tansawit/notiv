@@ -4,11 +4,11 @@ Last updated: February 10, 2026
 
 ## Overview
 
-Notiv is a browser extension used to capture visual feedback and create issues in Linear. This document describes what data is processed, where it is stored, and when it is shared.
+Notis is a browser extension used to capture visual feedback and create issues in Linear. This document describes what data is processed, where it is stored, and when it is shared.
 
 ## Data processed
 
-When you use Notiv, the extension may process:
+When you use Notis, the extension may process:
 
 - Authentication state for Linear (OAuth access token and optional refresh token)
 - Feedback content you type
@@ -37,13 +37,13 @@ Feedback drafts are held in extension runtime context until submitted or discard
 
 ## Data sharing
 
-Notiv sends data to:
+Notis sends data to:
 
 - Linear API endpoints (`https://api.linear.app/*`)
 
 Shared data includes the issue payload you submit (description, selected metadata, screenshots, and selected routing options).
 
-Notiv does not include built-in third-party analytics or ad tracking.
+Notis does not include built-in third-party analytics or ad tracking.
 
 ## Retention and deletion
 

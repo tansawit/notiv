@@ -113,7 +113,7 @@ function PopupApp(): React.JSX.Element {
     >
       <section className="popup-panel popup-panel-flat">
         <div className="popup-header-flat">
-          <h1 className="popup-title">Notiv</h1>
+          <h1 className="popup-title">Notis</h1>
           <div className="popup-header-actions">
             <motion.button
               className="button-ghost"

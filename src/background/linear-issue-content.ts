@@ -105,7 +105,7 @@ export function buildIssueDescription(annotation: Annotation, overallDescription
       : []),
     '',
     '---',
-    '*Created via Notiv*'
+    '*Created via Notis*'
   ].join('\n');
 }
 
@@ -168,7 +168,7 @@ export function buildGroupedIssueDescription(
     `| Marker Count | ${annotations.length} |`,
     '',
     '---',
-    '*Created via Notiv*'
+    '*Created via Notis*'
   ].join('\n');
 }
 

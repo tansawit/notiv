@@ -106,12 +106,12 @@ function useTriggerWidth(
 
 function createFloatingHosts(): { container: HTMLDivElement; portalHost: HTMLDivElement } {
   const container = document.createElement('div');
-  container.setAttribute('data-notiv-ui', 'true');
+  container.setAttribute('data-notis-ui', 'true');
   container.style.position = 'relative';
   container.style.width = '100%';
 
   const portalHost = document.createElement('div');
-  portalHost.setAttribute('data-notiv-ui', 'true');
+  portalHost.setAttribute('data-notis-ui', 'true');
   portalHost.style.position = 'fixed';
   portalHost.style.left = '0';
   portalHost.style.top = '0';
@@ -124,22 +124,22 @@ function createFloatingHosts(): { container: HTMLDivElement; portalHost: HTMLDiv
 }
 
 function ensureComboboxStyles(): void {
-  if (document.getElementById('notiv-base-combobox-style')) {
+  if (document.getElementById('notis-base-combobox-style')) {
     return;
   }
   const style = document.createElement('style');
-  style.id = 'notiv-base-combobox-style';
+  style.id = 'notis-base-combobox-style';
   style.textContent = `
-    .notiv-base-combobox-item[data-highlighted] {
-      background: var(--notiv-combobox-hover-bg, ${UTILITY_STYLE_TOKENS.combobox.hoverBackgroundFallback}) !important;
+    .notis-base-combobox-item[data-highlighted] {
+      background: var(--notis-combobox-hover-bg, ${UTILITY_STYLE_TOKENS.combobox.hoverBackgroundFallback}) !important;
     }
-    .notiv-base-combobox-item:hover {
-      background: var(--notiv-combobox-hover-bg, ${UTILITY_STYLE_TOKENS.combobox.hoverBackgroundFallback}) !important;
+    .notis-base-combobox-item:hover {
+      background: var(--notis-combobox-hover-bg, ${UTILITY_STYLE_TOKENS.combobox.hoverBackgroundFallback}) !important;
     }
-    .notiv-base-combobox-item[data-selected] {
-      background: var(--notiv-combobox-selected-bg, ${UTILITY_STYLE_TOKENS.combobox.selectedBackgroundFallback});
+    .notis-base-combobox-item[data-selected] {
+      background: var(--notis-combobox-selected-bg, ${UTILITY_STYLE_TOKENS.combobox.selectedBackgroundFallback});
     }
-    .notiv-base-combobox-item[data-disabled] {
+    .notis-base-combobox-item[data-disabled] {
       opacity: 0.5;
       cursor: not-allowed;
     }
@@ -254,7 +254,7 @@ function BaseCombobox({
     >
       <Combobox.Trigger
         ref={triggerRef}
-        data-notiv-ui="true"
+        data-notis-ui="true"
         onPointerDown={(event) => {
           event.stopPropagation();
         }}
@@ -322,7 +322,7 @@ function BaseCombobox({
 
       <Combobox.Portal container={portalContainer}>
         <Combobox.Positioner
-          data-notiv-ui="true"
+          data-notis-ui="true"
           side="bottom"
           align="start"
           sideOffset={6}
@@ -330,7 +330,7 @@ function BaseCombobox({
           style={{ zIndex: 2147483647 }}
         >
           <Combobox.Popup
-            data-notiv-ui="true"
+            data-notis-ui="true"
             style={{
               width: `${triggerWidth}px`,
               maxHeight: '240px',
@@ -342,14 +342,14 @@ function BaseCombobox({
               border: `1.25px solid ${palette.surfaceBorder}`,
               background: palette.shellBackground,
               boxShadow: palette.surfaceHoverShadow,
-              ['--notiv-combobox-hover-bg' as string]: palette.surfaceHoverBackground,
-              ['--notiv-combobox-selected-bg' as string]: palette.surfaceSelectedBackground
+              ['--notis-combobox-hover-bg' as string]: palette.surfaceHoverBackground,
+              ['--notis-combobox-selected-bg' as string]: palette.surfaceSelectedBackground
             }}
             onPointerDown={(event) => event.stopPropagation()}
           >
             <Combobox.Input
               ref={inputRef}
-              data-notiv-ui="true"
+              data-notis-ui="true"
               placeholder={searchPlaceholder}
               onPointerDown={(event) => event.stopPropagation()}
               style={{
@@ -369,7 +369,7 @@ function BaseCombobox({
               autoComplete="off"
             />
             <Combobox.List
-              data-notiv-ui="true"
+              data-notis-ui="true"
               style={{
                 overflowY: 'auto',
                 minHeight: 0,
@@ -380,8 +380,8 @@ function BaseCombobox({
               {(item: SubmitDropdownOption) => (
                 <Combobox.Item
                   key={item.value}
-                  className="notiv-base-combobox-item"
-                  data-notiv-ui="true"
+                  className="notis-base-combobox-item"
+                  data-notis-ui="true"
                   value={item}
                   disabled={item.disabled}
                   onPointerDown={(event) => {
@@ -554,7 +554,7 @@ function BaseLabelSearchCombobox({
     >
       <Combobox.Trigger
         ref={triggerRef}
-        data-notiv-ui="true"
+        data-notis-ui="true"
         onPointerDown={handleTriggerPointerDown}
         onKeyDown={handleTriggerKeyDown}
         aria-label="Add label"
@@ -602,7 +602,7 @@ function BaseLabelSearchCombobox({
 
       <Combobox.Portal container={portalContainer}>
         <Combobox.Positioner
-          data-notiv-ui="true"
+          data-notis-ui="true"
           side="bottom"
           align="start"
           sideOffset={6}
@@ -610,7 +610,7 @@ function BaseLabelSearchCombobox({
           style={{ zIndex: 2147483647 }}
         >
           <Combobox.Popup
-            data-notiv-ui="true"
+            data-notis-ui="true"
             style={{
               width: `${menuWidth}px`,
               maxHeight: '240px',
@@ -622,14 +622,14 @@ function BaseLabelSearchCombobox({
               border: `1.25px solid ${palette.surfaceBorder}`,
               background: palette.shellBackground,
               boxShadow: palette.surfaceHoverShadow,
-              ['--notiv-combobox-hover-bg' as string]: palette.surfaceHoverBackground,
-              ['--notiv-combobox-selected-bg' as string]: palette.surfaceSelectedBackground
+              ['--notis-combobox-hover-bg' as string]: palette.surfaceHoverBackground,
+              ['--notis-combobox-selected-bg' as string]: palette.surfaceSelectedBackground
             }}
             onPointerDown={(event) => event.stopPropagation()}
           >
             <Combobox.Input
               ref={inputRef}
-              data-notiv-ui="true"
+              data-notis-ui="true"
               placeholder={searchPlaceholder}
               onPointerDown={(event) => event.stopPropagation()}
               onKeyDown={(event) => {
@@ -657,7 +657,7 @@ function BaseLabelSearchCombobox({
               autoComplete="off"
             />
             <Combobox.List
-              data-notiv-ui="true"
+              data-notis-ui="true"
               style={{
                 overflowY: 'auto',
                 minHeight: 0,
@@ -668,8 +668,8 @@ function BaseLabelSearchCombobox({
               {(item: SubmitLabelSearchOption) => (
                 <Combobox.Item
                   key={item.value}
-                  className="notiv-base-combobox-item"
-                  data-notiv-ui="true"
+                  className="notis-base-combobox-item"
+                  data-notis-ui="true"
                   value={item}
                   onPointerDown={(event) => {
                     event.stopPropagation();

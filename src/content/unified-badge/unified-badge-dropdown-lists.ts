@@ -3,7 +3,7 @@ import { appendSelectedCheckIcon } from './unified-badge-dropdown';
 
 function renderEmptyState(listEl: HTMLDivElement, message: string): void {
   const empty = document.createElement('div');
-  empty.className = 'notiv-unified-dropdown-empty';
+  empty.className = 'notis-unified-dropdown-empty';
   empty.textContent = message;
   listEl.appendChild(empty);
 }
@@ -31,18 +31,18 @@ export function renderTeamDropdownList(input: RenderTeamDropdownListInput): void
   filtered.forEach((team) => {
     const item = document.createElement('button');
     item.type = 'button';
-    item.className = 'notiv-unified-dropdown-item';
+    item.className = 'notis-unified-dropdown-item';
     if (input.selectedTeamId === team.id) {
       item.classList.add('selected');
     }
 
     const name = document.createElement('span');
-    name.className = 'notiv-unified-dropdown-name';
+    name.className = 'notis-unified-dropdown-name';
     name.textContent = team.name;
     item.appendChild(name);
 
     const key = document.createElement('span');
-    key.className = 'notiv-unified-dropdown-team-key';
+    key.className = 'notis-unified-dropdown-team-key';
     key.textContent = team.key;
     item.appendChild(key);
 
@@ -80,25 +80,25 @@ export function renderAssigneeDropdownList(input: RenderAssigneeDropdownListInpu
   filtered.forEach((user) => {
     const item = document.createElement('button');
     item.type = 'button';
-    item.className = 'notiv-unified-dropdown-item';
+    item.className = 'notis-unified-dropdown-item';
     if (input.selectedAssigneeId === user.id) {
       item.classList.add('selected');
     }
 
     if (user.avatarUrl) {
       const avatar = document.createElement('img');
-      avatar.className = 'notiv-unified-dropdown-avatar';
+      avatar.className = 'notis-unified-dropdown-avatar';
       avatar.src = user.avatarUrl;
       item.appendChild(avatar);
     } else {
       const placeholder = document.createElement('span');
-      placeholder.className = 'notiv-unified-dropdown-avatar-placeholder';
+      placeholder.className = 'notis-unified-dropdown-avatar-placeholder';
       placeholder.textContent = user.name.charAt(0).toUpperCase();
       item.appendChild(placeholder);
     }
 
     const name = document.createElement('span');
-    name.className = 'notiv-unified-dropdown-name';
+    name.className = 'notis-unified-dropdown-name';
     name.textContent = user.name;
     item.appendChild(name);
 
@@ -136,19 +136,19 @@ export function renderLabelsDropdownList(input: RenderLabelsDropdownListInput): 
   filtered.forEach((label) => {
     const item = document.createElement('button');
     item.type = 'button';
-    item.className = 'notiv-unified-dropdown-item';
+    item.className = 'notis-unified-dropdown-item';
     const isSelected = input.selectedLabelIds.includes(label.id);
     if (isSelected) {
       item.classList.add('selected');
     }
 
     const dot = document.createElement('span');
-    dot.className = 'notiv-unified-dropdown-dot';
+    dot.className = 'notis-unified-dropdown-dot';
     dot.style.background = label.color;
     item.appendChild(dot);
 
     const name = document.createElement('span');
-    name.className = 'notiv-unified-dropdown-name';
+    name.className = 'notis-unified-dropdown-name';
     name.textContent = label.name;
     item.appendChild(name);
 

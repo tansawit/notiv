@@ -1,5 +1,5 @@
 import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
-import { getNotivThemeMode } from './theme-mode';
+import { getNotisThemeMode } from './theme-mode';
 
 interface TooltipAnchor {
   x: number;
@@ -28,10 +28,10 @@ export function createLinearAuthTooltipController(): LinearAuthTooltipController
 
   const show = (message: string, anchor?: TooltipAnchor): void => {
     clear();
-    const visualTokens = getVisualModeTokens(getNotivThemeMode());
+    const visualTokens = getVisualModeTokens(getNotisThemeMode());
 
     const tooltip = document.createElement('div');
-    tooltip.setAttribute('data-notiv-ui', 'true');
+    tooltip.setAttribute('data-notis-ui', 'true');
     tooltip.style.position = 'fixed';
     tooltip.style.left = '0';
     tooltip.style.top = '0';

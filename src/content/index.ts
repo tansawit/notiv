@@ -706,7 +706,7 @@ window.addEventListener('keydown', (event) => {
 
 chrome.runtime.onMessage.addListener((message: BackgroundToContentMessage, _sender, sendResponse) => {
   switch (message.type) {
-    case 'notivPing': {
+    case 'notisPing': {
       sendResponse({ ok: true });
       return;
     }

@@ -11,8 +11,8 @@ import { clearLinearAuth, getLinearSettings, saveLinearSettings } from './storag
 const activePickerTabs = new Set<number>();
 const activeToolbarTabs = new Set<number>();
 const SESSION_KEYS = {
-  pickerTabs: 'notivActivePickerTabs',
-  toolbarTabs: 'notivActiveToolbarTabs'
+  pickerTabs: 'notisActivePickerTabs',
+  toolbarTabs: 'notisActiveToolbarTabs'
 } as const;
 
 type TogglePayload = { visible: boolean } | { active: boolean };
@@ -54,7 +54,7 @@ function resolveContentScriptFile(): string {
 async function ensureContentScriptReady(tabId: number): Promise<void> {
   const pingContentScript = async (): Promise<boolean> => {
     try {
-      const pingResponse = await chrome.tabs.sendMessage(tabId, { type: 'notivPing' });
+      const pingResponse = await chrome.tabs.sendMessage(tabId, { type: 'notisPing' });
       return Boolean((pingResponse as { ok?: boolean } | undefined)?.ok);
     } catch {
       return false;
@@ -90,7 +90,7 @@ async function ensureContentScriptReady(tabId: number): Promise<void> {
   });
 
   if (!(await waitForContentScriptReady())) {
-    throw new Error('Notiv could not start on this page. Refresh and try again.');
+    throw new Error('Notis could not start on this page. Refresh and try again.');
   }
 }
 
@@ -98,7 +98,7 @@ async function ensureSiteAccessForTab(tabId: number): Promise<void> {
   const tab = await chrome.tabs.get(tabId);
   const permission = resolveSiteOriginPermission(tab.url);
   if (!permission) {
-    throw new Error('Notiv works only on regular http/https pages.');
+    throw new Error('Notis works only on regular http/https pages.');
   }
 
   const hasAccess = await chrome.permissions.contains({ origins: [permission.pattern] });

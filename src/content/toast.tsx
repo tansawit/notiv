@@ -5,23 +5,23 @@ import 'sonner/dist/styles.css';
 import { FONT_STACK_SANS, getVisualModeTokens } from '../shared/visual-tokens';
 
 type ToastVariant = 'success' | 'error';
-type NotivThemeMode = 'light' | 'dark';
+type NotisThemeMode = 'light' | 'dark';
 
 let toasterRoot: Root | null = null;
 let toasterHost: HTMLDivElement | null = null;
-let renderedTheme: NotivThemeMode | null = null;
+let renderedTheme: NotisThemeMode | null = null;
 let listenersBound = false;
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-function getTheme(): NotivThemeMode {
-  const explicitTheme = document.documentElement.getAttribute('data-notiv-theme');
+function getTheme(): NotisThemeMode {
+  const explicitTheme = document.documentElement.getAttribute('data-notis-theme');
   if (explicitTheme === 'dark' || explicitTheme === 'light') {
     return explicitTheme;
   }
   return systemThemeQuery.matches ? 'dark' : 'light';
 }
 
-function renderToaster(theme: NotivThemeMode): void {
+function renderToaster(theme: NotisThemeMode): void {
   if (!toasterRoot) {
     return;
   }
@@ -60,7 +60,7 @@ function ensureToasterMounted(): void {
   }
 
   toasterHost = document.createElement('div');
-  toasterHost.setAttribute('data-notiv-ui', 'true');
+  toasterHost.setAttribute('data-notis-ui', 'true');
   toasterHost.style.position = 'fixed';
   toasterHost.style.right = '0';
   toasterHost.style.bottom = '0';
@@ -75,7 +75,7 @@ function ensureToasterMounted(): void {
       syncToasterTheme();
     };
     systemThemeQuery.addEventListener('change', handleThemeChange);
-    window.addEventListener('notiv-theme-change', handleThemeChange as EventListener);
+    window.addEventListener('notis-theme-change', handleThemeChange as EventListener);
     listenersBound = true;
   }
 }

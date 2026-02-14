@@ -2,7 +2,7 @@
 
 ## Official channel
 
-- Artifact source: GitHub Releases (`notiv-extension-<version>.zip`)
+- Artifact source: GitHub Releases (`notis-extension-<version>.zip`)
 - Build source: tagged commits (`v*`) via `.github/workflows/release.yml`
 - OAuth mode: bundled client ID via repository secret `LINEAR_OAUTH_CLIENT_ID`
 
@@ -16,7 +16,7 @@
 1. Ensure `LINEAR_OAUTH_CLIENT_ID` secret is set.
 2. Run `pnpm run lint && pnpm run check && pnpm run test:run && pnpm run build`.
 3. Tag release (`vX.Y.Z`) and push tag.
-4. Verify generated GitHub release includes `notiv-extension-<version>.zip`.
+4. Verify generated GitHub release includes `notis-extension-<version>.zip`.
 
 ## Release notes baseline
 

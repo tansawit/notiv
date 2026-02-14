@@ -12,7 +12,7 @@ Browser extension for PM/QA to capture visual feedback on staging sites and crea
 ## Architecture
 
 ```
-notiv-extension/
+notis-extension/
 ├── manifest.json
 ├── package.json
 ├── tsconfig.json
@@ -217,7 +217,7 @@ interface Annotation {
 
 ---
 
-_Created via Notiv Extension_
+_Created via Notis Extension_
 ```
 
 ## Dependencies
@@ -243,7 +243,7 @@ _Created via Notiv Extension_
 ```json
 {
   "manifest_version": 3,
-  "name": "Notiv",
+  "name": "Notis",
   "version": "0.1.0",
   "description": "Visual feedback for staging review → Linear",
 

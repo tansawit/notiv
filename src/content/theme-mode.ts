@@ -1,7 +1,7 @@
-export type NotivThemeMode = 'light' | 'dark';
+export type NotisThemeMode = 'light' | 'dark';
 
-export function getNotivThemeMode(): NotivThemeMode {
-  const explicitTheme = document.documentElement.getAttribute('data-notiv-theme');
+export function getNotisThemeMode(): NotisThemeMode {
+  const explicitTheme = document.documentElement.getAttribute('data-notis-theme');
   if (explicitTheme === 'dark' || explicitTheme === 'light') {
     return explicitTheme;
   }

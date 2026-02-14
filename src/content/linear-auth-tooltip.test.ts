@@ -17,12 +17,12 @@ describe('createLinearAuthTooltipController', () => {
     const tooltip = createLinearAuthTooltipController();
     tooltip.show('Connect Linear to continue', { x: 200, y: 200 });
 
-    const node = document.querySelector('[data-notiv-ui="true"]') as HTMLDivElement | null;
+    const node = document.querySelector('[data-notis-ui="true"]') as HTMLDivElement | null;
     expect(node).toBeTruthy();
     expect(node?.textContent).toBe('Connect Linear to continue');
 
     tooltip.clear();
-    expect(document.querySelector('[data-notiv-ui="true"]')).toBeNull();
+    expect(document.querySelector('[data-notis-ui="true"]')).toBeNull();
   });
 
   it('auto-dismisses after timeout', () => {
@@ -34,9 +34,9 @@ describe('createLinearAuthTooltipController', () => {
 
     const tooltip = createLinearAuthTooltipController();
     tooltip.show('Auto dismiss');
-    expect(document.querySelector('[data-notiv-ui="true"]')).toBeTruthy();
+    expect(document.querySelector('[data-notis-ui="true"]')).toBeTruthy();
 
     vi.advanceTimersByTime(5340);
-    expect(document.querySelector('[data-notiv-ui="true"]')).toBeNull();
+    expect(document.querySelector('[data-notis-ui="true"]')).toBeNull();
   });
 });
