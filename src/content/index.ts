@@ -51,6 +51,14 @@ interface SettingsState {
 }
 
 const EMPTY_RESOURCES: LinearWorkspaceResources = EMPTY_LINEAR_RESOURCES;
+const DEFAULT_HIGHLIGHT_Z_INDEX = {
+  overlay: 2147483582,
+  tooltip: 2147483583
+} as const;
+const QUEUE_HIGHLIGHT_Z_INDEX = {
+  overlay: 2147483646,
+  tooltip: 2147483647
+} as const;
 
 let pickerActive = false;
 let toolbarVisible = false;
@@ -59,8 +67,8 @@ let selectedClickPoint: { x: number; y: number } | null = null;
 let draftAnnotations: DraftAnnotation[] = [];
 let editingDraftId: string | null = null;
 const componentFocusHighlighter = new Highlighter({
-  overlayZIndex: 2147483582,
-  tooltipZIndex: 2147483583,
+  overlayZIndex: DEFAULT_HIGHLIGHT_Z_INDEX.overlay,
+  tooltipZIndex: DEFAULT_HIGHLIGHT_Z_INDEX.tooltip,
   bringToFrontOnShow: true
 });
 let hoveredDraftId: string | null = null;
@@ -78,9 +86,9 @@ const linearAuthTooltip = createLinearAuthTooltipController();
 
 function refreshFocusedComponentHighlight(): void {
   if (isHoverFromQueue) {
-    componentFocusHighlighter.setZIndex(2147483646, 2147483647);
+    componentFocusHighlighter.setZIndex(QUEUE_HIGHLIGHT_Z_INDEX.overlay, QUEUE_HIGHLIGHT_Z_INDEX.tooltip);
   } else {
-    componentFocusHighlighter.setZIndex(2147483582, 2147483583);
+    componentFocusHighlighter.setZIndex(DEFAULT_HIGHLIGHT_Z_INDEX.overlay, DEFAULT_HIGHLIGHT_Z_INDEX.tooltip);
   }
 
   if (annotatorFocusTarget) {
@@ -173,9 +181,7 @@ const draftMarkers = new DraftMarkers({
           editingDraftId = null;
           selectedElement = null;
           selectedClickPoint = null;
-          if (pickerActive && toolbarVisible) {
-            detector.start();
-          }
+          restartDetectorIfReady();
         }
       }
     );
@@ -209,6 +215,12 @@ function syncDraftMarkerVisibility(): void {
       draftAnnotations.length > 0 &&
       !inlineAnnotator.isOpen()
   );
+}
+
+function restartDetectorIfReady(): void {
+  if (pickerActive && toolbarVisible) {
+    detector.start();
+  }
 }
 
 async function syncPickerState(active: boolean): Promise<void> {
@@ -278,11 +290,23 @@ function getNoteCreationBlockedMessage(): string | null {
   return null;
 }
 
+function applyWorkspaceResources(resources: LinearWorkspaceResources): void {
+  settingsState.resources = resources;
+  inlineAnnotator.setTeams(resources.teams);
+  unifiedBadge.setResources({
+    teams: resources.teams,
+    labels: resources.labels,
+    users: resources.users
+  });
+}
+
+function clearWorkspaceResources(): void {
+  applyWorkspaceResources(EMPTY_RESOURCES);
+}
+
 async function loadResources(): Promise<void> {
   if (!settingsState.accessToken.trim()) {
-    settingsState.resources = EMPTY_RESOURCES;
-    inlineAnnotator.setTeams([]);
-    unifiedBadge.setResources({ teams: [], labels: [], users: [] });
+    clearWorkspaceResources();
     return;
   }
 
@@ -296,13 +320,9 @@ async function loadResources(): Promise<void> {
     }
 
     const nextResources = (response.data as LinearWorkspaceResources | undefined) ?? EMPTY_RESOURCES;
-    settingsState.resources = nextResources;
-    inlineAnnotator.setTeams(nextResources.teams);
-    unifiedBadge.setResources({ teams: nextResources.teams, labels: nextResources.labels, users: nextResources.users });
+    applyWorkspaceResources(nextResources);
   } catch (resourceError) {
-    settingsState.resources = EMPTY_RESOURCES;
-    inlineAnnotator.setTeams([]);
-    unifiedBadge.setResources({ teams: [], labels: [], users: [] });
+    clearWorkspaceResources();
     settingsState.error = resourceError instanceof Error ? resourceError.message : 'Could not load workspace data.';
   } finally {
     settingsState.loadingResources = false;
@@ -422,6 +442,15 @@ function toSubmissionAnnotation(note: DraftAnnotation): Omit<Annotation, 'screen
   return annotation;
 }
 
+async function loadStoredTeamId(): Promise<string | undefined> {
+  try {
+    const items = await getLocalStorageItems<Record<string, unknown>>([STORAGE_KEYS.submitTeamId]);
+    return items?.[STORAGE_KEYS.submitTeamId] as string | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function submitDrafts(): Promise<void> {
   if (draftAnnotations.length === 0) {
     showToast('No notes to submit yet.', undefined, 'error');
@@ -431,9 +460,7 @@ async function submitDrafts(): Promise<void> {
   unifiedBadge.setSubmitting(true);
 
   try {
-    const storedTeamId = await getLocalStorageItems<Record<string, unknown>>([STORAGE_KEYS.submitTeamId])
-      .then((items) => items?.[STORAGE_KEYS.submitTeamId] as string | undefined)
-      .catch(() => undefined);
+    const storedTeamId = await loadStoredTeamId();
 
     const selectedTeam = settingsState.resources.teams.find((t) => t.id === storedTeamId)
       ?? settingsState.resources.teams[0];
@@ -528,9 +555,7 @@ function handleAnnotatorSubmit(
     annotatorFocusTarget = null;
     syncDraftMarkerVisibility();
     refreshFocusedComponentHighlight();
-    if (pickerActive && toolbarVisible) {
-      detector.start();
-    }
+    restartDetectorIfReady();
     return;
   }
 
@@ -585,9 +610,7 @@ function handleAnnotatorSubmit(
   refreshFocusedComponentHighlight();
   selectedElement = null;
   selectedClickPoint = null;
-  if (pickerActive && toolbarVisible) {
-    detector.start();
-  }
+  restartDetectorIfReady();
 
   if (immediate) {
     const blockedMessage = getNoteCreationBlockedMessage();
@@ -607,9 +630,7 @@ function handleAnnotatorCancel(): void {
   editingDraftId = null;
   selectedElement = null;
   selectedClickPoint = null;
-  if (pickerActive && toolbarVisible) {
-    detector.start();
-  }
+  restartDetectorIfReady();
 }
 
 const inlineAnnotator = new InlineAnnotator(handleAnnotatorSubmit, handleAnnotatorCancel);
@@ -668,9 +689,7 @@ window.addEventListener('keydown', (event) => {
     editingDraftId = null;
     selectedElement = null;
     selectedClickPoint = null;
-    if (pickerActive && toolbarVisible) {
-      detector.start();
-    }
+    restartDetectorIfReady();
     return;
   }
 
@@ -686,75 +705,72 @@ window.addEventListener('keydown', (event) => {
 });
 
 chrome.runtime.onMessage.addListener((message: BackgroundToContentMessage, _sender, sendResponse) => {
-  if (message.type === 'notivPing') {
-    sendResponse({ ok: true });
-    return;
-  }
-
-  if (message.type === 'capturePrepare') {
-    const fallbackBoundingBox = selectedElement
-      ? (() => {
-          const rect = selectedElement.getBoundingClientRect();
-          return {
-            x: rect.left,
-            y: rect.top,
-            width: rect.width,
-            height: rect.height
-          } satisfies BoundingBox;
-        })()
-      : undefined;
-    const fallbackMarker = selectedClickPoint
-      ? { ...selectedClickPoint }
-      : undefined;
-
-    void prepareCaptureUi({
-      boundingBox: message.payload.boundingBox,
-      marker: message.payload.marker,
-      highlights: message.payload.highlights,
-      markers: message.payload.markers,
-      fallbackBoundingBox,
-      fallbackMarker
-    }).then(() => {
+  switch (message.type) {
+    case 'notivPing': {
       sendResponse({ ok: true });
-    });
-    return true;
-  }
+      return;
+    }
+    case 'capturePrepare': {
+      const fallbackBoundingBox = selectedElement
+        ? (() => {
+            const rect = selectedElement.getBoundingClientRect();
+            return {
+              x: rect.left,
+              y: rect.top,
+              width: rect.width,
+              height: rect.height
+            } satisfies BoundingBox;
+          })()
+        : undefined;
+      const fallbackMarker = selectedClickPoint
+        ? { ...selectedClickPoint }
+        : undefined;
 
-  if (message.type === 'captureRestore') {
-    restoreCaptureUi();
-    sendResponse({ ok: true });
-    return;
+      void prepareCaptureUi({
+        boundingBox: message.payload.boundingBox,
+        marker: message.payload.marker,
+        highlights: message.payload.highlights,
+        markers: message.payload.markers,
+        fallbackBoundingBox,
+        fallbackMarker
+      }).then(() => {
+        sendResponse({ ok: true });
+      });
+      return true;
+    }
+    case 'captureRestore': {
+      restoreCaptureUi();
+      sendResponse({ ok: true });
+      return;
+    }
+    case 'toolbarVisibilityChanged': {
+      setToolbarVisible(message.payload.visible);
+      sendResponse({ ok: true });
+      return;
+    }
+    case 'pickerActivationChanged': {
+      setToolbarVisible(true);
+      setPickerActive(message.payload.active);
+      sendResponse({ ok: true });
+      return;
+    }
+    case 'issueCreated': {
+      unifiedBadge.setVisible(true);
+      unifiedBadge.showSuccessPill({
+        identifier: message.payload.identifier,
+        url: message.payload.url
+      });
+      sendResponse({ ok: true });
+      return;
+    }
+    case 'issueCreationFailed': {
+      unifiedBadge.setVisible(true);
+      unifiedBadge.showErrorPill(message.payload.message);
+      sendResponse({ ok: true });
+      return;
+    }
+    default: {
+      sendResponse({ ok: false });
+    }
   }
-
-  if (message.type === 'toolbarVisibilityChanged') {
-    setToolbarVisible(message.payload.visible);
-    sendResponse({ ok: true });
-    return;
-  }
-
-  if (message.type === 'pickerActivationChanged') {
-    setToolbarVisible(true);
-    setPickerActive(message.payload.active);
-    sendResponse({ ok: true });
-    return;
-  }
-
-  if (message.type === 'issueCreated') {
-    unifiedBadge.setVisible(true);
-    unifiedBadge.showSuccessPill({
-      identifier: message.payload.identifier,
-      url: message.payload.url
-    });
-    sendResponse({ ok: true });
-    return;
-  }
-
-  if (message.type === 'issueCreationFailed') {
-    unifiedBadge.setVisible(true);
-    unifiedBadge.showErrorPill(message.payload.message);
-    sendResponse({ ok: true });
-    return;
-  }
-
-  sendResponse({ ok: false });
 });

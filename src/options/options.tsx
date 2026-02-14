@@ -1,64 +1,10 @@
 import React, { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { maskAccessToken } from '../shared/linear-settings-client';
-import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
-import { STORAGE_KEYS } from '../shared/constants';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
-import {
-  getAllPermissions,
-  requestOriginPermission,
-  removeOriginPermission
-} from '../shared/chrome-api';
-
-const REQUIRED_ORIGINS = new Set(['https://api.linear.app/*', 'https://linear.app/*']);
-
-function isConfigurableSiteOrigin(originPattern: string): boolean {
-  if (REQUIRED_ORIGINS.has(originPattern)) {
-    return false;
-  }
-  return originPattern.startsWith('https://') || originPattern.startsWith('http://');
-}
-
-function compareSiteOrigins(left: string, right: string): number {
-  return left.localeCompare(right);
-}
-
-function normalizeSiteOriginInput(value: string): { pattern: string; label: string } | null {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return null;
-  }
-
-  let parsed: URL;
-  try {
-    parsed = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
-  } catch {
-    return null;
-  }
-
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    return null;
-  }
-
-  if (!parsed.hostname) {
-    return null;
-  }
-
-  return {
-    pattern: `${parsed.protocol}//${parsed.hostname}/*`,
-    label: parsed.origin
-  };
-}
-
-async function loadCaptureRedactionEnabled(): Promise<boolean> {
-  const items = await getLocalStorageItems<Record<string, unknown>>([STORAGE_KEYS.captureRedactionEnabled]);
-  return items?.[STORAGE_KEYS.captureRedactionEnabled] !== false;
-}
-
-async function saveCaptureRedactionEnabled(enabled: boolean): Promise<void> {
-  await setLocalStorageItems({ [STORAGE_KEYS.captureRedactionEnabled]: enabled });
-}
+import { useOptionsSitePermissions } from './use-options-site-permissions';
+import { useCaptureRedaction } from './use-capture-redaction';
 
 function SettingsApp(): React.JSX.Element {
   const {
@@ -84,49 +30,24 @@ function SettingsApp(): React.JSX.Element {
     disconnect,
     refreshResources
   } = useLinearConnection();
-  const [sitePermissionsLoading, setSitePermissionsLoading] = React.useState(true);
-  const [sitePermissionsBusy, setSitePermissionsBusy] = React.useState(false);
-  const [siteAccessDraft, setSiteAccessDraft] = React.useState('');
-  const [grantedSiteOrigins, setGrantedSiteOrigins] = React.useState<string[]>([]);
-  const [captureRedactionEnabled, setCaptureRedactionEnabled] = React.useState(true);
-  const [captureRedactionBusy, setCaptureRedactionBusy] = React.useState(false);
+  const {
+    sitePermissionsLoading,
+    sitePermissionsBusy,
+    siteAccessDraft,
+    grantedSiteOrigins,
+    setSiteAccessDraft,
+    refreshSitePermissions,
+    grantSiteAccess,
+    revokeSiteAccess,
+    formatSiteOrigin
+  } = useOptionsSitePermissions({ setFeedback });
+  const {
+    captureRedactionEnabled,
+    captureRedactionBusy,
+    toggleCaptureRedaction
+  } = useCaptureRedaction({ setFeedback });
 
-  const oauthRedirectUrl = React.useMemo(() => chrome.identity.getRedirectURL('linear'), []);
-
-  const refreshSitePermissions = React.useCallback(async (): Promise<void> => {
-    setSitePermissionsLoading(true);
-    try {
-      const allPermissions = await getAllPermissions();
-      const nextOrigins = (allPermissions.origins ?? [])
-        .filter(isConfigurableSiteOrigin)
-        .sort(compareSiteOrigins);
-      setGrantedSiteOrigins(nextOrigins);
-    } catch (permissionError) {
-      setFeedback(
-        null,
-        permissionError instanceof Error ? permissionError.message : 'Could not load site permissions.'
-      );
-    } finally {
-      setSitePermissionsLoading(false);
-    }
-  }, [setFeedback]);
-
-  React.useEffect(() => {
-    void refreshSitePermissions();
-  }, [refreshSitePermissions]);
-
-  React.useEffect(() => {
-    void (async () => {
-      try {
-        setCaptureRedactionEnabled(await loadCaptureRedactionEnabled());
-      } catch (loadError) {
-        setFeedback(
-          null,
-          loadError instanceof Error ? loadError.message : 'Could not load capture privacy settings.'
-        );
-      }
-    })();
-  }, [setFeedback]);
+  const oauthRedirectUrl = useMemo(() => chrome.identity.getRedirectURL('linear'), []);
 
   const workspaceSummary = useMemo(() => {
     if (!connected) {
@@ -276,35 +197,7 @@ function SettingsApp(): React.JSX.Element {
           <button
             className="button primary"
             disabled={sitePermissionsBusy}
-            onClick={() => {
-              void (async () => {
-                const normalized = normalizeSiteOriginInput(siteAccessDraft);
-                if (!normalized) {
-                  setFeedback(null, 'Enter a valid http/https origin, for example https://staging.example.com.');
-                  return;
-                }
-
-                setSitePermissionsBusy(true);
-                setFeedback(null, null);
-                try {
-                  const granted = await requestOriginPermission(normalized.pattern);
-                  if (!granted) {
-                    setFeedback(null, `Permission request was denied for ${normalized.label}.`);
-                    return;
-                  }
-                  setSiteAccessDraft('');
-                  await refreshSitePermissions();
-                  setFeedback(`Site access granted for ${normalized.label}.`, null);
-                } catch (permissionError) {
-                  setFeedback(
-                    null,
-                    permissionError instanceof Error ? permissionError.message : 'Could not grant site access.'
-                  );
-                } finally {
-                  setSitePermissionsBusy(false);
-                }
-              })();
-            }}
+            onClick={() => void grantSiteAccess()}
           >
             {sitePermissionsBusy ? 'Working...' : 'Grant access'}
           </button>
@@ -325,28 +218,11 @@ function SettingsApp(): React.JSX.Element {
           <ul className="granted-site-list">
             {grantedSiteOrigins.map((origin) => (
               <li key={origin} className="granted-site-item">
-                <code className="site-origin">{origin.replace(/\/\*$/, '')}</code>
+                <code className="site-origin">{formatSiteOrigin(origin)}</code>
                 <button
                   className="button"
                   disabled={sitePermissionsBusy}
-                  onClick={() => {
-                    void (async () => {
-                      setSitePermissionsBusy(true);
-                      setFeedback(null, null);
-                      try {
-                        await removeOriginPermission(origin);
-                        await refreshSitePermissions();
-                        setFeedback(`Removed site access for ${origin.replace(/\/\*$/, '')}.`, null);
-                      } catch (permissionError) {
-                        setFeedback(
-                          null,
-                          permissionError instanceof Error ? permissionError.message : 'Could not remove site access.'
-                        );
-                      } finally {
-                        setSitePermissionsBusy(false);
-                      }
-                    })();
-                  }}
+                  onClick={() => void revokeSiteAccess(origin)}
                 >
                   Revoke
                 </button>
@@ -365,28 +241,7 @@ function SettingsApp(): React.JSX.Element {
           <button
             className="button"
             disabled={captureRedactionBusy}
-            onClick={() => {
-              const next = !captureRedactionEnabled;
-              setCaptureRedactionBusy(true);
-              setFeedback(null, null);
-              void saveCaptureRedactionEnabled(next)
-                .then(() => {
-                  setCaptureRedactionEnabled(next);
-                  setFeedback(
-                    next ? 'Capture redaction enabled.' : 'Capture redaction disabled.',
-                    null
-                  );
-                })
-                .catch((saveError) => {
-                  setFeedback(
-                    null,
-                    saveError instanceof Error ? saveError.message : 'Could not update capture privacy settings.'
-                  );
-                })
-                .finally(() => {
-                  setCaptureRedactionBusy(false);
-                });
-            }}
+            onClick={() => void toggleCaptureRedaction()}
           >
             {captureRedactionBusy
               ? 'Working...'

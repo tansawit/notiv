@@ -1,18 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BackgroundResponse } from '../shared/messages';
 import { maskAccessToken } from '../shared/linear-settings-client';
 import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
-import { STORAGE_KEYS } from '../shared/constants';
 import { Icon } from '../shared/components/Icon';
-import {
-  getActiveTab,
-  containsOriginPermission,
-  requestOriginPermission,
-  removeOriginPermission
-} from '../shared/chrome-api';
+import { usePopupSitePermission } from './use-popup-site-permission';
+import { usePopupTheme } from './use-popup-theme';
 import {
   springTransition,
   buttonHoverScale,
@@ -27,45 +22,9 @@ import {
 } from '../shared/motion-presets';
 
 type PopupView = 'home' | 'settings';
-type ThemePreference = 'system' | 'light' | 'dark';
-
-interface SitePermissionTarget {
-  pattern: string;
-  label: string;
-}
-
-function resolveSitePermissionTarget(urlValue: string | undefined): SitePermissionTarget | null {
-  if (!urlValue) {
-    return null;
-  }
-  let parsed: URL;
-  try {
-    parsed = new URL(urlValue);
-  } catch {
-    return null;
-  }
-
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    return null;
-  }
-
-  if (!parsed.hostname) {
-    return null;
-  }
-
-  return {
-    pattern: `${parsed.protocol}//${parsed.hostname}/*`,
-    label: parsed.origin
-  };
-}
 
 function PopupApp(): React.JSX.Element {
   const [view, setView] = useState<PopupView>('home');
-  const [sitePermissionsLoading, setSitePermissionsLoading] = useState(true);
-  const [sitePermissionsBusy, setSitePermissionsBusy] = useState(false);
-  const [currentSiteTarget, setCurrentSiteTarget] = useState<SitePermissionTarget | null>(null);
-  const [currentSiteGranted, setCurrentSiteGranted] = useState(false);
-  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
   const {
     loading,
     authBusy,
@@ -86,6 +45,15 @@ function PopupApp(): React.JSX.Element {
     disconnect,
     refreshResources
   } = useLinearConnection();
+  const {
+    sitePermissionsLoading,
+    sitePermissionsBusy,
+    currentSiteTarget,
+    currentSiteGranted,
+    refreshCurrentSitePermission,
+    toggleCurrentSitePermission
+  } = usePopupSitePermission({ setFeedback });
+  const { themePreference, cycleTheme } = usePopupTheme();
 
   const unifiedStatus = useMemo(() => {
     if (sitePermissionsLoading) {
@@ -111,96 +79,6 @@ function PopupApp(): React.JSX.Element {
     window.close();
   };
 
-  const refreshCurrentSitePermission = React.useCallback(async (): Promise<void> => {
-    setSitePermissionsLoading(true);
-    try {
-      const tab = await getActiveTab();
-      const target = resolveSitePermissionTarget(tab?.url);
-      setCurrentSiteTarget(target);
-      if (!target) {
-        setCurrentSiteGranted(false);
-        return;
-      }
-      setCurrentSiteGranted(await containsOriginPermission(target.pattern));
-    } catch (permissionError) {
-      setFeedback(
-        null,
-        permissionError instanceof Error ? permissionError.message : 'Could not load site permissions.'
-      );
-    } finally {
-      setSitePermissionsLoading(false);
-    }
-  }, [setFeedback]);
-
-  React.useEffect(() => {
-    void refreshCurrentSitePermission();
-  }, [refreshCurrentSitePermission]);
-
-  const applyTheme = useCallback((pref: ThemePreference) => {
-    document.documentElement.removeAttribute('data-theme');
-    if (pref === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-    } else if (pref === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  }, []);
-
-  useEffect(() => {
-    chrome.storage.local.get([STORAGE_KEYS.themePreference], (result) => {
-      const stored = result[STORAGE_KEYS.themePreference] as ThemePreference | undefined;
-      if (stored && ['system', 'light', 'dark'].includes(stored)) {
-        setThemePreference(stored);
-        applyTheme(stored);
-      }
-    });
-  }, [applyTheme]);
-
-  const cycleTheme = useCallback(() => {
-    const next: ThemePreference =
-      themePreference === 'system' ? 'light' :
-      themePreference === 'light' ? 'dark' : 'system';
-    setThemePreference(next);
-    applyTheme(next);
-    chrome.storage.local.set({ [STORAGE_KEYS.themePreference]: next });
-  }, [themePreference, applyTheme]);
-
-  const toggleCurrentSitePermission = async (): Promise<void> => {
-    if (!currentSiteTarget) {
-      setFeedback(null, 'Current tab is not a regular http/https page.');
-      return;
-    }
-
-    const target = currentSiteTarget;
-    const shouldRevoke = currentSiteGranted;
-    setSitePermissionsBusy(true);
-    setFeedback(null, null);
-    try {
-      if (shouldRevoke) {
-        await removeOriginPermission(target.pattern);
-      } else {
-        const granted = await requestOriginPermission(target.pattern);
-        if (!granted) {
-          setFeedback(null, `Permission request was denied for ${target.label}.`);
-          return;
-        }
-      }
-      await refreshCurrentSitePermission();
-      setFeedback(
-        shouldRevoke
-          ? `Removed site access for ${target.label}.`
-          : `Site access granted for ${target.label}.`,
-        null
-      );
-    } catch (permissionError) {
-      setFeedback(
-        null,
-        permissionError instanceof Error ? permissionError.message : 'Could not update site access.'
-      );
-    } finally {
-      setSitePermissionsBusy(false);
-    }
-  };
-
   const activatePicker = async (): Promise<void> => {
     setFeedback(null, null);
     try {
@@ -224,13 +102,6 @@ function PopupApp(): React.JSX.Element {
     return <div className="popup-shell"><div className="muted">Loading...</div></div>;
   }
 
-  /* ─────────────────────────────────────────────────────────
-   * VIEW TRANSITION
-   *
-   * Drill-down navigation: vertical fade, not horizontal slide.
-   * Forward (→ settings): fade out, new content rises in
-   * Back (→ home): fade out, content settles down
-   * ───────────────────────────────────────────────────────── */
   const homeView = (
     <motion.div
       key="home"
@@ -350,8 +221,8 @@ function PopupApp(): React.JSX.Element {
           <motion.button
             className="button-ghost"
             onClick={() => void openMainSettingsPage()}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
+            whileHover={buttonHoverScale}
+            whileTap={buttonTapScale}
             transition={springTransition}
           >
             Open
@@ -399,8 +270,8 @@ function PopupApp(): React.JSX.Element {
                     className="button"
                     disabled={authBusy}
                     onClick={() => void disconnect()}
-                    whileHover={{ scale: authBusy ? 1 : 1.02 }}
-                    whileTap={{ scale: authBusy ? 1 : 0.96 }}
+                    whileHover={createDisabledButtonHover(authBusy)}
+                    whileTap={createDisabledButtonTap(authBusy)}
                     transition={springTransition}
                   >
                     Disconnect
@@ -456,8 +327,8 @@ function PopupApp(): React.JSX.Element {
               <motion.button
                 className="button"
                 onClick={cycleTheme}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
+                whileHover={buttonHoverScale}
+                whileTap={buttonTapScale}
                 transition={springTransition}
               >
                 {themePreference === 'system' ? 'Use Light' : themePreference === 'light' ? 'Use Dark' : 'Use System'}
@@ -485,8 +356,8 @@ function PopupApp(): React.JSX.Element {
                         className="button"
                         disabled={authBusy}
                         onClick={() => void saveToken()}
-                        whileHover={{ scale: authBusy ? 1 : 1.02 }}
-                        whileTap={{ scale: authBusy ? 1 : 0.96 }}
+                        whileHover={createDisabledButtonHover(authBusy)}
+                        whileTap={createDisabledButtonTap(authBusy)}
                         transition={springTransition}
                       >
                         Save
@@ -496,8 +367,8 @@ function PopupApp(): React.JSX.Element {
                           className="button"
                           disabled={authBusy}
                           onClick={() => { setTokenEditing(false); setTokenDraft(settings.accessToken); }}
-                          whileHover={{ scale: authBusy ? 1 : 1.02 }}
-                          whileTap={{ scale: authBusy ? 1 : 0.96 }}
+                          whileHover={createDisabledButtonHover(authBusy)}
+                          whileTap={createDisabledButtonTap(authBusy)}
                           transition={springTransition}
                         >
                           Cancel
@@ -513,8 +384,8 @@ function PopupApp(): React.JSX.Element {
                       onClick={() => { setTokenEditing(true); setTokenDraft(settings.accessToken); }}
                       aria-label="Edit API token"
                       title="Edit"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileHover={iconButtonHoverScale}
+                      whileTap={iconButtonTapScale}
                       transition={springTransition}
                     >
                       <Icon path="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z" size={12} />

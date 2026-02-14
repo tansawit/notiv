@@ -58,6 +58,71 @@ export interface SubmitLabelSearchControl {
   destroy?: () => void;
 }
 
+function filterOptionByQuery(
+  item: { label: string; keywords?: string } | null | undefined,
+  query: string
+): boolean {
+  if (!item) {
+    return false;
+  }
+  const haystack = `${item.label} ${item.keywords ?? ''}`.toLowerCase();
+  return haystack.includes(query.trim().toLowerCase());
+}
+
+function focusInputNextFrame(
+  inputRef: React.RefObject<HTMLInputElement | null>,
+  selectText = true
+): void {
+  window.requestAnimationFrame(() => {
+    inputRef.current?.focus();
+    if (selectText) {
+      inputRef.current?.select();
+    }
+  });
+}
+
+function useTriggerWidth(
+  triggerRef: React.RefObject<HTMLElement | null>,
+  minimumWidth: number
+): number {
+  const [width, setWidth] = useState(minimumWidth);
+
+  useLayoutEffect(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) {
+      return;
+    }
+    const update = (): void => {
+      setWidth(Math.max(minimumWidth, Math.round(trigger.getBoundingClientRect().width + 44)));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(trigger);
+    return () => observer.disconnect();
+  }, [triggerRef, minimumWidth]);
+
+  return width;
+}
+
+function createFloatingHosts(): { container: HTMLDivElement; portalHost: HTMLDivElement } {
+  const container = document.createElement('div');
+  container.setAttribute('data-notiv-ui', 'true');
+  container.style.position = 'relative';
+  container.style.width = '100%';
+
+  const portalHost = document.createElement('div');
+  portalHost.setAttribute('data-notiv-ui', 'true');
+  portalHost.style.position = 'fixed';
+  portalHost.style.left = '0';
+  portalHost.style.top = '0';
+  portalHost.style.width = '0';
+  portalHost.style.height = '0';
+  portalHost.style.zIndex = '2147483647';
+  document.documentElement.appendChild(portalHost);
+
+  return { container, portalHost };
+}
+
 function ensureComboboxStyles(): void {
   if (document.getElementById('notiv-base-combobox-style')) {
     return;
@@ -141,9 +206,9 @@ function BaseCombobox({
   registerParts
 }: BaseComboboxProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
-  const [triggerWidth, setTriggerWidth] = useState(220);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const triggerWidth = useTriggerWidth(triggerRef, 220);
   const selected = useMemo(
     () => options.find((option) => option.value === value) ?? options[0],
     [options, value]
@@ -153,29 +218,11 @@ function BaseCombobox({
     registerParts({ trigger: triggerRef.current, searchInput: inputRef.current });
   }, [registerParts, open, options, value]);
 
-  useLayoutEffect(() => {
-    const trigger = triggerRef.current;
-    if (!trigger) {
-      return;
-    }
-    const update = (): void => {
-      const width = Math.max(220, Math.round(trigger.getBoundingClientRect().width + 44));
-      setTriggerWidth(width);
-    };
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(trigger);
-    return () => observer.disconnect();
-  }, []);
-
   useEffect(() => {
     if (!open) {
       return;
     }
-    window.requestAnimationFrame(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    });
+    focusInputNextFrame(inputRef);
   }, [open]);
 
   const selectedLabel = selected?.label ?? 'None';
@@ -189,13 +236,7 @@ function BaseCombobox({
       open={open}
       autoHighlight
       highlightItemOnHover
-      filter={(item, query) => {
-        if (!item) {
-          return false;
-        }
-        const haystack = `${item.label} ${item.keywords ?? ''}`.toLowerCase();
-        return haystack.includes(query.trim().toLowerCase());
-      }}
+      filter={(item, query) => filterOptionByQuery(item, query)}
       itemToStringLabel={(item) => (item ? item.label : '')}
       onOpenChange={(nextOpen) => {
         if (nextOpen) {
@@ -427,9 +468,9 @@ function BaseLabelSearchCombobox({
   registerParts
 }: BaseLabelSearchComboboxProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
-  const [menuWidth, setMenuWidth] = useState(240);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const menuWidth = useTriggerWidth(triggerRef, 240);
   const allowCloseRef = useRef(false);
   const selectedCount = useMemo(
     () => options.filter((option) => option.checked).length,
@@ -440,21 +481,6 @@ function BaseLabelSearchCombobox({
   useEffect(() => {
     registerParts({ searchInput: inputRef.current });
   }, [registerParts, open, options, disabled]);
-
-  useLayoutEffect(() => {
-    const trigger = triggerRef.current;
-    if (!trigger) {
-      return;
-    }
-    const update = (): void => {
-      const width = Math.max(240, Math.round(trigger.getBoundingClientRect().width + 44));
-      setMenuWidth(width);
-    };
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(trigger);
-    return () => observer.disconnect();
-  }, []);
 
   const requestClose = (): void => {
     allowCloseRef.current = true;
@@ -496,10 +522,7 @@ function BaseLabelSearchCombobox({
     if (!open) {
       return;
     }
-    window.requestAnimationFrame(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    });
+    focusInputNextFrame(inputRef);
   }, [open]);
 
   return (
@@ -510,13 +533,7 @@ function BaseLabelSearchCombobox({
       open={open}
       autoHighlight
       highlightItemOnHover
-      filter={(item, query) => {
-        if (!item) {
-          return false;
-        }
-        const haystack = `${item.label} ${item.keywords ?? ''}`.toLowerCase();
-        return haystack.includes(query.trim().toLowerCase());
-      }}
+      filter={(item, query) => filterOptionByQuery(item, query)}
       itemToStringLabel={(item) => (item ? item.label : '')}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
@@ -532,7 +549,7 @@ function BaseLabelSearchCombobox({
           return;
         }
         onSelect(item.value);
-        window.requestAnimationFrame(() => inputRef.current?.focus());
+        focusInputNextFrame(inputRef, false);
       }}
     >
       <Combobox.Trigger
@@ -738,20 +755,7 @@ export function createBaseSubmitDropdownControl(config: {
   const { select, searchPlaceholder, getOptions, getPalette, onBeforeOpen } = config;
   select.style.display = 'none';
 
-  const container = document.createElement('div');
-  container.setAttribute('data-notiv-ui', 'true');
-  container.style.position = 'relative';
-  container.style.width = '100%';
-
-  const portalHost = document.createElement('div');
-  portalHost.setAttribute('data-notiv-ui', 'true');
-  portalHost.style.position = 'fixed';
-  portalHost.style.left = '0';
-  portalHost.style.top = '0';
-  portalHost.style.width = '0';
-  portalHost.style.height = '0';
-  portalHost.style.zIndex = '2147483647';
-  document.documentElement.appendChild(portalHost);
+  const { container, portalHost } = createFloatingHosts();
 
   let reactRoot: Root | null = createRoot(container);
   let closeSignal = 0;
@@ -845,20 +849,7 @@ export function createBaseLabelSearchControl(config: {
   ensureComboboxStyles();
   const { searchPlaceholder, getOptions, getPalette, isDisabled, onSelect, onBeforeOpen } = config;
 
-  const container = document.createElement('div');
-  container.setAttribute('data-notiv-ui', 'true');
-  container.style.position = 'relative';
-  container.style.width = '100%';
-
-  const portalHost = document.createElement('div');
-  portalHost.setAttribute('data-notiv-ui', 'true');
-  portalHost.style.position = 'fixed';
-  portalHost.style.left = '0';
-  portalHost.style.top = '0';
-  portalHost.style.width = '0';
-  portalHost.style.height = '0';
-  portalHost.style.zIndex = '2147483647';
-  document.documentElement.appendChild(portalHost);
+  const { container, portalHost } = createFloatingHosts();
 
   let reactRoot: Root | null = createRoot(container);
   let closeSignal = 0;

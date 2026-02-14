@@ -1,7 +1,9 @@
-import type { BackgroundResponse, ContentToBackgroundMessage } from '../shared/messages';
+import type { BackgroundResponse, BackgroundToContentMessage, ContentToBackgroundMessage } from '../shared/messages';
 import type { Annotation, BoundingBox, LinearSettings } from '../shared/types';
 import { ALLOW_LINEAR_PAT_FALLBACK } from '../shared/feature-flags';
 import { getSessionStorageItems, setSessionStorageItems } from '../shared/chrome-storage';
+import { EMPTY_LINEAR_RESOURCES } from '../shared/linear-resources';
+import { resolveSiteOriginPermission } from '../shared/site-origin';
 import { createLinearGroupedIssue, createLinearIssue, getLinearWorkspaceResources, runLinearOAuthFlow } from './linear';
 import { captureElementScreenshot, captureRegionScreenshot, captureVisibleScreenshot } from './screenshot';
 import { clearLinearAuth, getLinearSettings, saveLinearSettings } from './storage';
@@ -13,10 +15,29 @@ const SESSION_KEYS = {
   toolbarTabs: 'notivActiveToolbarTabs'
 } as const;
 
-interface TabSitePermission {
-  pattern: string;
-  label: string;
+type TogglePayload = { visible: boolean } | { active: boolean };
+type CapturePreparePayload = Extract<BackgroundToContentMessage, { type: 'capturePrepare' }>['payload'];
+
+interface RuntimeToggleConfig {
+  tabs: Set<number>;
+  messageType: 'toolbarVisibilityChanged' | 'pickerActivationChanged';
+  unavailableMessage: string;
+  getPayload: (value: boolean) => TogglePayload;
 }
+
+const TOOLBAR_TOGGLE_CONFIG: RuntimeToggleConfig = {
+  tabs: activeToolbarTabs,
+  messageType: 'toolbarVisibilityChanged',
+  unavailableMessage: 'Toolbar is unavailable on this page. Open a regular http/https page and try again.',
+  getPayload: (visible) => ({ visible })
+};
+
+const PICKER_TOGGLE_CONFIG: RuntimeToggleConfig = {
+  tabs: activePickerTabs,
+  messageType: 'pickerActivationChanged',
+  unavailableMessage: 'Picker is unavailable on this page. Open a regular http/https page and try again.',
+  getPayload: (active) => ({ active })
+};
 
 function resolveContentScriptFile(): string {
   const fallback = 'src/content/index.ts';
@@ -28,33 +49,6 @@ function resolveContentScriptFile(): string {
     }
   }
   return fallback;
-}
-
-function resolveTabSitePermission(urlValue: string | undefined): TabSitePermission | null {
-  if (!urlValue) {
-    return null;
-  }
-
-  let parsed: URL;
-  try {
-    parsed = new URL(urlValue);
-  } catch {
-    return null;
-  }
-
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    return null;
-  }
-
-  const host = parsed.hostname;
-  if (!host) {
-    return null;
-  }
-
-  return {
-    pattern: `${parsed.protocol}//${host}/*`,
-    label: parsed.origin
-  };
 }
 
 async function ensureContentScriptReady(tabId: number): Promise<void> {
@@ -102,7 +96,7 @@ async function ensureContentScriptReady(tabId: number): Promise<void> {
 
 async function ensureSiteAccessForTab(tabId: number): Promise<void> {
   const tab = await chrome.tabs.get(tabId);
-  const permission = resolveTabSitePermission(tab.url);
+  const permission = resolveSiteOriginPermission(tab.url);
   if (!permission) {
     throw new Error('Notiv works only on regular http/https pages.');
   }
@@ -186,81 +180,101 @@ function sanitizeSettingsForContent(settings: LinearSettings): LinearSettings {
   };
 }
 
-async function notifyToolbarState(tabId: number, visible: boolean): Promise<void> {
+async function sendTabToggleMessage(tabId: number, config: RuntimeToggleConfig, value: boolean): Promise<void> {
   try {
     await chrome.tabs.sendMessage(tabId, {
-      type: 'toolbarVisibilityChanged',
-      payload: { visible }
+      type: config.messageType,
+      payload: config.getPayload(value)
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
     if (message.includes('Receiving end does not exist')) {
-      throw new Error(
-        'Toolbar is unavailable on this page. Open a regular http/https page and try again.'
-      );
+      throw new Error(config.unavailableMessage);
     }
+    throw error;
+  }
+}
+
+async function setRuntimeToggleState(tabId: number, value: boolean, config: RuntimeToggleConfig): Promise<void> {
+  const hadValue = config.tabs.has(tabId);
+  if (value) {
+    config.tabs.add(tabId);
+  } else {
+    config.tabs.delete(tabId);
+  }
+
+  try {
+    await sendTabToggleMessage(tabId, config, value);
+    await persistRuntimeState();
+  } catch (error) {
+    if (hadValue) {
+      config.tabs.add(tabId);
+    } else {
+      config.tabs.delete(tabId);
+    }
+    await persistRuntimeState();
     throw error;
   }
 }
 
 async function setToolbar(tabId: number, visible: boolean): Promise<void> {
-  const hadToolbar = activeToolbarTabs.has(tabId);
-  if (visible) {
-    activeToolbarTabs.add(tabId);
-  } else {
-    activeToolbarTabs.delete(tabId);
-  }
-
-  try {
-    await notifyToolbarState(tabId, visible);
-    await persistRuntimeState();
-  } catch (error) {
-    if (hadToolbar) {
-      activeToolbarTabs.add(tabId);
-    } else {
-      activeToolbarTabs.delete(tabId);
-    }
-    await persistRuntimeState();
-    throw error;
-  }
-}
-
-async function notifyPickerState(tabId: number, active: boolean): Promise<void> {
-  try {
-    await chrome.tabs.sendMessage(tabId, {
-      type: 'pickerActivationChanged',
-      payload: { active }
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '';
-    if (message.includes('Receiving end does not exist')) {
-      throw new Error(
-        'Picker is unavailable on this page. Open a regular http/https page and try again.'
-      );
-    }
-    throw error;
-  }
+  await setRuntimeToggleState(tabId, visible, TOOLBAR_TOGGLE_CONFIG);
 }
 
 async function setPicker(tabId: number, active: boolean): Promise<void> {
-  const hadPicker = activePickerTabs.has(tabId);
-  if (active) {
-    activePickerTabs.add(tabId);
-  } else {
-    activePickerTabs.delete(tabId);
+  await setRuntimeToggleState(tabId, active, PICKER_TOGGLE_CONFIG);
+}
+
+function getSenderTabId(sender: chrome.runtime.MessageSender, context: 'picker' | 'toolbar' | 'capture'): number {
+  const tabId = sender.tab?.id;
+  if (tabId) {
+    return tabId;
+  }
+
+  if (context === 'picker') {
+    throw new Error('Could not resolve source tab for picker update.');
+  }
+  if (context === 'toolbar') {
+    throw new Error('Could not resolve source tab for toolbar update.');
+  }
+  throw new Error('Could not resolve current tab.');
+}
+
+function toIssueCreateResponse(issue: { identifier: string; url: string; id: string }): BackgroundResponse {
+  return {
+    ok: true,
+    data: {
+      identifier: issue.identifier,
+      url: issue.url,
+      issueId: issue.id
+    }
+  };
+}
+
+async function withCapturePreparation<T>(
+  tabId: number,
+  payload: CapturePreparePayload | undefined,
+  capture: () => Promise<T>
+): Promise<T> {
+  try {
+    if (payload) {
+      await chrome.tabs.sendMessage(tabId, {
+        type: 'capturePrepare',
+        payload
+      });
+    }
+  } catch {
+    // Continue even if content script prepare hook is unavailable.
   }
 
   try {
-    await notifyPickerState(tabId, active);
-    await persistRuntimeState();
-  } catch (error) {
-    if (hadPicker) {
-      activePickerTabs.add(tabId);
-    } else {
-      activePickerTabs.delete(tabId);
+    return await capture();
+  } finally {
+    try {
+      await chrome.tabs.sendMessage(tabId, { type: 'captureRestore' });
+    } catch {
+      // Best-effort UI restore.
     }
-    await persistRuntimeState();
-    throw error;
   }
 }
 
@@ -276,37 +290,24 @@ async function captureAnnotationWithScreenshot(
   windowId: number | undefined,
   annotationBase: Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'>
 ): Promise<Annotation> {
-  let captures: Awaited<ReturnType<typeof captureElementScreenshot>>;
-  try {
-    try {
-      await chrome.tabs.sendMessage(tabId, {
-        type: 'capturePrepare',
-        payload: {
-          boundingBox: annotationBase.boundingBox,
-          marker: {
-            x: annotationBase.x,
-            y: annotationBase.y,
-            text: annotationBase.comment,
-            color: annotationBase.highlightColor
-          }
-        }
-      });
-    } catch {
-      // Continue even if content script prepare hook is unavailable.
-    }
-
-    captures = await captureElementScreenshot({
-      windowId,
-      boundingBox: annotationBase.boundingBox ?? { x: 0, y: 0, width: 1, height: 1 },
-      devicePixelRatio: annotationBase.viewport?.devicePixelRatio ?? 1
-    });
-  } finally {
-    try {
-      await chrome.tabs.sendMessage(tabId, { type: 'captureRestore' });
-    } catch {
-      // Best-effort UI restore.
-    }
-  }
+  const captures = await withCapturePreparation(
+    tabId,
+    {
+      boundingBox: annotationBase.boundingBox,
+      marker: {
+        x: annotationBase.x,
+        y: annotationBase.y,
+        text: annotationBase.comment,
+        color: annotationBase.highlightColor
+      }
+    },
+    () =>
+      captureElementScreenshot({
+        windowId,
+        boundingBox: annotationBase.boundingBox ?? { x: 0, y: 0, width: 1, height: 1 },
+        devicePixelRatio: annotationBase.viewport?.devicePixelRatio ?? 1
+      })
+  );
 
   return {
     ...annotationBase,
@@ -315,7 +316,9 @@ async function captureAnnotationWithScreenshot(
   };
 }
 
-function computeGroupedCaptureBounds(annotations: Array<Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'>>): BoundingBox | null {
+function computeGroupedCaptureBounds(
+  annotations: Array<Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'>>
+): BoundingBox | null {
   if (annotations.length === 0) {
     return null;
   }
@@ -398,150 +401,108 @@ async function dispatchRuntimeMessage(
 ): Promise<BackgroundResponse> {
   const trustedSender = isExtensionPageSender(sender);
 
-  if (message.type === 'activatePicker') {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab.id) {
-      throw new Error('No active tab available.');
+  switch (message.type) {
+    case 'activatePicker': {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab.id) {
+        throw new Error('No active tab available.');
+      }
+      await ensureSiteAccessForTab(tab.id);
+      await setToolbar(tab.id, true);
+      const active = await togglePicker(tab.id);
+      return { ok: true, data: { active } };
     }
-    await ensureSiteAccessForTab(tab.id);
-    await setToolbar(tab.id, true);
-    const active = await togglePicker(tab.id);
-    return { ok: true, data: { active } };
-  }
-
-  if (message.type === 'setPickerActive') {
-    const tabId = sender.tab?.id;
-    if (!tabId) {
-      throw new Error('Could not resolve source tab for picker update.');
+    case 'setPickerActive': {
+      const tabId = getSenderTabId(sender, 'picker');
+      await setPicker(tabId, message.payload.active);
+      return { ok: true, data: { active: message.payload.active } };
     }
-    await setPicker(tabId, message.payload.active);
-    return { ok: true, data: { active: message.payload.active } };
-  }
-
-  if (message.type === 'setToolbarVisible') {
-    const tabId = sender.tab?.id;
-    if (!tabId) {
-      throw new Error('Could not resolve source tab for toolbar update.');
+    case 'setToolbarVisible': {
+      const tabId = getSenderTabId(sender, 'toolbar');
+      await setToolbar(tabId, message.payload.visible);
+      return { ok: true, data: { visible: message.payload.visible } };
     }
-    await setToolbar(tabId, message.payload.visible);
-    return { ok: true, data: { visible: message.payload.visible } };
-  }
-
-  if (message.type === 'openSettingsPage') {
-    await chrome.runtime.openOptionsPage();
-    return { ok: true };
-  }
-
-  if (message.type === 'linearSettingsGet') {
-    const settings = await getLinearSettings();
-    return {
-      ok: true,
-      data: trustedSender ? settings : sanitizeSettingsForContent(settings)
-    };
-  }
-
-  if (message.type === 'linearResourcesGet') {
-    const settings = await getLinearSettings();
-    const rawExplicitAccessToken = trustedSender ? message.payload?.accessToken?.trim() : undefined;
-    if (rawExplicitAccessToken && !ALLOW_LINEAR_PAT_FALLBACK) {
-      throw new Error('Personal API token fallback is disabled. Connect with OAuth.');
+    case 'openSettingsPage': {
+      await chrome.runtime.openOptionsPage();
+      return { ok: true };
     }
-    const explicitAccessToken = ALLOW_LINEAR_PAT_FALLBACK ? rawExplicitAccessToken : undefined;
-    const hasStoredAccessToken = Boolean(settings.accessToken?.trim());
-    if (!explicitAccessToken && !hasStoredAccessToken) {
+    case 'linearSettingsGet': {
+      const settings = await getLinearSettings();
       return {
         ok: true,
-        data: {
-          viewerName: undefined,
-          organizationName: undefined,
-          teams: [],
-          projects: [],
-          labels: [],
-          users: []
-        }
+        data: trustedSender ? settings : sanitizeSettingsForContent(settings)
       };
     }
-
-    const resources = explicitAccessToken
-      ? await getLinearWorkspaceResources(explicitAccessToken)
-      : await getLinearWorkspaceResources(settings);
-    return { ok: true, data: resources };
-  }
-
-  if (message.type === 'linearSettingsSave') {
-    if (!trustedSender) {
-      throw new Error('Settings updates must be made from extension settings.');
-    }
-    if (message.payload.accessToken !== undefined && !ALLOW_LINEAR_PAT_FALLBACK) {
-      throw new Error('Personal API token fallback is disabled. Connect with OAuth.');
-    }
-    await saveLinearSettings(message.payload);
-    const settings = await getLinearSettings();
-    return { ok: true, data: settings };
-  }
-
-  if (message.type === 'linearAuthDisconnect') {
-    if (!trustedSender) {
-      throw new Error('Authentication changes must be made from extension settings.');
-    }
-    await clearLinearAuth();
-    const settings = await getLinearSettings();
-    return { ok: true, data: settings };
-  }
-
-  if (message.type === 'linearAuthStart') {
-    if (!trustedSender) {
-      throw new Error('Authentication must be initiated from extension settings.');
-    }
-    const currentSettings = await getLinearSettings();
-    const oauth = await runLinearOAuthFlow(currentSettings);
-    await saveLinearSettings({
-      accessToken: oauth.accessToken,
-      refreshToken: oauth.refreshToken,
-      accessTokenExpiresAt: oauth.accessTokenExpiresAt
-    });
-    const updatedSettings = await getLinearSettings();
-    return { ok: true, data: updatedSettings };
-  }
-
-  if (message.type === 'captureAndCreateIssue') {
-    const tabId = sender.tab?.id;
-    if (!tabId) {
-      throw new Error('Could not resolve current tab.');
-    }
-
-    const windowId = sender.tab?.windowId;
-    const annotationBase = message.payload.annotation;
-    const annotation = await captureAnnotationWithScreenshot(tabId, windowId, annotationBase);
-
-    const settings = await getLinearSettings();
-    const issue = await createLinearIssue(annotation, settings, message.payload.overrides);
-
-    return {
-      ok: true,
-      data: {
-        identifier: issue.identifier,
-        url: issue.url,
-        issueId: issue.id
+    case 'linearResourcesGet': {
+      const settings = await getLinearSettings();
+      const rawExplicitAccessToken = trustedSender ? message.payload?.accessToken?.trim() : undefined;
+      if (rawExplicitAccessToken && !ALLOW_LINEAR_PAT_FALLBACK) {
+        throw new Error('Personal API token fallback is disabled. Connect with OAuth.');
       }
-    };
-  }
+      const explicitAccessToken = ALLOW_LINEAR_PAT_FALLBACK ? rawExplicitAccessToken : undefined;
+      const hasStoredAccessToken = Boolean(settings.accessToken?.trim());
+      if (!explicitAccessToken && !hasStoredAccessToken) {
+        return { ok: true, data: EMPTY_LINEAR_RESOURCES };
+      }
 
-  if (message.type === 'captureAndCreateGroupedIssue') {
-    const tabId = sender.tab?.id;
-    if (!tabId) {
-      throw new Error('Could not resolve current tab.');
+      const resources = explicitAccessToken
+        ? await getLinearWorkspaceResources(explicitAccessToken)
+        : await getLinearWorkspaceResources(settings);
+      return { ok: true, data: resources };
     }
-    const windowId = sender.tab?.windowId;
-    const annotations = message.payload.annotations;
-    if (annotations.length === 0) {
-      throw new Error('No notes to submit.');
+    case 'linearSettingsSave': {
+      if (!trustedSender) {
+        throw new Error('Settings updates must be made from extension settings.');
+      }
+      if (message.payload.accessToken !== undefined && !ALLOW_LINEAR_PAT_FALLBACK) {
+        throw new Error('Personal API token fallback is disabled. Connect with OAuth.');
+      }
+      await saveLinearSettings(message.payload);
+      const settings = await getLinearSettings();
+      return { ok: true, data: settings };
     }
-    let fullScreenshot = '';
-    try {
-      await chrome.tabs.sendMessage(tabId, {
-        type: 'capturePrepare',
-        payload: {
+    case 'linearAuthDisconnect': {
+      if (!trustedSender) {
+        throw new Error('Authentication changes must be made from extension settings.');
+      }
+      await clearLinearAuth();
+      const settings = await getLinearSettings();
+      return { ok: true, data: settings };
+    }
+    case 'linearAuthStart': {
+      if (!trustedSender) {
+        throw new Error('Authentication must be initiated from extension settings.');
+      }
+      const currentSettings = await getLinearSettings();
+      const oauth = await runLinearOAuthFlow(currentSettings);
+      await saveLinearSettings({
+        accessToken: oauth.accessToken,
+        refreshToken: oauth.refreshToken,
+        accessTokenExpiresAt: oauth.accessTokenExpiresAt
+      });
+      const updatedSettings = await getLinearSettings();
+      return { ok: true, data: updatedSettings };
+    }
+    case 'captureAndCreateIssue': {
+      const tabId = getSenderTabId(sender, 'capture');
+      const windowId = sender.tab?.windowId;
+      const annotationBase = message.payload.annotation;
+      const annotation = await captureAnnotationWithScreenshot(tabId, windowId, annotationBase);
+      const settings = await getLinearSettings();
+      const issue = await createLinearIssue(annotation, settings, message.payload.overrides);
+      return toIssueCreateResponse(issue);
+    }
+    case 'captureAndCreateGroupedIssue': {
+      const tabId = getSenderTabId(sender, 'capture');
+      const windowId = sender.tab?.windowId;
+      const annotations = message.payload.annotations;
+      if (annotations.length === 0) {
+        throw new Error('No notes to submit.');
+      }
+
+      const fullScreenshot = await withCapturePreparation(
+        tabId,
+        {
           highlights: annotations
             .map((annotation) =>
               annotation.boundingBox ? { ...annotation.boundingBox, color: annotation.highlightColor } : null
@@ -557,49 +518,31 @@ async function dispatchRuntimeMessage(
             index: index + 1,
             color: annotation.highlightColor
           }))
+        },
+        async () => {
+          const groupedBounds = computeGroupedCaptureBounds(annotations);
+          if (groupedBounds) {
+            return captureRegionScreenshot({
+              windowId,
+              boundingBox: groupedBounds,
+              devicePixelRatio: annotations[0]?.viewport?.devicePixelRatio ?? 1
+            });
+          }
+          return captureVisibleScreenshot({ windowId });
         }
-      });
-    } catch {
-      // Continue even if content script prepare hook is unavailable.
+      );
+
+      const settings = await getLinearSettings();
+      const issue = await createLinearGroupedIssue(annotations, fullScreenshot, settings, message.payload.overrides);
+      return toIssueCreateResponse(issue);
     }
-
-    try {
-      const groupedBounds = computeGroupedCaptureBounds(annotations);
-      if (groupedBounds) {
-        fullScreenshot = await captureRegionScreenshot({
-          windowId,
-          boundingBox: groupedBounds,
-          devicePixelRatio: annotations[0]?.viewport?.devicePixelRatio ?? 1
-        });
-      } else {
-        fullScreenshot = await captureVisibleScreenshot({ windowId });
-      }
-    } finally {
-      try {
-        await chrome.tabs.sendMessage(tabId, { type: 'captureRestore' });
-      } catch {
-        // Best-effort UI restore.
-      }
-    }
-
-    const settings = await getLinearSettings();
-    const issue = await createLinearGroupedIssue(annotations, fullScreenshot, settings, message.payload.overrides);
-
-    return {
-      ok: true,
-      data: {
-        identifier: issue.identifier,
-        url: issue.url,
-        issueId: issue.id
-      }
-    };
+    default:
+      return { ok: false, error: 'Unsupported message type.' };
   }
-
-  return { ok: false, error: 'Unsupported message type.' };
 }
 
 chrome.runtime.onMessage.addListener((message: ContentToBackgroundMessage, sender, sendResponse) => {
-  void (async () => {
+  const handleMessage = async (): Promise<void> => {
     try {
       const response = await dispatchRuntimeMessage(message, sender);
       sendResponse(response);
@@ -607,7 +550,9 @@ chrome.runtime.onMessage.addListener((message: ContentToBackgroundMessage, sende
       const message = error instanceof Error ? error.message : 'Unexpected error in background worker.';
       sendResponse({ ok: false, error: message } satisfies BackgroundResponse);
     }
-  })();
+  };
+
+  void handleMessage();
 
   return true;
 });

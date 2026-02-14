@@ -76,7 +76,7 @@ export function useLinearConnection(): UseLinearConnectionResult {
   }, [setFeedback]);
 
   useEffect(() => {
-    void (async () => {
+    const loadInitialSettings = async (): Promise<void> => {
       try {
         const normalized = await fetchLinearSettings();
         setSettings(normalized);
@@ -88,7 +88,9 @@ export function useLinearConnection(): UseLinearConnectionResult {
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    void loadInitialSettings();
   }, [setFeedback]);
 
   useEffect(() => {

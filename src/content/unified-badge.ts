@@ -3,12 +3,10 @@ import { UI_IDS, STORAGE_KEYS } from '../shared/constants';
 import { getNotivThemeMode } from './theme-mode';
 import type { LinearLabel } from '../shared/types';
 import { getHighlightColorPreset, resolveHighlightColor } from '../shared/highlight-colors';
-import { FONT_STACK_MONO, FONT_STACK_SANS } from '../shared/visual-tokens';
 import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
 import {
   createPriorityIcon,
   createUserIcon,
-  createTrashIcon,
   getChevronSvgHtml as createChevronHtml,
 } from '../shared/svg-builder';
 import {
@@ -28,6 +26,17 @@ import {
   TIMING,
   EASING,
 } from './unified-badge-types';
+import {
+  createSearchDropdownShell,
+  focusElementNextFrame
+} from './unified-badge-dropdown';
+import { PRIORITY_OPTIONS, PRIORITY_SELECTION_DELAY_MS } from './unified-badge-settings';
+import { renderUnifiedBadgeRows, updateUnifiedBadgeRowHighlight } from './unified-badge-list';
+import {
+  renderAssigneeDropdownList,
+  renderLabelsDropdownList,
+  renderTeamDropdownList
+} from './unified-badge-dropdown-lists';
 
 export type {
   QueueNoteSummary,
@@ -62,7 +71,6 @@ export class UnifiedBadge {
   private hoveredId: string | null = null;
   private visible = false;
   private submitting = false;
-
 
   private resources: UnifiedBadgeResources = { teams: [], labels: [], users: [] };
   private settings: SubmissionSettings = { priority: null, labelIds: [], assigneeId: null };
@@ -835,136 +843,16 @@ export class UnifiedBadge {
 
     this.renderedItemIds = currentIds;
 
-    this.items.forEach((note, index) => {
-      const colorPreset = getHighlightColorPreset(resolveHighlightColor(note.highlightColor));
-      const isHovered = this.hoveredId === note.id;
-      const isNew = newIds.has(note.id);
-
-      const row = document.createElement('div');
-      row.className = 'notiv-unified-row';
-      if (isNew) row.classList.add('notiv-unified-row-new');
-      row.setAttribute('data-note-id', note.id);
-      row.style.display = 'grid';
-      row.style.gridTemplateColumns = '14px minmax(0, 1fr) auto';
-      row.style.gap = '10px';
-      row.style.alignItems = 'start';
-      row.style.padding = '8px 6px';
-      row.style.borderRadius = '6px';
-      row.style.background = isHovered ? (isDark ? 'rgba(240, 239, 237, 0.06)' : 'rgba(26, 24, 22, 0.05)') : 'transparent';
-      row.style.cursor = 'pointer';
-      row.style.transition = 'background 80ms ease';
-
-      const indexChip = document.createElement('div');
-      indexChip.textContent = String(index + 1);
-      indexChip.style.width = '14px';
-      indexChip.style.height = '14px';
-      indexChip.style.marginTop = '2px';
-      indexChip.style.borderRadius = '3px';
-      indexChip.style.border = `1px solid ${colorPreset.border}`;
-      indexChip.style.display = 'grid';
-      indexChip.style.placeItems = 'center';
-      indexChip.style.fontFamily = FONT_STACK_MONO;
-      indexChip.style.fontSize = '9px';
-      indexChip.style.fontWeight = '600';
-      indexChip.style.color = colorPreset.pinText;
-      indexChip.style.background = colorPreset.pinFill;
-
-      const body = document.createElement('div');
-      body.style.minWidth = '0';
-
-      const comment = document.createElement('div');
-      const commentText = note.comment || 'Untitled note';
-      comment.textContent = commentText.length > 110 ? commentText.slice(0, 107) + '...' : commentText;
-      comment.style.color = isDark ? '#f0efed' : '#1a1816';
-      comment.style.fontFamily = FONT_STACK_SANS;
-      comment.style.fontSize = '14px';
-      comment.style.fontWeight = '500';
-      comment.style.lineHeight = '1.3';
-
-      const target = document.createElement('div');
-      let targetText = note.target;
-      if ((note.attachmentsCount ?? 0) > 0) {
-        targetText += ` · ${note.attachmentsCount} image${note.attachmentsCount === 1 ? '' : 's'}`;
-      }
-      target.textContent = targetText;
-      target.style.marginTop = '4px';
-      target.style.color = isDark ? '#8a8884' : '#9c9894';
-      target.style.fontFamily = FONT_STACK_MONO;
-      target.style.fontSize = '10px';
-      target.style.whiteSpace = 'nowrap';
-      target.style.overflow = 'hidden';
-      target.style.textOverflow = 'ellipsis';
-
-      body.appendChild(comment);
-      body.appendChild(target);
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.type = 'button';
-      deleteBtn.title = 'Delete note';
-      deleteBtn.setAttribute('aria-label', 'Delete note');
-      deleteBtn.style.appearance = 'none';
-      deleteBtn.style.display = 'inline-flex';
-      deleteBtn.style.alignItems = 'center';
-      deleteBtn.style.justifyContent = 'center';
-      deleteBtn.style.width = '20px';
-      deleteBtn.style.height = '20px';
-      deleteBtn.style.padding = '0';
-      deleteBtn.style.border = 'none';
-      deleteBtn.style.background = 'transparent';
-      deleteBtn.style.color = isDark ? '#8a8884' : '#9c9894';
-      deleteBtn.style.cursor = 'pointer';
-      deleteBtn.style.opacity = isHovered ? '0.6' : '0';
-      deleteBtn.style.transition = 'opacity 80ms ease';
-      deleteBtn.disabled = this.submitting;
-
-      const icon = createTrashIcon();
-      deleteBtn.appendChild(icon);
-
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.callbacks.onDelete(note.id);
-      });
-
-      const deleteBtnDefaultColor = isDark ? '#8a8884' : '#9c9894';
-      const deleteBtnHoverColor = isDark ? '#f07070' : '#c94a4a';
-
-      deleteBtn.addEventListener('mouseenter', () => {
-        deleteBtn.style.color = deleteBtnHoverColor;
-        deleteBtn.style.opacity = '1';
-      });
-
-      deleteBtn.addEventListener('mouseleave', () => {
-        deleteBtn.style.color = deleteBtnDefaultColor;
-        if (!row.matches(':hover')) {
-          deleteBtn.style.opacity = '0';
-        } else {
-          deleteBtn.style.opacity = '0.6';
-        }
-      });
-
-      row.addEventListener('mouseenter', () => {
-        if (this.submitting) return;
-        row.style.background = isDark ? 'rgba(240, 239, 237, 0.06)' : 'rgba(26, 24, 22, 0.05)';
-        deleteBtn.style.opacity = '0.6';
-        this.callbacks.onHover(note.id);
-      });
-
-      row.addEventListener('mouseleave', () => {
-        row.style.background = 'transparent';
-        deleteBtn.style.opacity = '0';
-        this.callbacks.onHover(null);
-      });
-
-      row.addEventListener('click', () => {
-        if (this.submitting) return;
-        this.callbacks.onEdit(note.id);
-      });
-
-      row.appendChild(indexChip);
-      row.appendChild(body);
-      row.appendChild(deleteBtn);
-
-      this.listEl!.appendChild(row);
+    renderUnifiedBadgeRows({
+      listEl: this.listEl,
+      items: this.items,
+      hoveredId: this.hoveredId,
+      newIds,
+      submitting: this.submitting,
+      isDark,
+      onDelete: this.callbacks.onDelete,
+      onHover: this.callbacks.onHover,
+      onEdit: this.callbacks.onEdit
     });
 
     if (newIds.size > 0) {
@@ -978,27 +866,7 @@ export class UnifiedBadge {
 
   private updateRowHighlights(prevId: string | null, newId: string | null): void {
     if (!this.listEl) return;
-    const mode = getNotivThemeMode();
-    const isDark = mode === 'dark';
-    const hoverBg = isDark ? 'rgba(240, 239, 237, 0.06)' : 'rgba(26, 24, 22, 0.05)';
-
-    if (prevId) {
-      const prevRow = this.listEl.querySelector(`[data-note-id="${prevId}"]`) as HTMLElement | null;
-      if (prevRow && !prevRow.matches(':hover')) {
-        prevRow.style.background = 'transparent';
-        const deleteBtn = prevRow.querySelector('button') as HTMLButtonElement | null;
-        if (deleteBtn) deleteBtn.style.opacity = '0';
-      }
-    }
-
-    if (newId) {
-      const newRow = this.listEl.querySelector(`[data-note-id="${newId}"]`) as HTMLElement | null;
-      if (newRow) {
-        newRow.style.background = hoverBg;
-        const deleteBtn = newRow.querySelector('button') as HTMLButtonElement | null;
-        if (deleteBtn) deleteBtn.style.opacity = '0.6';
-      }
-    }
+    updateUnifiedBadgeRowHighlight(this.listEl, prevId, newId, getNotivThemeMode() === 'dark');
   }
 
   private renderSettings(): void {
@@ -1020,7 +888,7 @@ export class UnifiedBadge {
     priorityBtn.type = 'button';
     priorityBtn.className = 'notiv-unified-inline-btn takeover-trigger';
     priorityBtn.appendChild(createPriorityIcon(this.settings.priority));
-    priorityBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
+    priorityBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
 
     priorityBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1052,16 +920,11 @@ export class UnifiedBadge {
     teamKey.className = 'notiv-unified-team-key';
     teamKey.textContent = selectedTeam?.key ?? 'Team';
     teamBtn.appendChild(teamKey);
-    teamBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
+    teamBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
 
     teamBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.takeoverMode = null;
-      this.assigneeDropdownOpen = false;
-      this.labelsDropdownOpen = false;
-      this.teamDropdownOpen = !this.teamDropdownOpen;
-      this.teamSearchQuery = '';
-      this.renderSettings();
+      this.toggleTeamDropdown();
     });
     teamAnchor.appendChild(teamBtn);
 
@@ -1098,16 +961,11 @@ export class UnifiedBadge {
     } else {
       assigneeBtn.appendChild(createUserIcon());
     }
-    assigneeBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
+    assigneeBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
 
     assigneeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.takeoverMode = null;
-      this.teamDropdownOpen = false;
-      this.labelsDropdownOpen = false;
-      this.assigneeDropdownOpen = !this.assigneeDropdownOpen;
-      this.assigneeSearchQuery = '';
-      this.renderSettings();
+      this.toggleAssigneeDropdown();
     });
     assigneeAnchor.appendChild(assigneeBtn);
 
@@ -1148,16 +1006,11 @@ export class UnifiedBadge {
       placeholder.textContent = 'Labels';
       labelsBtn.appendChild(placeholder);
     }
-    labelsBtn.innerHTML += createChevronHtml('notiv-unified-chevron');
+    labelsBtn.insertAdjacentHTML('beforeend', createChevronHtml('notiv-unified-chevron'));
 
     labelsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.takeoverMode = null;
-      this.teamDropdownOpen = false;
-      this.assigneeDropdownOpen = false;
-      this.labelsDropdownOpen = !this.labelsDropdownOpen;
-      this.labelsSearchQuery = '';
-      this.renderSettings();
+      this.toggleLabelsDropdown();
     });
     labelsAnchor.appendChild(labelsBtn);
 
@@ -1176,79 +1029,62 @@ export class UnifiedBadge {
   }
 
   private createTeamDropdown(): HTMLDivElement {
-    const dropdown = document.createElement('div');
-    dropdown.className = 'notiv-unified-dropdown';
-
-    const searchRow = document.createElement('div');
-    searchRow.className = 'notiv-unified-dropdown-search';
-
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.className = 'notiv-unified-dropdown-input';
-    searchInput.placeholder = 'Search teams...';
-    searchInput.value = this.teamSearchQuery;
-
-    const listEl = document.createElement('div');
-    listEl.className = 'notiv-unified-dropdown-list';
+    const { dropdown, searchInput, listEl } = createSearchDropdownShell('Search teams...', this.teamSearchQuery);
 
     searchInput.addEventListener('input', () => {
       this.teamSearchQuery = searchInput.value;
       this.renderTeamList(listEl);
     });
 
-    searchRow.appendChild(searchInput);
-    dropdown.appendChild(searchRow);
     this.renderTeamList(listEl);
-    dropdown.appendChild(listEl);
 
-    setTimeout(() => searchInput.focus(), 0);
+    focusElementNextFrame(searchInput);
     return dropdown;
   }
 
+  private toggleTeamDropdown(): void {
+    this.takeoverMode = null;
+    this.assigneeDropdownOpen = false;
+    this.labelsDropdownOpen = false;
+    this.teamDropdownOpen = !this.teamDropdownOpen;
+    this.teamSearchQuery = '';
+    this.renderSettings();
+  }
+
+  private toggleAssigneeDropdown(): void {
+    this.takeoverMode = null;
+    this.teamDropdownOpen = false;
+    this.labelsDropdownOpen = false;
+    this.assigneeDropdownOpen = !this.assigneeDropdownOpen;
+    this.assigneeSearchQuery = '';
+    this.renderSettings();
+  }
+
+  private toggleLabelsDropdown(): void {
+    this.takeoverMode = null;
+    this.teamDropdownOpen = false;
+    this.assigneeDropdownOpen = false;
+    this.labelsDropdownOpen = !this.labelsDropdownOpen;
+    this.labelsSearchQuery = '';
+    this.renderSettings();
+  }
+
+  private commitSettingsAndRender(): void {
+    void this.saveSettings();
+    this.renderSettings();
+  }
+
   private renderTeamList(listEl: HTMLDivElement): void {
-    listEl.innerHTML = '';
-    const query = this.teamSearchQuery.toLowerCase();
-    const filtered = this.resources.teams
-      .filter((t) => t.key.toLowerCase().includes(query) || t.name.toLowerCase().includes(query))
-      .sort((a, b) => a.key.localeCompare(b.key));
-
-    if (filtered.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'notiv-unified-dropdown-empty';
-      empty.textContent = 'No teams found';
-      listEl.appendChild(empty);
-      return;
-    }
-
-    filtered.forEach((team) => {
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.className = 'notiv-unified-dropdown-item';
-      if (this.selectedTeamId === team.id) item.classList.add('selected');
-
-      const name = document.createElement('span');
-      name.className = 'notiv-unified-dropdown-name';
-      name.textContent = team.name;
-      item.appendChild(name);
-
-      const key = document.createElement('span');
-      key.className = 'notiv-unified-dropdown-team-key';
-      key.textContent = team.key;
-      item.appendChild(key);
-
-      if (this.selectedTeamId === team.id) {
-        item.innerHTML += `<svg class="notiv-unified-dropdown-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>`;
-      }
-
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.selectedTeamId = team.id;
+    renderTeamDropdownList({
+      listEl,
+      teams: this.resources.teams,
+      selectedTeamId: this.selectedTeamId,
+      query: this.teamSearchQuery,
+      onSelect: (teamId) => {
+        this.selectedTeamId = teamId;
         this.teamDropdownOpen = false;
-        void this.saveSettings();
-        this.renderSettings();
-      });
-
-      listEl.appendChild(item);
+        this.commitSettingsAndRender();
+      }
     });
   }
 
@@ -1271,15 +1107,7 @@ export class UnifiedBadge {
     const options = document.createElement('div');
     options.className = 'notiv-unified-takeover-options';
 
-    const priorities = [
-      { value: null, label: 'No priority' },
-      { value: 1, label: 'Urgent' },
-      { value: 2, label: 'High' },
-      { value: 3, label: 'Medium' },
-      { value: 4, label: 'Low' }
-    ];
-
-    priorities.forEach((p) => {
+    PRIORITY_OPTIONS.forEach((p) => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'notiv-unified-takeover-chip priority-chip';
@@ -1295,7 +1123,7 @@ export class UnifiedBadge {
           void this.saveSettings();
           this.takeoverMode = null;
           this.renderSettings();
-        }, 80);
+        }, PRIORITY_SELECTION_DELAY_MS);
       });
 
       options.appendChild(chip);
@@ -1306,164 +1134,66 @@ export class UnifiedBadge {
   }
 
   private createAssigneeDropdown(): HTMLDivElement {
-    const dropdown = document.createElement('div');
-    dropdown.className = 'notiv-unified-dropdown';
-
-    const searchRow = document.createElement('div');
-    searchRow.className = 'notiv-unified-dropdown-search';
-
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.className = 'notiv-unified-dropdown-input';
-    searchInput.placeholder = 'Assign to...';
-    searchInput.value = this.assigneeSearchQuery;
-
-    const listEl = document.createElement('div');
-    listEl.className = 'notiv-unified-dropdown-list';
+    const { dropdown, searchInput, listEl } = createSearchDropdownShell('Assign to...', this.assigneeSearchQuery);
 
     searchInput.addEventListener('input', () => {
       this.assigneeSearchQuery = searchInput.value;
       this.renderAssigneeList(listEl);
     });
 
-    searchRow.appendChild(searchInput);
-    dropdown.appendChild(searchRow);
     this.renderAssigneeList(listEl);
-    dropdown.appendChild(listEl);
 
-    setTimeout(() => searchInput.focus(), 0);
+    focusElementNextFrame(searchInput);
     return dropdown;
   }
 
   private renderAssigneeList(listEl: HTMLDivElement): void {
-    listEl.innerHTML = '';
-    const query = this.assigneeSearchQuery.toLowerCase();
-    const filtered = this.resources.users.filter((u) => u.name.toLowerCase().includes(query));
-
-    if (filtered.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'notiv-unified-dropdown-empty';
-      empty.textContent = 'No members found';
-      listEl.appendChild(empty);
-      return;
-    }
-
-    filtered.forEach((user) => {
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.className = 'notiv-unified-dropdown-item';
-      if (this.settings.assigneeId === user.id) item.classList.add('selected');
-
-      if (user.avatarUrl) {
-        const avatar = document.createElement('img');
-        avatar.className = 'notiv-unified-dropdown-avatar';
-        avatar.src = user.avatarUrl;
-        item.appendChild(avatar);
-      } else {
-        const placeholder = document.createElement('span');
-        placeholder.className = 'notiv-unified-dropdown-avatar-placeholder';
-        placeholder.textContent = user.name.charAt(0).toUpperCase();
-        item.appendChild(placeholder);
-      }
-
-      const name = document.createElement('span');
-      name.className = 'notiv-unified-dropdown-name';
-      name.textContent = user.name;
-      item.appendChild(name);
-
-      if (this.settings.assigneeId === user.id) {
-        item.innerHTML += `<svg class="notiv-unified-dropdown-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>`;
-      }
-
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.settings.assigneeId = user.id;
+    renderAssigneeDropdownList({
+      listEl,
+      users: this.resources.users,
+      selectedAssigneeId: this.settings.assigneeId,
+      query: this.assigneeSearchQuery,
+      onSelect: (assigneeId) => {
+        this.settings.assigneeId = assigneeId;
         this.assigneeDropdownOpen = false;
-        void this.saveSettings();
-        this.renderSettings();
-      });
-
-      listEl.appendChild(item);
+        this.commitSettingsAndRender();
+      }
     });
   }
 
   private createLabelsDropdown(): HTMLDivElement {
-    const dropdown = document.createElement('div');
-    dropdown.className = 'notiv-unified-dropdown';
-
-    const searchRow = document.createElement('div');
-    searchRow.className = 'notiv-unified-dropdown-search';
-
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.className = 'notiv-unified-dropdown-input';
-    searchInput.placeholder = 'Add or change labels...';
-    searchInput.value = this.labelsSearchQuery;
-
-    const listEl = document.createElement('div');
-    listEl.className = 'notiv-unified-dropdown-list';
+    const { dropdown, searchInput, listEl } = createSearchDropdownShell(
+      'Add or change labels...',
+      this.labelsSearchQuery
+    );
 
     searchInput.addEventListener('input', () => {
       this.labelsSearchQuery = searchInput.value;
       this.renderLabelsList(listEl);
     });
 
-    searchRow.appendChild(searchInput);
-    dropdown.appendChild(searchRow);
     this.renderLabelsList(listEl);
-    dropdown.appendChild(listEl);
 
-    setTimeout(() => searchInput.focus(), 0);
+    focusElementNextFrame(searchInput);
     return dropdown;
   }
 
   private renderLabelsList(listEl: HTMLDivElement): void {
-    listEl.innerHTML = '';
-    const query = this.labelsSearchQuery.toLowerCase();
-    const filtered = this.resources.labels.filter((l) => l.name.toLowerCase().includes(query));
-
-    if (filtered.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'notiv-unified-dropdown-empty';
-      empty.textContent = 'No labels found';
-      listEl.appendChild(empty);
-      return;
-    }
-
-    filtered.forEach((label) => {
-      const item = document.createElement('button');
-      item.type = 'button';
-      item.className = 'notiv-unified-dropdown-item';
-      const isSelected = this.settings.labelIds.includes(label.id);
-      if (isSelected) item.classList.add('selected');
-
-      const dot = document.createElement('span');
-      dot.className = 'notiv-unified-dropdown-dot';
-      dot.style.background = label.color;
-      item.appendChild(dot);
-
-      const name = document.createElement('span');
-      name.className = 'notiv-unified-dropdown-name';
-      name.textContent = label.name;
-      item.appendChild(name);
-
-      if (isSelected) {
-        item.innerHTML += `<svg class="notiv-unified-dropdown-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>`;
-      }
-
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (isSelected) {
-          this.settings.labelIds = this.settings.labelIds.filter((id) => id !== label.id);
+    renderLabelsDropdownList({
+      listEl,
+      labels: this.resources.labels,
+      selectedLabelIds: this.settings.labelIds,
+      query: this.labelsSearchQuery,
+      onToggle: (labelId) => {
+        if (this.settings.labelIds.includes(labelId)) {
+          this.settings.labelIds = this.settings.labelIds.filter((id) => id !== labelId);
         } else {
-          this.settings.labelIds = [...this.settings.labelIds, label.id];
+          this.settings.labelIds = [...this.settings.labelIds, labelId];
         }
         void this.saveSettings();
         this.renderLabelsList(listEl);
         this.renderSettings();
-      });
-
-      listEl.appendChild(item);
+      }
     });
   }
 
