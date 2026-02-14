@@ -64,6 +64,7 @@ const componentFocusHighlighter = new Highlighter({
   bringToFrontOnShow: true
 });
 let hoveredDraftId: string | null = null;
+let isHoverFromQueue = false;
 let annotatorFocusTarget: {
   label: string;
   targetElement?: HTMLElement | null;
@@ -76,6 +77,12 @@ let annotatorFocusTarget: {
 const linearAuthTooltip = createLinearAuthTooltipController();
 
 function refreshFocusedComponentHighlight(): void {
+  if (isHoverFromQueue) {
+    componentFocusHighlighter.setZIndex(2147483646, 2147483647);
+  } else {
+    componentFocusHighlighter.setZIndex(2147483582, 2147483583);
+  }
+
   if (annotatorFocusTarget) {
     const box = resolveFocusBoundingBox(annotatorFocusTarget);
     if (box) {
@@ -178,6 +185,7 @@ const draftMarkers = new DraftMarkers({
     setDrafts(draftAnnotations.filter((note) => note.id !== id));
   },
   onHover: (id) => {
+    isHoverFromQueue = false;
     unifiedBadge.setHoveredId(id);
     setHoveredDraftId(id);
   }
@@ -624,6 +632,7 @@ const unifiedBadge = new UnifiedBadge({
     setDrafts(draftAnnotations.filter((note) => note.id !== id));
   },
   onHover: (id: string | null) => {
+    isHoverFromQueue = id !== null;
     draftMarkers.setHoveredNoteId(id);
     setHoveredDraftId(id);
   },

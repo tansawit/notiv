@@ -116,6 +116,7 @@ export class DraftMarkers {
 
   setHoveredNoteId(id: string | null): void {
     this.queueHoverId = id;
+    this.container.style.zIndex = id ? '2147483646' : '2147483590';
     this.render();
   }
 

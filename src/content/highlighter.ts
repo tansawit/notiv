@@ -125,6 +125,11 @@ export class Highlighter {
     this.visible = false;
   }
 
+  setZIndex(overlay: number, tooltip: number): void {
+    this.overlay.style.zIndex = String(overlay);
+    this.tooltip.style.zIndex = String(tooltip);
+  }
+
   isVisible(): boolean {
     return this.visible;
   }
