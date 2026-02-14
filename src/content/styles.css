@@ -3107,6 +3107,254 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
+   SETTINGS BAR TAKEOVER PATTERN
+   Team & Priority use takeover (chips replace bar)
+   Assignee & Labels use dropdowns
+   ───────────────────────────────────────────────────────────── */
+
+.notiv-queue-settings-bar {
+  position: relative;
+  min-height: 44px;
+}
+
+.notiv-queue-bar-resting {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notiv-queue-settings-bar.selecting .notiv-queue-bar-resting {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+.notiv-queue-bar-takeover {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notiv-queue-settings-bar.selecting .notiv-queue-bar-takeover {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.notiv-queue-settings-bar.selecting-team .notiv-queue-bar-takeover[data-mode="team"] { display: flex; }
+.notiv-queue-settings-bar.selecting-priority .notiv-queue-bar-takeover[data-mode="priority"] { display: flex; }
+
+.notiv-queue-takeover-cancel {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 60ms ease,
+    color 60ms ease;
+}
+
+.notiv-queue-takeover-cancel:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+}
+
+.notiv-queue-takeover-options {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.notiv-queue-takeover-chip {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.96) translateY(-4px);
+  transition:
+    opacity 120ms cubic-bezier(0.25, 1, 0.5, 1),
+    transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 60ms ease;
+}
+
+.notiv-queue-settings-bar.selecting .notiv-queue-takeover-chip {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.notiv-queue-takeover-chip:nth-child(1) { transition-delay: 30ms, 30ms, 0ms; }
+.notiv-queue-takeover-chip:nth-child(2) { transition-delay: 50ms, 50ms, 0ms; }
+.notiv-queue-takeover-chip:nth-child(3) { transition-delay: 70ms, 70ms, 0ms; }
+.notiv-queue-takeover-chip:nth-child(4) { transition-delay: 90ms, 90ms, 0ms; }
+.notiv-queue-takeover-chip:nth-child(5) { transition-delay: 110ms, 110ms, 0ms; }
+
+.notiv-queue-takeover-chip:hover {
+  background: var(--hover-bg);
+}
+
+.notiv-queue-takeover-chip.selected {
+  background: var(--selected-bg, rgba(0, 0, 0, 0.06));
+}
+
+.notiv-queue-takeover-chip .chip-check {
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  transition: opacity 100ms ease;
+}
+
+.notiv-queue-takeover-chip.selected .chip-check {
+  opacity: 1;
+}
+
+.notiv-queue-takeover-chip.selecting {
+  background: var(--success-bg, #e8f4e8);
+  transform: scale(1.04);
+}
+
+.notiv-queue-takeover-chip.priority-chip {
+  padding: 0 8px;
+}
+
+/* Takeover trigger styling */
+.notiv-queue-inline-btn.takeover-trigger {
+  background: var(--hover-bg);
+  border: none;
+}
+
+.notiv-queue-inline-btn.takeover-trigger:hover {
+  background: var(--selected-bg, rgba(0, 0, 0, 0.06));
+}
+
+/* Dark mode takeover */
+:host([data-notiv-theme="dark"]) .notiv-queue-bar-resting,
+:host([data-notiv-theme="dark"]) .notiv-queue-bar-takeover {
+  /* transitions inherit */
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-takeover-cancel {
+  color: var(--dark-text-muted);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-takeover-cancel:hover {
+  background: var(--dark-hover-bg);
+  color: var(--dark-text);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-takeover-chip {
+  color: var(--dark-text);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-takeover-chip:hover {
+  background: var(--dark-hover-bg);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-takeover-chip.selected {
+  background: var(--dark-selected-bg, rgba(255, 255, 255, 0.08));
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-takeover-chip.selecting {
+  background: var(--dark-success-bg, #2d3f2d);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-inline-btn.takeover-trigger {
+  background: var(--dark-hover-bg);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-queue-inline-btn.takeover-trigger:hover {
+  background: var(--dark-selected-bg, rgba(255, 255, 255, 0.08));
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CORNER-AWARE DROPDOWN POSITIONING
+   ───────────────────────────────────────────────────────────── */
+
+/* Bottom corners: dropdown opens upward */
+.notiv-queue-panel.corner-bottom .notiv-queue-dropdown {
+  bottom: calc(100% + 6px);
+  top: auto;
+  transform-origin: bottom center;
+}
+
+/* Top corners: dropdown opens downward */
+.notiv-queue-panel.corner-top .notiv-queue-dropdown {
+  top: calc(100% + 6px);
+  bottom: auto;
+  transform-origin: top center;
+}
+
+/* Right side: align right */
+.notiv-queue-panel.corner-right .notiv-queue-dropdown {
+  right: 0;
+  left: auto;
+}
+
+/* Left side: align left */
+.notiv-queue-panel.corner-left .notiv-queue-dropdown {
+  left: 0;
+  right: auto;
+}
+
+/* Combined origins */
+.notiv-queue-panel.corner-bottom.corner-right .notiv-queue-dropdown {
+  transform-origin: bottom right;
+}
+
+.notiv-queue-panel.corner-bottom.corner-left .notiv-queue-dropdown {
+  transform-origin: bottom left;
+}
+
+.notiv-queue-panel.corner-top.corner-right .notiv-queue-dropdown {
+  transform-origin: top right;
+}
+
+.notiv-queue-panel.corner-top.corner-left .notiv-queue-dropdown {
+  transform-origin: top left;
+}
+
+/* Dropdown anchor for relative positioning */
+.notiv-queue-dropdown-anchor {
+  position: relative;
+}
+
+/* ─────────────────────────────────────────────────────────────
    UNIFIED BADGE
    The badge IS the queue. One morphing container, four shapes.
    ───────────────────────────────────────────────────────────── */
@@ -3444,6 +3692,471 @@
   color: var(--text-muted);
 }
 
+/* ─────────────────────────────────────────────────────────
+   UNIFIED BADGE HYBRID SETTINGS
+   Takeover for Team/Priority, Dropdown for Assignee/Labels
+   ───────────────────────────────────────────────────────── */
+
+.notiv-unified-settings-bar {
+  position: relative;
+  min-height: 36px;
+  perspective: 400px;
+}
+
+.notiv-unified-bar-resting {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  opacity: 1;
+  transform: rotateX(0deg);
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+  transition:
+    opacity 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notiv-unified-settings-bar.selecting .notiv-unified-bar-resting {
+  opacity: 0;
+  transform: rotateX(90deg);
+  pointer-events: none;
+}
+
+.notiv-unified-bar-takeover {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  opacity: 0;
+  transform: rotateX(-90deg);
+  transform-origin: center top;
+  backface-visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notiv-unified-settings-bar.selecting .notiv-unified-bar-takeover {
+  opacity: 1;
+  transform: rotateX(0deg);
+  pointer-events: auto;
+}
+
+.notiv-unified-settings-bar.selecting-priority .notiv-unified-bar-takeover[data-mode="priority"] { display: flex; }
+
+.notiv-unified-takeover-cancel {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 60ms ease, color 60ms ease;
+}
+
+.notiv-unified-takeover-cancel:hover {
+  background: var(--hover-bg);
+  color: var(--text);
+}
+
+.notiv-unified-takeover-options {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.notiv-unified-bar-takeover[data-mode="team"] .notiv-unified-takeover-options {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.notiv-unified-bar-takeover[data-mode="team"] .notiv-unified-takeover-options::-webkit-scrollbar {
+  display: none;
+}
+
+.notiv-unified-takeover-chip {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.96) translateY(-4px);
+  transition:
+    opacity 120ms cubic-bezier(0.25, 1, 0.5, 1),
+    transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 60ms ease;
+}
+
+.notiv-unified-settings-bar.selecting .notiv-unified-takeover-chip {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.notiv-unified-takeover-chip:nth-child(1) { transition-delay: 30ms, 30ms, 0ms; }
+.notiv-unified-takeover-chip:nth-child(2) { transition-delay: 50ms, 50ms, 0ms; }
+.notiv-unified-takeover-chip:nth-child(3) { transition-delay: 70ms, 70ms, 0ms; }
+.notiv-unified-takeover-chip:nth-child(4) { transition-delay: 90ms, 90ms, 0ms; }
+.notiv-unified-takeover-chip:nth-child(5) { transition-delay: 110ms, 110ms, 0ms; }
+
+.notiv-unified-takeover-chip:hover {
+  background: var(--hover-bg);
+}
+
+.notiv-unified-takeover-chip.selected {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.notiv-unified-takeover-chip .chip-check {
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  transition: opacity 100ms ease;
+}
+
+.notiv-unified-takeover-chip.selected .chip-check {
+  opacity: 1;
+}
+
+.notiv-unified-takeover-chip.selecting {
+  background: #e8f4e8;
+  transform: scale(1.04);
+}
+
+.notiv-unified-takeover-chip.priority-chip {
+  padding: 0 8px;
+}
+
+.notiv-unified-inline-btn.takeover-trigger {
+  background: var(--hover-bg);
+}
+
+.notiv-unified-inline-btn.takeover-trigger:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.notiv-unified-chevron {
+  color: var(--text-subtle);
+  margin-left: 2px;
+  opacity: 0.6;
+}
+
+.notiv-unified-dropdown-anchor {
+  position: relative;
+}
+
+.notiv-unified-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.notiv-unified-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--hover-bg);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.notiv-unified-label-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.notiv-unified-label-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.notiv-unified-placeholder {
+  font-size: 11px;
+  color: var(--text-subtle);
+}
+
+.notiv-unified-dropdown {
+  position: fixed;
+  min-width: 180px;
+  max-width: 220px;
+  background: var(--surface);
+  border: 1.25px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 2147483647;
+  animation: notiv-unified-dropdown-enter 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes notiv-unified-dropdown-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.notiv-unified-dropdown.flip-up {
+  animation: notiv-unified-dropdown-enter-up 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes notiv-unified-dropdown-enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.notiv-unified-dropdown-search {
+  padding: 0;
+  background: var(--hover-bg);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.notiv-unified-dropdown-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+}
+
+.notiv-unified-dropdown-input:focus {
+  background: transparent;
+}
+
+.notiv-unified-dropdown-input::placeholder {
+  color: var(--text-muted);
+}
+
+.notiv-unified-dropdown-list {
+  padding: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.notiv-unified-dropdown-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-subtle);
+  font-size: 12px;
+}
+
+.notiv-unified-dropdown-item {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 60ms ease;
+}
+
+.notiv-unified-dropdown-item:hover {
+  background: var(--hover-bg);
+}
+
+.notiv-unified-dropdown-item.selected {
+  background: var(--hover-bg);
+}
+
+.notiv-unified-dropdown-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.notiv-unified-dropdown-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--hover-bg);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.notiv-unified-dropdown-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.notiv-unified-dropdown-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notiv-unified-dropdown-team-key {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-subtle);
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-team-key {
+  color: var(--dark-text-subtle);
+}
+
+.notiv-unified-dropdown-check {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Dark mode unified settings */
+:host([data-notiv-theme="dark"]) .notiv-unified-takeover-cancel {
+  color: var(--dark-text-muted);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-takeover-cancel:hover {
+  background: var(--dark-hover-bg);
+  color: var(--dark-text);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-takeover-chip {
+  color: var(--dark-text);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-takeover-chip:hover {
+  background: var(--dark-hover-bg);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-takeover-chip.selected {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-takeover-chip.selecting {
+  background: #2d3f2d;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-inline-btn.takeover-trigger {
+  background: var(--dark-hover-bg);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-inline-btn.takeover-trigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-avatar-placeholder {
+  background: var(--dark-hover-bg);
+  color: var(--dark-text-muted);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  box-shadow: 0 8px 24px var(--dark-shadow);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-search {
+  background: var(--dark-hover-bg);
+  border-bottom-color: var(--dark-border-soft);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-input {
+  background: transparent;
+  color: var(--dark-text);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-input::placeholder {
+  color: var(--dark-text-muted);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-input::placeholder {
+  color: var(--dark-text-subtle);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-empty {
+  color: var(--dark-text-subtle);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-item {
+  color: var(--dark-text);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-item:hover {
+  background: var(--dark-hover-bg);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-item.selected {
+  background: var(--dark-hover-bg);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-avatar-placeholder {
+  background: var(--dark-hover-bg);
+  color: var(--dark-text-muted);
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-dropdown-check {
+  color: var(--dark-text-muted);
+}
+
 /* Loading Content */
 .notiv-unified-loading-content {
   color: var(--text);
@@ -3633,6 +4346,10 @@
 :host([data-notiv-theme="dark"]) .notiv-unified-btn-ghost:hover:not(:disabled) {
   background: rgba(240, 100, 100, 0.15);
   color: #f07070;
+}
+
+:host([data-notiv-theme="dark"]) .notiv-unified-btn-submit:hover:not(:disabled) {
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.25);
 }
 
 :host([data-notiv-theme="dark"]) .notiv-unified-settings {
