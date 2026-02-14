@@ -107,6 +107,21 @@ export function createSpinnerIcon(size = 20): SVGSVGElement {
   return svg;
 }
 
+export function createArcSpinnerIcon(): SVGSVGElement {
+  const svg = createSvg(24, 24, '0 0 24 24', {
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 2.5,
+    'stroke-linecap': 'round',
+  });
+  svg.appendChild(createPath('M12 2a10 10 0 0 1 10 10'));
+  return svg;
+}
+
+export function createExternalLinkIcon(size = 14): SVGSVGElement {
+  return createStrokeIcon(size, size, 'M7 17L17 7M17 7H7M17 7v10', 2);
+}
+
 export function createErrorIcon(size = 18): SVGSVGElement {
   const svg = createSvg(size, size, '0 0 24 24', {
     fill: 'none',
@@ -147,6 +162,31 @@ export function createPriorityIcon(priority: number | null, size = 14): SVGSVGEl
     });
   }
 
+  return svg;
+}
+
+export function createSettingsIcon(size = 14): SVGSVGElement {
+  const svg = createSvg(size, size, '0 0 24 24', {
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 1.5,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+  });
+  svg.appendChild(createPath('M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'));
+  svg.appendChild(createCircle(12, 12, 3));
+  return svg;
+}
+
+export function createEmptyStateIcon(size = 24): SVGSVGElement {
+  const svg = createSvg(size, size, '0 0 24 24', {
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 1.5,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+  });
+  svg.appendChild(createPath('M9 12h6M12 9v6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z'));
   return svg;
 }
 

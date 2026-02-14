@@ -18,7 +18,8 @@ import {
   resolveFocusBoundingBox,
   resolveLiveBoundingBoxFromElement
 } from './focus-resolver';
-import { showToast } from './toast';
+import { showToast, showTicketCreatedToast } from './toast';
+import { playCapturePop } from './capture-sound';
 import { createLinearAuthTooltipController } from './linear-auth-tooltip';
 import type { BackgroundResponse, BackgroundToContentMessage } from '../shared/messages';
 import type {
@@ -258,17 +259,16 @@ function toQueueItems(notes: DraftAnnotation[]): QueueNoteSummary[] {
   });
 }
 
+const AUTH_ERROR_PATTERNS = ['401', '403', 'unauthorized', 'not connected'];
+const AUTH_TOKEN_ERROR_PAIRS = [['invalid', 'token'], ['expired', 'token']];
+
 function hasLinearAuthError(error?: string): boolean {
   if (!error) return false;
   const message = error.toLowerCase();
-  return (
-    message.includes('401')
-    || message.includes('403')
-    || message.includes('unauthorized')
-    || message.includes('not connected')
-    || (message.includes('invalid') && message.includes('token'))
-    || (message.includes('expired') && message.includes('token'))
-  );
+  if (AUTH_ERROR_PATTERNS.some((pattern) => message.includes(pattern))) {
+    return true;
+  }
+  return AUTH_TOKEN_ERROR_PAIRS.some(([a, b]) => message.includes(a) && message.includes(b));
 }
 
 function getNoteCreationBlockedMessage(): string | null {
@@ -435,10 +435,8 @@ function setToolbarVisible(visible: boolean): void {
 }
 
 function toSubmissionAnnotation(note: DraftAnnotation): Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { anchorX, anchorY, fixed, ...annotation } = note;
-  void anchorX;
-  void anchorY;
-  void fixed;
   return annotation;
 }
 
@@ -457,6 +455,7 @@ async function submitDrafts(): Promise<void> {
     return;
   }
 
+  const noteCount = draftAnnotations.length;
   unifiedBadge.setSubmitting(true);
 
   try {
@@ -491,7 +490,8 @@ async function submitDrafts(): Promise<void> {
 
     setDrafts([]);
     unifiedBadge.resetPriority();
-    unifiedBadge.showSuccessPill(issue);
+    unifiedBadge.showSuccessPill({ ...issue, noteCount });
+    showTicketCreatedToast(issue);
   } catch (error) {
     unifiedBadge.showErrorPill(error instanceof Error ? error.message : 'Unexpected error');
   } finally {
@@ -604,6 +604,7 @@ function handleAnnotatorSubmit(
   };
 
   setDrafts([...draftAnnotations, annotation]);
+  void playCapturePop();
   inlineAnnotator.close();
   annotatorFocusTarget = null;
   syncDraftMarkerVisibility();
@@ -660,6 +661,9 @@ const unifiedBadge = new UnifiedBadge({
   onEdit: (id: string) => {
     unifiedBadge.closeQueue();
     draftMarkers.requestEdit(id);
+  },
+  onOpenSettings: () => {
+    void sendRuntimeMessage({ type: 'openSettingsPage' });
   }
 });
 

@@ -5,6 +5,12 @@ import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
 import { useCaptureRedaction, useOptionsSitePermissions } from './hooks';
 
+function getRedactionButtonText(busy: boolean, enabled: boolean): string {
+  if (busy) return 'Working...';
+  if (enabled) return 'Disable redaction';
+  return 'Enable redaction';
+}
+
 function SettingsApp(): React.JSX.Element {
   const {
     loading,
@@ -242,11 +248,7 @@ function SettingsApp(): React.JSX.Element {
             disabled={captureRedactionBusy}
             onClick={() => void toggleCaptureRedaction()}
           >
-            {captureRedactionBusy
-              ? 'Working...'
-              : captureRedactionEnabled
-                ? 'Disable redaction'
-                : 'Enable redaction'}
+            {getRedactionButtonText(captureRedactionBusy, captureRedactionEnabled)}
           </button>
         </div>
         <div className="meta-line">

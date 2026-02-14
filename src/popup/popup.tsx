@@ -1,12 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BackgroundResponse } from '../shared/messages';
+import { STORAGE_KEYS } from '../shared/constants';
+import { getLocalStorageItems } from '../shared/chrome-storage';
 import { maskAccessToken } from '../shared/linear-settings-client';
 import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
-import { usePopupSitePermission, usePopupTheme } from './hooks';
+import { OnboardingWizard } from './OnboardingWizard';
+import { usePopupSitePermission, usePopupTheme, useCaptureSound, useSubmissionHistory } from './hooks';
 import {
   springTransition,
   buttonHoverScale,
@@ -21,9 +24,71 @@ import {
 } from '../shared/motion-presets';
 
 type PopupView = 'home' | 'settings';
+type ThemePreference = 'system' | 'light' | 'dark';
+
+interface StatusDisplayParams {
+  ready: boolean;
+  connected: boolean;
+  currentSiteTarget: { label: string } | null;
+  viewerName?: string;
+  organizationName?: string;
+}
+
+function getStatusPrimaryText(params: StatusDisplayParams): string {
+  if (params.ready) return params.viewerName ?? 'Connected';
+  if (!params.connected) return 'Not connected';
+  if (!params.currentSiteTarget) return 'No webpage';
+  return 'Site access needed';
+}
+
+function getStatusSecondaryText(params: StatusDisplayParams): string {
+  if (params.ready) return params.organizationName ?? 'Ready to annotate';
+  if (!params.connected) return 'Connect Linear to start';
+  if (!params.currentSiteTarget) return 'Open a webpage to annotate';
+  return params.currentSiteTarget?.label ?? '';
+}
+
+function getSiteAccessStatusText(
+  loading: boolean,
+  hasTarget: boolean,
+  granted: boolean
+): string {
+  if (loading) return 'Checking...';
+  if (hasTarget && granted) return 'Access granted';
+  if (hasTarget) return 'Not granted';
+  return 'Unavailable';
+}
+
+function getThemeDisplayName(preference: ThemePreference): string {
+  if (preference === 'system') return 'System';
+  if (preference === 'light') return 'Light';
+  return 'Dark';
+}
+
+function getNextThemeLabel(preference: ThemePreference): string {
+  if (preference === 'system') return 'Use Light';
+  if (preference === 'light') return 'Use Dark';
+  return 'Use System';
+}
+
+function formatRelativeTime(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return new Date(timestamp).toLocaleDateString();
+}
 
 function PopupApp(): React.JSX.Element {
   const [view, setView] = useState<PopupView>('home');
+  const [historyCollapsed, setHistoryCollapsed] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const {
     loading,
     authBusy,
@@ -53,6 +118,18 @@ function PopupApp(): React.JSX.Element {
     toggleCurrentSitePermission
   } = usePopupSitePermission({ setFeedback });
   const { themePreference, cycleTheme } = usePopupTheme();
+  const { soundEnabled, toggleSound } = useCaptureSound();
+  const { history } = useSubmissionHistory();
+
+  useEffect(() => {
+    const loadOnboardingState = async (): Promise<void> => {
+      const data = await getLocalStorageItems<Record<string, unknown>>([
+        STORAGE_KEYS.onboardingCompleted
+      ]);
+      setOnboardingCompleted(Boolean(data[STORAGE_KEYS.onboardingCompleted]));
+    };
+    void loadOnboardingState();
+  }, []);
 
   const unifiedStatus = useMemo(() => {
     if (sitePermissionsLoading) {
@@ -97,8 +174,29 @@ function PopupApp(): React.JSX.Element {
     }
   };
 
-  if (loading) {
+  if (loading || onboardingCompleted === null) {
     return <div className="popup-shell"><div className="muted">Loading...</div></div>;
+  }
+
+  const showOnboarding = !onboardingCompleted && (!connected || !currentSiteGranted);
+
+  if (showOnboarding) {
+    return (
+      <div className="popup-shell">
+        <section className="popup-panel">
+          <OnboardingWizard
+            connected={connected}
+            currentSiteTarget={currentSiteTarget}
+            currentSiteGranted={currentSiteGranted}
+            authBusy={authBusy}
+            sitePermissionsBusy={sitePermissionsBusy}
+            connectWithOAuth={connectWithOAuth}
+            toggleCurrentSitePermission={toggleCurrentSitePermission}
+            onComplete={() => setOnboardingCompleted(true)}
+          />
+        </section>
+      </div>
+    );
   }
 
   const homeView = (
@@ -131,22 +229,20 @@ function PopupApp(): React.JSX.Element {
             <span className={`status-dot ${unifiedStatus.ready ? 'ready' : !connected ? 'offline' : 'pending'}`} />
             <div className="status-identity">
               <span className="status-primary">
-                {unifiedStatus.ready
-                  ? (resources.viewerName ?? 'Connected')
-                  : !connected
-                    ? 'Not connected'
-                    : !currentSiteTarget
-                      ? 'No webpage'
-                      : 'Site access needed'}
+                {getStatusPrimaryText({
+                  ready: unifiedStatus.ready,
+                  connected,
+                  currentSiteTarget,
+                  viewerName: resources.viewerName
+                })}
               </span>
               <span className="status-secondary">
-                {unifiedStatus.ready
-                  ? (resources.organizationName ?? 'Ready to annotate')
-                  : !connected
-                    ? 'Connect Linear to start'
-                    : !currentSiteTarget
-                      ? 'Open a webpage to annotate'
-                      : currentSiteTarget.label}
+                {getStatusSecondaryText({
+                  ready: unifiedStatus.ready,
+                  connected,
+                  currentSiteTarget,
+                  organizationName: resources.organizationName
+                })}
               </span>
             </div>
           </div>
@@ -187,6 +283,50 @@ function PopupApp(): React.JSX.Element {
           </div>
         </div>
       </section>
+
+      {history.length > 0 && (
+        <section className="popup-panel popup-panel-flat">
+          <div className="history-section">
+            <div className="history-header">
+              <span className="history-header-label">Recent</span>
+              <button
+                className={`history-toggle ${historyCollapsed ? 'collapsed' : ''}`}
+                onClick={() => setHistoryCollapsed(!historyCollapsed)}
+                aria-label={historyCollapsed ? 'Expand history' : 'Collapse history'}
+              >
+                <Icon path="M6 9l6 6 6-6" size={12} />
+              </button>
+            </div>
+            <div className={`history-list ${historyCollapsed ? 'collapsed' : ''}`}>
+              {history.slice(0, 5).map((item) => (
+                <div
+                  key={item.id}
+                  className="history-item"
+                  onClick={() => window.open(item.url, '_blank')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      window.open(item.url, '_blank');
+                    }
+                  }}
+                >
+                  <span className="history-item-badge">{item.identifier}</span>
+                  <div className="history-item-details">
+                    <span className="history-item-preview">
+                      {item.firstNotePreview || `${item.noteCount} note${item.noteCount > 1 ? 's' : ''}`}
+                    </span>
+                    <span className="history-item-meta">
+                      {item.pageDomain} · {formatRelativeTime(item.timestamp)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {error ? <div className="error">{error}</div> : null}
     </motion.div>
   );
@@ -288,13 +428,11 @@ function PopupApp(): React.JSX.Element {
               <span className={`status-dot ${currentSiteTarget && currentSiteGranted ? 'ready' : sitePermissionsLoading ? 'pending' : 'offline'}`} />
               <div className="status-identity">
                 <span className="status-primary">
-                  {sitePermissionsLoading
-                    ? 'Checking...'
-                    : currentSiteTarget && currentSiteGranted
-                      ? 'Access granted'
-                      : currentSiteTarget
-                        ? 'Not granted'
-                        : 'Unavailable'}
+                  {getSiteAccessStatusText(
+                    sitePermissionsLoading,
+                    Boolean(currentSiteTarget),
+                    currentSiteGranted
+                  )}
                 </span>
                 <span className="status-secondary">
                   {currentSiteTarget ? currentSiteTarget.label : 'Not a regular webpage'}
@@ -321,7 +459,7 @@ function PopupApp(): React.JSX.Element {
             <span className="settings-section-label">Appearance</span>
             <div className="settings-row-inline">
               <span className="settings-value">
-                {themePreference === 'system' ? 'System' : themePreference === 'light' ? 'Light' : 'Dark'}
+                {getThemeDisplayName(themePreference)}
               </span>
               <motion.button
                 className="button"
@@ -330,7 +468,19 @@ function PopupApp(): React.JSX.Element {
                 whileTap={buttonTapScale}
                 transition={springTransition}
               >
-                {themePreference === 'system' ? 'Use Light' : themePreference === 'light' ? 'Use Dark' : 'Use System'}
+                {getNextThemeLabel(themePreference)}
+              </motion.button>
+            </div>
+            <div className="settings-row-inline">
+              <span className="settings-value">Capture sound</span>
+              <motion.button
+                className="button"
+                onClick={toggleSound}
+                whileHover={buttonHoverScale}
+                whileTap={buttonTapScale}
+                transition={springTransition}
+              >
+                {soundEnabled ? 'On' : 'Off'}
               </motion.button>
             </div>
           </div>

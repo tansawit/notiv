@@ -7,6 +7,14 @@ import { getLocalStorageItems, setLocalStorageItems } from '../../shared/chrome-
 import {
   createPriorityIcon,
   createUserIcon,
+  createPlusIcon,
+  createArrowRightIcon,
+  createSettingsIcon,
+  createEmptyStateIcon,
+  createArcSpinnerIcon,
+  createCheckIcon,
+  createExternalLinkIcon,
+  createErrorIcon,
   getChevronSvgHtml as createChevronHtml,
 } from '../../shared/svg-builder';
 import {
@@ -31,7 +39,11 @@ import {
   focusElementNextFrame
 } from './unified-badge-dropdown';
 import { PRIORITY_OPTIONS, PRIORITY_SELECTION_DELAY_MS } from './unified-badge-settings';
-import { renderUnifiedBadgeRows, updateUnifiedBadgeRowHighlight } from './unified-badge-list';
+import {
+  renderUnifiedBadgeRows,
+  updateUnifiedBadgeRowHighlight,
+  animateRowDeletion,
+} from './unified-badge-list';
 import {
   renderAssigneeDropdownList,
   renderLabelsDropdownList,
@@ -63,6 +75,9 @@ export class UnifiedBadge {
   private settingsEl: HTMLDivElement | null = null;
   private backdrop: HTMLDivElement | null = null;
   private tooltip: HTMLDivElement | null = null;
+  private introTooltip: HTMLDivElement | null = null;
+  private introTooltipTimeout: ReturnType<typeof setTimeout> | null = null;
+  private introTooltipShown = false;
 
   private stage: Stage = 'badge';
   private prevStage: Stage = 'badge';
@@ -71,6 +86,7 @@ export class UnifiedBadge {
   private hoveredId: string | null = null;
   private visible = false;
   private submitting = false;
+  private animatedDeletionId: string | null = null;
 
   private resources: UnifiedBadgeResources = { teams: [], labels: [], users: [] };
   private settings: SubmissionSettings = { priority: null, labelIds: [], assigneeId: null };
@@ -98,6 +114,21 @@ export class UnifiedBadge {
     void this.loadSettings();
   }
 
+  private clearPillTimeouts(): void {
+    if (this.successPillTimeout) {
+      clearTimeout(this.successPillTimeout);
+      this.successPillTimeout = null;
+    }
+    if (this.errorPillTimeout) {
+      clearTimeout(this.errorPillTimeout);
+      this.errorPillTimeout = null;
+    }
+    if (this.introTooltipTimeout) {
+      clearTimeout(this.introTooltipTimeout);
+      this.introTooltipTimeout = null;
+    }
+  }
+
   private changeStage(newStage: Stage): void {
     this.prevStage = this.stage;
     this.stage = newStage;
@@ -114,6 +145,14 @@ export class UnifiedBadge {
       this.renderedItemIds.length !== newIds.length ||
       this.renderedItemIds.some((id, i) => id !== newIds[i]);
     this.items = value;
+
+    if (this.animatedDeletionId && !newIds.includes(this.animatedDeletionId)) {
+      this.animatedDeletionId = null;
+      this.updateTitleAndButtons();
+      this.updateBadgeCount();
+      return;
+    }
+
     if (itemsChanged) {
       this.renderQueueContent();
     }
@@ -166,7 +205,7 @@ export class UnifiedBadge {
     this.renderSettings();
   }
 
-  showSuccessPill(issue?: { identifier?: string; url?: string }): void {
+  showSuccessPill(issue?: { identifier?: string; url?: string; noteCount?: number }): void {
     if (this.successPillTimeout) {
       clearTimeout(this.successPillTimeout);
       this.successPillTimeout = null;
@@ -177,7 +216,11 @@ export class UnifiedBadge {
     if (this.successContent) {
       const textEl = this.successContent.querySelector('.notis-unified-success-text');
       if (textEl) {
-        textEl.textContent = issue?.identifier ? `${issue.identifier} created` : 'Ticket created';
+        const noteCount = issue?.noteCount ?? 0;
+        const noteSuffix = noteCount > 1 ? ` with ${noteCount} notes` : '';
+        textEl.textContent = issue?.identifier
+          ? `${issue.identifier} created${noteSuffix}`
+          : `Ticket created${noteSuffix}`;
       }
     }
 
@@ -270,19 +313,49 @@ export class UnifiedBadge {
     this.visible = value;
     if (value) {
       this.ensureMounted();
+      this.maybeShowIntroTooltip();
     }
     this.render();
   }
 
+  private async maybeShowIntroTooltip(): Promise<void> {
+    if (this.introTooltipShown) return;
+
+    try {
+      const data = await getLocalStorageItems<Record<string, unknown>>([
+        STORAGE_KEYS.badgeIntroShown
+      ]);
+      if (data[STORAGE_KEYS.badgeIntroShown]) {
+        this.introTooltipShown = true;
+        return;
+      }
+    } catch {
+      return;
+    }
+
+    this.introTooltipShown = true;
+    await setLocalStorageItems({ [STORAGE_KEYS.badgeIntroShown]: true });
+
+    if (!this.introTooltip) return;
+    this.introTooltip.classList.add('visible');
+
+    this.introTooltipTimeout = setTimeout(() => {
+      this.hideIntroTooltip();
+    }, 3500);
+  }
+
+  private hideIntroTooltip(): void {
+    if (this.introTooltipTimeout) {
+      clearTimeout(this.introTooltipTimeout);
+      this.introTooltipTimeout = null;
+    }
+    if (this.introTooltip) {
+      this.introTooltip.classList.remove('visible');
+    }
+  }
+
   destroy(): void {
-    if (this.successPillTimeout) {
-      clearTimeout(this.successPillTimeout);
-      this.successPillTimeout = null;
-    }
-    if (this.errorPillTimeout) {
-      clearTimeout(this.errorPillTimeout);
-      this.errorPillTimeout = null;
-    }
+    this.clearPillTimeouts();
     this.systemThemeQuery.removeEventListener('change', this.themeChangeHandler);
     window.removeEventListener('notis-theme-change', this.themeChangeHandler as EventListener);
     this.container?.remove();
@@ -342,7 +415,7 @@ export class UnifiedBadge {
     container.id = `${UI_IDS.rootContainer}-unified`;
     container.setAttribute('data-notis-ui', 'true');
     container.style.position = 'fixed';
-    container.style.zIndex = '2147483645';
+    container.style.zIndex = '2147483649';
     container.style.right = '20px';
     container.style.bottom = '20px';
     container.setAttribute('data-notis-theme', getNotisThemeMode());
@@ -379,6 +452,15 @@ export class UnifiedBadge {
     morphContainer.appendChild(tooltip);
     this.tooltip = tooltip;
 
+    const introTooltip = document.createElement('div');
+    introTooltip.className = 'notis-unified-intro-tooltip';
+    introTooltip.innerHTML = `
+      <span>Click to annotate</span>
+      <kbd>⌘⇧F</kbd>
+    `;
+    shadow.appendChild(introTooltip);
+    this.introTooltip = introTooltip;
+
     shadow.appendChild(morphContainer);
     this.morphContainer = morphContainer;
     this.shadowRoot = shadow;
@@ -398,16 +480,8 @@ export class UnifiedBadge {
     countEl.className = 'notis-unified-badge-count';
     countEl.textContent = '+';
 
-    const emptyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const emptyIcon = createPlusIcon(24);
     emptyIcon.setAttribute('class', 'notis-unified-badge-icon');
-    emptyIcon.setAttribute('viewBox', '0 0 24 24');
-    emptyIcon.setAttribute('fill', 'none');
-    emptyIcon.setAttribute('stroke', 'currentColor');
-    emptyIcon.setAttribute('stroke-width', '1.5');
-    emptyIcon.setAttribute('stroke-linecap', 'round');
-    const plusPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    plusPath.setAttribute('d', 'M12 5v14M5 12h14');
-    emptyIcon.appendChild(plusPath);
 
     content.appendChild(countEl);
     content.appendChild(emptyIcon);
@@ -440,6 +514,14 @@ export class UnifiedBadge {
     const actions = document.createElement('div');
     actions.className = 'notis-unified-actions';
 
+    const settingsBtn = document.createElement('button');
+    settingsBtn.type = 'button';
+    settingsBtn.className = 'notis-unified-btn notis-unified-btn-icon';
+    settingsBtn.title = 'Settings';
+    settingsBtn.appendChild(createSettingsIcon(14));
+    settingsBtn.addEventListener('click', () => this.callbacks.onOpenSettings());
+    this.addButtonPressEffect(settingsBtn);
+
     const clearBtn = document.createElement('button');
     clearBtn.type = 'button';
     clearBtn.className = 'notis-unified-btn notis-unified-btn-ghost';
@@ -451,22 +533,11 @@ export class UnifiedBadge {
     submitBtn.type = 'button';
     submitBtn.className = 'notis-unified-btn notis-unified-btn-submit';
     submitBtn.title = 'Submit to Linear';
-    const submitIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    submitIcon.setAttribute('width', '14');
-    submitIcon.setAttribute('height', '14');
-    submitIcon.setAttribute('viewBox', '0 0 24 24');
-    submitIcon.setAttribute('fill', 'none');
-    submitIcon.setAttribute('stroke', 'currentColor');
-    submitIcon.setAttribute('stroke-width', '1.5');
-    submitIcon.setAttribute('stroke-linecap', 'round');
-    submitIcon.setAttribute('stroke-linejoin', 'round');
-    const submitPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    submitPath.setAttribute('d', 'M5 12h14M12 5l7 7-7 7');
-    submitIcon.appendChild(submitPath);
-    submitBtn.appendChild(submitIcon);
+    submitBtn.appendChild(createArrowRightIcon(14));
     submitBtn.addEventListener('click', () => this.callbacks.onSubmit());
     this.addButtonPressEffect(submitBtn);
 
+    actions.appendChild(settingsBtn);
     actions.appendChild(clearBtn);
     actions.appendChild(submitBtn);
     header.appendChild(title);
@@ -479,17 +550,8 @@ export class UnifiedBadge {
     empty.className = 'notis-unified-empty';
     empty.style.display = 'none';
 
-    const emptyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const emptyIcon = createEmptyStateIcon(24);
     emptyIcon.setAttribute('class', 'notis-unified-empty-icon');
-    emptyIcon.setAttribute('viewBox', '0 0 24 24');
-    emptyIcon.setAttribute('fill', 'none');
-    emptyIcon.setAttribute('stroke', 'currentColor');
-    emptyIcon.setAttribute('stroke-width', '1.5');
-    emptyIcon.setAttribute('stroke-linecap', 'round');
-    emptyIcon.setAttribute('stroke-linejoin', 'round');
-    const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    iconPath.setAttribute('d', 'M9 12h6M12 9v6M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z');
-    emptyIcon.appendChild(iconPath);
 
     const emptyText = document.createElement('div');
     emptyText.className = 'notis-unified-empty-text';
@@ -525,16 +587,8 @@ export class UnifiedBadge {
     const content = document.createElement('div');
     content.className = 'notis-unified-content notis-unified-loading-content';
 
-    const spinner = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const spinner = createArcSpinnerIcon();
     spinner.setAttribute('class', 'notis-unified-spinner');
-    spinner.setAttribute('viewBox', '0 0 24 24');
-    spinner.setAttribute('fill', 'none');
-    spinner.setAttribute('stroke', 'currentColor');
-    spinner.setAttribute('stroke-width', '2.5');
-    spinner.setAttribute('stroke-linecap', 'round');
-    const spinnerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    spinnerCircle.setAttribute('d', 'M12 2a10 10 0 0 1 10 10');
-    spinner.appendChild(spinnerCircle);
 
     content.appendChild(spinner);
 
@@ -550,37 +604,16 @@ export class UnifiedBadge {
     const content = document.createElement('div');
     content.className = 'notis-unified-content notis-unified-success-content';
 
-    const checkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const checkIcon = createCheckIcon(16);
     checkIcon.setAttribute('class', 'notis-unified-success-check');
-    checkIcon.setAttribute('width', '16');
-    checkIcon.setAttribute('height', '16');
-    checkIcon.setAttribute('viewBox', '0 0 24 24');
-    checkIcon.setAttribute('fill', 'none');
-    checkIcon.setAttribute('stroke', 'currentColor');
     checkIcon.setAttribute('stroke-width', '2.5');
-    checkIcon.setAttribute('stroke-linecap', 'round');
-    checkIcon.setAttribute('stroke-linejoin', 'round');
-    const checkPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    checkPath.setAttribute('d', 'M4 12l5 5L20 6');
-    checkIcon.appendChild(checkPath);
 
     const textEl = document.createElement('span');
     textEl.className = 'notis-unified-success-text';
     textEl.textContent = 'Ticket created';
 
-    const arrowIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const arrowIcon = createExternalLinkIcon(14);
     arrowIcon.setAttribute('class', 'notis-unified-success-arrow');
-    arrowIcon.setAttribute('width', '14');
-    arrowIcon.setAttribute('height', '14');
-    arrowIcon.setAttribute('viewBox', '0 0 24 24');
-    arrowIcon.setAttribute('fill', 'none');
-    arrowIcon.setAttribute('stroke', 'currentColor');
-    arrowIcon.setAttribute('stroke-width', '2');
-    arrowIcon.setAttribute('stroke-linecap', 'round');
-    arrowIcon.setAttribute('stroke-linejoin', 'round');
-    const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    arrowPath.setAttribute('d', 'M7 17L17 7M17 7H7M17 7v10');
-    arrowIcon.appendChild(arrowPath);
 
     content.appendChild(checkIcon);
     content.appendChild(textEl);
@@ -601,19 +634,9 @@ export class UnifiedBadge {
     const content = document.createElement('div');
     content.className = 'notis-unified-content notis-unified-error-content';
 
-    const errorIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const errorIcon = createErrorIcon(16);
     errorIcon.setAttribute('class', 'notis-unified-error-icon');
-    errorIcon.setAttribute('width', '16');
-    errorIcon.setAttribute('height', '16');
-    errorIcon.setAttribute('viewBox', '0 0 24 24');
-    errorIcon.setAttribute('fill', 'none');
-    errorIcon.setAttribute('stroke', 'currentColor');
     errorIcon.setAttribute('stroke-width', '2.5');
-    errorIcon.setAttribute('stroke-linecap', 'round');
-    errorIcon.setAttribute('stroke-linejoin', 'round');
-    const errorPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    errorPath.setAttribute('d', 'M18 6L6 18M6 6l12 12');
-    errorIcon.appendChild(errorPath);
 
     const textEl = document.createElement('span');
     textEl.className = 'notis-unified-error-text';
@@ -658,9 +681,12 @@ export class UnifiedBadge {
   }
 
   private getQueueHeight(): number {
-    const listPadding = 12; // 6px top + 6px bottom from CSS
-    const bottomPadding = this.items.length === 0 ? 40 : 4;
-    return HEADER_HEIGHT + SETTINGS_HEIGHT + listPadding + Math.max(1, this.items.length) * ROW_HEIGHT + bottomPadding;
+    if (this.items.length === 0) {
+      return this.getEmptyStateHeight();
+    }
+    const listPadding = 12;
+    const bottomPadding = 4;
+    return HEADER_HEIGHT + SETTINGS_HEIGHT + listPadding + this.items.length * ROW_HEIGHT + bottomPadding;
   }
 
   private getDimensions(): { width: number; height: number; borderRadius: number } {
@@ -693,18 +719,22 @@ export class UnifiedBadge {
     }
   }
 
-  private getTransitionTiming(): string {
+  private getTransitionTiming(): { duration: number; easing: string } {
     if (this.prefersReducedMotion) {
-      return '0ms linear';
+      return { duration: 0, easing: 'linear' };
     }
 
     if (this.stage === 'success' && this.prevStage === 'loading') {
-      return `${TIMING.successExpand}ms ${EASING.successSpring}`;
+      return { duration: TIMING.successExpand, easing: EASING.successSpring };
     }
 
-    const duration = this.stage === 'queue' ? TIMING.expand : TIMING.collapse;
-    return `${duration}ms ${EASING.precise}`;
+    if (this.stage === 'queue') {
+      return { duration: TIMING.expand, easing: EASING.expandMorph };
+    }
+
+    return { duration: TIMING.collapse, easing: EASING.collapseMorph };
   }
+
 
   private render(): void {
     if (!this.container || !this.morphContainer) return;
@@ -712,13 +742,38 @@ export class UnifiedBadge {
     this.container.style.display = this.visible ? 'block' : 'none';
     if (!this.visible) return;
 
-    const dims = this.getDimensions();
-    const transition = this.getTransitionTiming();
+    const isExpanding = this.stage === 'queue' && this.prevStage !== 'queue';
+    const isCollapsing = this.prevStage === 'queue' && this.stage !== 'queue';
 
+    if (isCollapsing) {
+      this.animateQueueContentOut(() => {
+        this.applyMorphTransition();
+      });
+    } else {
+      this.applyMorphTransition();
+      if (isExpanding) {
+        this.animateQueueContentIn();
+      }
+      this.renderQueueContent();
+    }
+
+    this.updateBadgeCount();
+  }
+
+  private applyMorphTransition(): void {
+    if (!this.morphContainer) return;
+
+    const dims = this.getDimensions();
+    const { duration, easing } = this.getTransitionTiming();
+
+    const transitionStr = this.prefersReducedMotion
+      ? 'none'
+      : `width ${duration}ms ${easing}, height ${duration}ms ${easing}, border-radius ${duration}ms ${easing}, background-color ${duration}ms ease, border-color ${duration}ms ease, box-shadow ${duration}ms ease`;
+
+    this.morphContainer.style.transition = transitionStr;
     this.morphContainer.style.width = `${dims.width}px`;
     this.morphContainer.style.height = `${dims.height}px`;
     this.morphContainer.style.borderRadius = `${dims.borderRadius}px`;
-    this.morphContainer.style.transition = `width ${transition}, height ${transition}, border-radius ${transition}, background-color ${transition}, border-color ${transition}`;
     this.morphContainer.setAttribute('data-stage', this.stage);
 
     if (this.backdrop) {
@@ -730,13 +785,6 @@ export class UnifiedBadge {
     this.loadingContent?.classList.toggle('active', this.stage === 'loading');
     this.successContent?.classList.toggle('active', this.stage === 'success');
     this.errorContent?.classList.toggle('active', this.stage === 'error');
-
-    if (this.stage === 'queue') {
-      this.animateQueueContentIn();
-    }
-
-    this.updateBadgeCount();
-    this.renderQueueContent();
   }
 
   private updateBadgeCount(): void {
@@ -762,46 +810,99 @@ export class UnifiedBadge {
     const settings = this.queueContent.querySelector('.notis-unified-settings') as HTMLElement;
     const empty = this.emptyEl;
     const rows = this.listEl?.querySelectorAll('.notis-unified-row');
+    const { enter } = TIMING;
 
     if (header) {
       header.style.opacity = '0';
-      header.style.transform = 'translateY(-6px)';
+      header.style.transform = 'translateY(-8px)';
       setTimeout(() => {
-        header.style.transition = `opacity ${TIMING.contentDuration}ms ${EASING.precise}, transform ${TIMING.contentDuration}ms ${EASING.precise}`;
+        header.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
         header.style.opacity = '1';
         header.style.transform = 'translateY(0)';
-      }, 20);
+      }, enter.header);
     }
 
     if (this.items.length === 0 && empty) {
       empty.style.opacity = '0';
+      empty.style.transform = 'scale(0.95)';
       setTimeout(() => {
-        empty.style.transition = `opacity ${TIMING.contentDuration}ms ${EASING.precise}`;
+        empty.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
         empty.style.opacity = '1';
-      }, 40);
+        empty.style.transform = 'scale(1)';
+      }, enter.settings);
     }
 
     rows?.forEach((row, i) => {
       const el = row as HTMLElement;
       el.style.opacity = '0';
-      el.style.transform = 'translateX(-8px)';
+      el.style.transform = 'translateX(-12px)';
       setTimeout(() => {
-        el.style.transition = `opacity ${TIMING.contentDuration}ms ${EASING.precise}, transform ${TIMING.contentDuration}ms ${EASING.precise}`;
+        el.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
         el.style.opacity = '1';
         el.style.transform = 'translateX(0)';
-      }, 30 + i * TIMING.contentStagger);
+      }, enter.rowsStart + i * enter.rowStagger);
     });
 
     if (settings && this.items.length > 0) {
-      const rowCount = Math.min(rows?.length ?? 0, 5);
       settings.style.opacity = '0';
-      settings.style.transform = 'translateY(4px)';
+      settings.style.transform = 'translateY(6px)';
       setTimeout(() => {
-        settings.style.transition = `opacity ${TIMING.contentDuration}ms ${EASING.precise}, transform ${TIMING.contentDuration}ms ${EASING.precise}`;
+        settings.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
         settings.style.opacity = '1';
         settings.style.transform = 'translateY(0)';
-      }, 30 + rowCount * TIMING.contentStagger);
+      }, enter.settings);
     }
+  }
+
+  private animateQueueContentOut(onComplete: () => void): void {
+    if (!this.queueContent || this.prefersReducedMotion) {
+      onComplete();
+      return;
+    }
+
+    const header = this.queueContent.querySelector('.notis-unified-header') as HTMLElement;
+    const settings = this.queueContent.querySelector('.notis-unified-settings') as HTMLElement;
+    const empty = this.emptyEl;
+    const rows = this.listEl?.querySelectorAll('.notis-unified-row');
+    const { exit } = TIMING;
+
+    const rowCount = rows?.length ?? 0;
+
+    rows?.forEach((row, i) => {
+      const el = row as HTMLElement;
+      const reverseIndex = rowCount - 1 - i;
+      setTimeout(() => {
+        el.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-8px) scale(0.97)';
+      }, reverseIndex * exit.rowStagger);
+    });
+
+    if (settings && this.items.length > 0) {
+      setTimeout(() => {
+        settings.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
+        settings.style.opacity = '0';
+        settings.style.transform = 'translateY(6px)';
+      }, exit.settings);
+    }
+
+    if (empty && this.items.length === 0) {
+      setTimeout(() => {
+        empty.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
+        empty.style.opacity = '0';
+        empty.style.transform = 'scale(0.95)';
+      }, exit.settings);
+    }
+
+    if (header) {
+      setTimeout(() => {
+        header.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
+        header.style.opacity = '0';
+        header.style.transform = 'translateY(-6px)';
+      }, exit.header);
+    }
+
+    setTimeout(onComplete, TIMING.collapseDelay);
   }
 
   private renderQueueContent(): void {
@@ -810,6 +911,92 @@ export class UnifiedBadge {
     const mode = getNotisThemeMode();
     const isDark = mode === 'dark';
 
+    this.updateTitleAndButtons();
+
+    const currentIds = this.items.map((item) => item.id);
+    const previousIds = new Set(this.renderedItemIds);
+    const newIds = new Set(currentIds.filter((id) => !previousIds.has(id)));
+
+    const existingRows = this.listEl.querySelectorAll('.notis-unified-row');
+    existingRows.forEach((row) => row.remove());
+
+    this.renderedItemIds = currentIds;
+
+    renderUnifiedBadgeRows({
+      listEl: this.listEl,
+      items: this.items,
+      hoveredId: this.hoveredId,
+      newIds,
+      submitting: this.submitting,
+      isDark,
+      onDelete: (id) => this.handleAnimatedDelete(id),
+      onHover: this.callbacks.onHover,
+      onEdit: this.callbacks.onEdit
+    });
+
+    if (newIds.size > 0 && this.stage === 'queue' && !this.prefersReducedMotion) {
+      this.animateHeightForAddition(newIds.size);
+      requestAnimationFrame(() => {
+        this.listEl?.scrollTo({ top: this.listEl.scrollHeight, behavior: 'smooth' });
+      });
+    }
+
+    this.renderSettings();
+  }
+
+  private updateRowHighlights(prevId: string | null, newId: string | null): void {
+    if (!this.listEl) return;
+    updateUnifiedBadgeRowHighlight(this.listEl, prevId, newId, getNotisThemeMode() === 'dark');
+  }
+
+  private handleAnimatedDelete(id: string): void {
+    if (!this.listEl || this.prefersReducedMotion) {
+      this.callbacks.onDelete(id);
+      return;
+    }
+
+    const index = this.items.findIndex((item) => item.id === id);
+    if (index === -1) {
+      this.callbacks.onDelete(id);
+      return;
+    }
+
+    this.animatedDeletionId = id;
+    const deletingToEmpty = this.items.length === 1;
+
+    animateRowDeletion({
+      listEl: this.listEl,
+      deleteId: id,
+      onComplete: () => {
+        this.cleanupAfterDeletion(id);
+        this.callbacks.onDelete(id);
+      },
+    });
+
+    this.animateHeightForDeletion(deletingToEmpty);
+  }
+
+  private cleanupAfterDeletion(id: string): void {
+    if (!this.listEl) return;
+
+    const deletedRow = this.listEl.querySelector(`[data-note-id="${id}"]`);
+    deletedRow?.remove();
+
+    const remainingRows = this.listEl.querySelectorAll('.notis-unified-row') as NodeListOf<HTMLElement>;
+    remainingRows.forEach((row, index) => {
+      row.style.transition = 'none';
+      row.style.transform = '';
+
+      const indexChip = row.querySelector('div') as HTMLElement | null;
+      if (indexChip) {
+        indexChip.textContent = String(index + 1);
+      }
+    });
+
+    this.renderedItemIds = this.renderedItemIds.filter((rid) => rid !== id);
+  }
+
+  private updateTitleAndButtons(): void {
     if (this.titleEl) {
       if (this.items.length === 0) {
         this.titleEl.textContent = 'Notes';
@@ -828,45 +1015,54 @@ export class UnifiedBadge {
       this.clearBtn.disabled = this.items.length === 0 || this.submitting;
     }
 
-    this.emptyEl.style.display = this.items.length === 0 ? 'flex' : 'none';
+    if (this.emptyEl) {
+      this.emptyEl.style.display = this.items.length === 0 ? 'flex' : 'none';
+    }
 
     if (this.settingsEl) {
       this.settingsEl.style.display = this.items.length === 0 ? 'none' : 'block';
     }
-
-    const currentIds = this.items.map((item) => item.id);
-    const previousIds = new Set(this.renderedItemIds);
-    const newIds = new Set(currentIds.filter((id) => !previousIds.has(id)));
-
-    const existingRows = this.listEl.querySelectorAll('.notis-unified-row');
-    existingRows.forEach((row) => row.remove());
-
-    this.renderedItemIds = currentIds;
-
-    renderUnifiedBadgeRows({
-      listEl: this.listEl,
-      items: this.items,
-      hoveredId: this.hoveredId,
-      newIds,
-      submitting: this.submitting,
-      isDark,
-      onDelete: this.callbacks.onDelete,
-      onHover: this.callbacks.onHover,
-      onEdit: this.callbacks.onEdit
-    });
-
-    if (newIds.size > 0) {
-      requestAnimationFrame(() => {
-        this.listEl?.scrollTo({ top: this.listEl.scrollHeight, behavior: 'smooth' });
-      });
-    }
-
-    this.renderSettings();
   }
 
-  private updateRowHighlights(prevId: string | null, newId: string | null): void {
-    if (!this.listEl) return;
-    updateUnifiedBadgeRowHighlight(this.listEl, prevId, newId, getNotisThemeMode() === 'dark');
+  private animateHeightForDeletion(deletingToEmpty: boolean): void {
+    if (!this.morphContainer || this.stage !== 'queue') return;
+
+    const targetHeight = deletingToEmpty
+      ? this.getEmptyStateHeight()
+      : this.getQueueHeight() - ROW_HEIGHT;
+
+    const duration = 200;
+    const easing = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+    this.morphContainer.style.transition = `height ${duration}ms ${easing}`;
+    this.morphContainer.style.height = `${targetHeight}px`;
+  }
+
+  private getEmptyStateHeight(): number {
+    const listPadding = 12;
+    const emptyContentHeight = 96;
+    return HEADER_HEIGHT + listPadding + emptyContentHeight;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private animateHeightForAddition(_addedCount: number): void {
+    if (!this.morphContainer || this.stage !== 'queue') return;
+
+    const currentComputedHeight = this.morphContainer.offsetHeight;
+    const targetHeight = this.getQueueHeight();
+
+    if (currentComputedHeight === targetHeight) return;
+
+    const duration = 200;
+    const easing = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+    this.morphContainer.style.height = `${currentComputedHeight}px`;
+
+    requestAnimationFrame(() => {
+      if (!this.morphContainer) return;
+      this.morphContainer.style.transition = `height ${duration}ms ${easing}`;
+      this.morphContainer.style.height = `${targetHeight}px`;
+    });
   }
 
   private renderSettings(): void {
