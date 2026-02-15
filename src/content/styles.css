@@ -2252,7 +2252,13 @@
 .notis-unified-header-left {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+}
+
+.notis-unified-header-left .notis-unified-btn-icon {
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
 }
 
 .notis-unified-title {
