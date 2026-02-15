@@ -2249,6 +2249,12 @@
   flex-shrink: 0;
 }
 
+.notis-unified-header-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .notis-unified-title {
   font-family: var(--font-sans);
   font-size: 13px;

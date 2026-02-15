@@ -510,9 +510,23 @@ export class UnifiedBadge {
     const header = document.createElement('div');
     header.className = 'notis-unified-header';
 
+    const headerLeft = document.createElement('div');
+    headerLeft.className = 'notis-unified-header-left';
+
     const title = document.createElement('span');
     title.className = 'notis-unified-title';
     title.textContent = 'Notes';
+
+    const settingsBtn = document.createElement('button');
+    settingsBtn.type = 'button';
+    settingsBtn.className = 'notis-unified-btn notis-unified-btn-icon';
+    settingsBtn.title = 'Settings';
+    settingsBtn.appendChild(createSettingsIcon(14));
+    settingsBtn.addEventListener('click', () => this.callbacks.onOpenSettings());
+    this.addButtonPressEffect(settingsBtn);
+
+    headerLeft.appendChild(title);
+    headerLeft.appendChild(settingsBtn);
 
     const actions = document.createElement('div');
     actions.className = 'notis-unified-actions';
@@ -524,14 +538,6 @@ export class UnifiedBadge {
     copyBtn.appendChild(createCopyIcon(14));
     copyBtn.addEventListener('click', () => this.callbacks.onCopyScreenshot());
     this.addButtonPressEffect(copyBtn);
-
-    const settingsBtn = document.createElement('button');
-    settingsBtn.type = 'button';
-    settingsBtn.className = 'notis-unified-btn notis-unified-btn-icon';
-    settingsBtn.title = 'Settings';
-    settingsBtn.appendChild(createSettingsIcon(14));
-    settingsBtn.addEventListener('click', () => this.callbacks.onOpenSettings());
-    this.addButtonPressEffect(settingsBtn);
 
     const clearBtn = document.createElement('button');
     clearBtn.type = 'button';
@@ -550,10 +556,9 @@ export class UnifiedBadge {
     this.addButtonPressEffect(submitBtn);
 
     actions.appendChild(copyBtn);
-    actions.appendChild(settingsBtn);
     actions.appendChild(clearBtn);
     actions.appendChild(submitBtn);
-    header.appendChild(title);
+    header.appendChild(headerLeft);
     header.appendChild(actions);
 
     const list = document.createElement('div');
