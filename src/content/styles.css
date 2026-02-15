@@ -2240,14 +2240,13 @@
 }
 
 .notis-unified-header {
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border-soft);
   background: var(--surface);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
-  min-height: 44px;
 }
 
 .notis-unified-header-left {
@@ -2266,7 +2265,6 @@
   font-size: 13px;
   font-weight: 560;
   color: var(--text);
-  line-height: 28px;
 }
 
 .notis-unified-actions {
