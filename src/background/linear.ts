@@ -9,11 +9,6 @@ import type {
   LinearWorkspaceResources
 } from '../shared/types';
 import {
-  calculatePKCECodeChallenge,
-  generateRandomCodeVerifier,
-  generateRandomState
-} from 'oauth4webapi';
-import {
   getSessionStorageItems,
   removeSessionStorageItems,
   setSessionStorageItems
@@ -30,6 +25,33 @@ import {
   WORKSPACE_RESOURCES_QUERY
 } from './linear-queries';
 import { saveLinearSettings } from './storage';
+
+function generateRandomBytes(length: number): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateRandomState(): string {
+  return generateRandomBytes(16);
+}
+
+function generateRandomCodeVerifier(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+async function calculatePKCECodeChallenge(verifier: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
 
 const LINEAR_GRAPHQL_URL = 'https://api.linear.app/graphql';
 const LINEAR_OAUTH_AUTHORIZE_URL = 'https://linear.app/oauth/authorize';

@@ -5,7 +5,6 @@ import {
   createPath,
   createCircle,
   createRect,
-  createStrokeIcon,
   createTrashIcon,
   createUserIcon,
   createCheckIcon,
@@ -98,30 +97,6 @@ describe('createRect', () => {
     const rect = createRect(5, 5, 20, 10, { rx: 3, fill: 'green' });
     expect(rect.getAttribute('rx')).toBe('3');
     expect(rect.getAttribute('fill')).toBe('green');
-  });
-});
-
-describe('createStrokeIcon', () => {
-  it('creates stroke-based icon SVG', () => {
-    const icon = createStrokeIcon(16, 16, 'M5 12l5 5L20 7');
-    expect(icon.tagName).toBe('svg');
-    expect(icon.getAttribute('width')).toBe('16');
-    expect(icon.getAttribute('height')).toBe('16');
-    expect(icon.getAttribute('fill')).toBe('none');
-    expect(icon.getAttribute('stroke')).toBe('currentColor');
-    expect(icon.getAttribute('stroke-width')).toBe('1.5');
-  });
-
-  it('uses custom stroke width', () => {
-    const icon = createStrokeIcon(24, 24, 'M0 0', 3);
-    expect(icon.getAttribute('stroke-width')).toBe('3');
-  });
-
-  it('contains the path element', () => {
-    const icon = createStrokeIcon(16, 16, 'M5 12h14');
-    const path = icon.querySelector('path');
-    expect(path).not.toBeNull();
-    expect(path?.getAttribute('d')).toBe('M5 12h14');
   });
 });
 

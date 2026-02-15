@@ -17,15 +17,12 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
-    "dialkit": "^0.2.0",
-    "framer-motion": "^12.34.0",
-    "lucide": "^0.563.0",
-    "oauth4webapi": "^3.8.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "sonner": "^2.0.7"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "dialkit": "^0.2.0",
+    "framer-motion": "^12.34.0",
     "@crxjs/vite-plugin": "^2.0.0-beta.33",
     "@eslint/js": "^9.22.0",
     "@types/chrome": "^0.1.36",

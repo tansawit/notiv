@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { BackgroundResponse } from '../shared/messages';
 import { STORAGE_KEYS } from '../shared/constants';
 import { getLocalStorageItems } from '../shared/chrome-storage';
@@ -10,18 +9,6 @@ import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
 import { OnboardingWizard } from './OnboardingWizard';
 import { usePopupSitePermission, usePopupTheme, useCaptureSound } from './hooks';
-import {
-  springTransition,
-  buttonHoverScale,
-  buttonTapScale,
-  buttonTapScaleWithY,
-  iconButtonHoverScale,
-  iconButtonTapScale,
-  createDisabledButtonHover,
-  createDisabledButtonTap,
-  viewVariants,
-  viewTransition,
-} from '../shared/motion-presets';
 
 type PopupView = 'home' | 'settings';
 type ThemePreference = 'system' | 'light' | 'dark';
@@ -184,28 +171,17 @@ function PopupApp(): React.JSX.Element {
   }
 
   const homeView = (
-    <motion.div
-      key="home"
-      custom={-1}
-      variants={viewVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={viewTransition}
-    >
+    <div key="home" className="view-enter">
       <section className="popup-panel popup-panel-flat">
         <div className="popup-header-flat">
           <h1 className="popup-title">Notis</h1>
           <div className="popup-header-actions">
-            <motion.button
+            <button
               className="button-ghost"
               onClick={() => setView('settings')}
-              whileHover={buttonHoverScale}
-              whileTap={buttonTapScale}
-              transition={springTransition}
             >
               Settings
-            </motion.button>
+            </button>
           </div>
         </div>
         <div className="popup-content">
@@ -232,81 +208,58 @@ function PopupApp(): React.JSX.Element {
           </div>
           <div className="popup-actions">
             {unifiedStatus.ready ? (
-              <motion.button
+              <button
                 className="button primary"
                 onClick={() => void activatePicker()}
-                whileHover={buttonHoverScale}
-                whileTap={buttonTapScaleWithY}
-                transition={springTransition}
               >
                 Start Annotating
-              </motion.button>
+              </button>
             ) : unifiedStatus.actionType === 'connect' ? (
-              <motion.button
+              <button
                 className="button"
                 onClick={() => void connectWithOAuth()}
                 disabled={authBusy}
-                whileHover={createDisabledButtonHover(authBusy)}
-                whileTap={createDisabledButtonTap(authBusy, true)}
-                transition={springTransition}
               >
                 {authBusy ? 'Connecting...' : 'Connect Linear'}
-              </motion.button>
+              </button>
             ) : unifiedStatus.actionType === 'grant' ? (
-              <motion.button
+              <button
                 className="button"
                 onClick={() => void toggleCurrentSitePermission()}
                 disabled={sitePermissionsBusy}
-                whileHover={createDisabledButtonHover(sitePermissionsBusy)}
-                whileTap={createDisabledButtonTap(sitePermissionsBusy, true)}
-                transition={springTransition}
               >
                 {sitePermissionsBusy ? 'Granting...' : 'Grant Access'}
-              </motion.button>
+              </button>
             ) : null}
           </div>
         </div>
       </section>
 
       {error ? <div className="error">{error}</div> : null}
-    </motion.div>
+    </div>
   );
 
   const settingsView = (
-    <motion.div
-      key="settings"
-      custom={1}
-      variants={viewVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={viewTransition}
-    >
+    <div key="settings" className="view-enter">
       <section className="popup-panel popup-panel-flat">
         <div className="popup-header-flat">
           <div className="popup-header-left-flat">
-            <motion.button
+            <button
               className="icon-button-ghost-small"
               onClick={() => setView('home')}
               aria-label="Back"
               title="Back"
-              whileHover={iconButtonHoverScale}
-              whileTap={iconButtonTapScale}
-              transition={springTransition}
             >
               <Icon path="M15 18l-6-6 6-6" size={14} />
-            </motion.button>
+            </button>
             <h1 className="popup-title">Settings</h1>
           </div>
-          <motion.button
+          <button
             className="button-ghost"
             onClick={() => void openMainSettingsPage()}
-            whileHover={buttonHoverScale}
-            whileTap={buttonTapScale}
-            transition={springTransition}
           >
             Open
-          </motion.button>
+          </button>
         </div>
 
         <div className="popup-content settings-content">
@@ -324,38 +277,29 @@ function PopupApp(): React.JSX.Element {
               </div>
             </div>
             <div className="popup-actions">
-              <motion.button
+              <button
                 className="button"
                 disabled={authBusy}
                 onClick={() => void connectWithOAuth()}
-                whileHover={createDisabledButtonHover(authBusy)}
-                whileTap={createDisabledButtonTap(authBusy)}
-                transition={springTransition}
               >
                 {authBusy ? 'Working...' : connected ? 'Reconnect' : 'Connect'}
-              </motion.button>
+              </button>
               {connected ? (
                 <>
-                  <motion.button
+                  <button
                     className="button"
                     disabled={authBusy || loadingResources}
                     onClick={() => void refreshResources()}
-                    whileHover={createDisabledButtonHover(authBusy || loadingResources)}
-                    whileTap={createDisabledButtonTap(authBusy || loadingResources)}
-                    transition={springTransition}
                   >
                     {loadingResources ? '...' : 'Refresh'}
-                  </motion.button>
-                  <motion.button
+                  </button>
+                  <button
                     className="button"
                     disabled={authBusy}
                     onClick={() => void disconnect()}
-                    whileHover={createDisabledButtonHover(authBusy)}
-                    whileTap={createDisabledButtonTap(authBusy)}
-                    transition={springTransition}
                   >
                     Disconnect
-                  </motion.button>
+                  </button>
                 </>
               ) : null}
             </div>
@@ -381,16 +325,13 @@ function PopupApp(): React.JSX.Element {
               </div>
             </div>
             <div className="popup-actions">
-              <motion.button
+              <button
                 className="button"
                 disabled={sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget}
                 onClick={() => void toggleCurrentSitePermission()}
-                whileHover={createDisabledButtonHover(sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget)}
-                whileTap={createDisabledButtonTap(sitePermissionsBusy || sitePermissionsLoading || !currentSiteTarget)}
-                transition={springTransition}
               >
                 {sitePermissionsBusy ? 'Working...' : currentSiteGranted ? 'Revoke' : 'Grant'}
-              </motion.button>
+              </button>
             </div>
           </div>
 
@@ -402,27 +343,21 @@ function PopupApp(): React.JSX.Element {
               <span className="settings-value">
                 {getThemeDisplayName(themePreference)}
               </span>
-              <motion.button
+              <button
                 className="button"
                 onClick={cycleTheme}
-                whileHover={buttonHoverScale}
-                whileTap={buttonTapScale}
-                transition={springTransition}
               >
                 {getNextThemeLabel(themePreference)}
-              </motion.button>
+              </button>
             </div>
             <div className="settings-row-inline">
               <span className="settings-value">Capture sound</span>
-              <motion.button
+              <button
                 className="button"
                 onClick={toggleSound}
-                whileHover={buttonHoverScale}
-                whileTap={buttonTapScale}
-                transition={springTransition}
               >
                 {soundEnabled ? 'On' : 'Off'}
-              </motion.button>
+              </button>
             </div>
           </div>
 
@@ -442,44 +377,35 @@ function PopupApp(): React.JSX.Element {
                       autoFocus
                     />
                     <div className="popup-actions">
-                      <motion.button
+                      <button
                         className="button"
                         disabled={authBusy}
                         onClick={() => void saveToken()}
-                        whileHover={createDisabledButtonHover(authBusy)}
-                        whileTap={createDisabledButtonTap(authBusy)}
-                        transition={springTransition}
                       >
                         Save
-                      </motion.button>
+                      </button>
                       {settings.accessToken ? (
-                        <motion.button
+                        <button
                           className="button"
                           disabled={authBusy}
                           onClick={() => { setTokenEditing(false); setTokenDraft(settings.accessToken); }}
-                          whileHover={createDisabledButtonHover(authBusy)}
-                          whileTap={createDisabledButtonTap(authBusy)}
-                          transition={springTransition}
                         >
                           Cancel
-                        </motion.button>
+                        </button>
                       ) : null}
                     </div>
                   </>
                 ) : (
                   <div className="settings-row-inline">
                     <code className="token-display">{maskAccessToken(settings.accessToken)}</code>
-                    <motion.button
+                    <button
                       className="icon-button-ghost-small"
                       onClick={() => { setTokenEditing(true); setTokenDraft(settings.accessToken); }}
                       aria-label="Edit API token"
                       title="Edit"
-                      whileHover={iconButtonHoverScale}
-                      whileTap={iconButtonTapScale}
-                      transition={springTransition}
                     >
                       <Icon path="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z" size={12} />
-                    </motion.button>
+                    </button>
                   </div>
                 )}
               </div>
@@ -490,14 +416,12 @@ function PopupApp(): React.JSX.Element {
 
       {notice ? <div className="notice">{notice}</div> : null}
       {error ? <div className="error">{error}</div> : null}
-    </motion.div>
+    </div>
   );
 
   return (
     <div className="popup-shell">
-      <AnimatePresence mode="wait" custom={view === 'home' ? -1 : 1}>
-        {view === 'home' ? homeView : settingsView}
-      </AnimatePresence>
+      {view === 'home' ? homeView : settingsView}
     </div>
   );
 }

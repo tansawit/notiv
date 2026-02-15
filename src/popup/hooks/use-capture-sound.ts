@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
 import { STORAGE_KEYS } from '../../shared/constants';
+import { useStorageToggle } from '../../shared/use-storage-toggle';
 
 interface UseCaptureSoundResult {
   soundEnabled: boolean;
@@ -7,23 +7,13 @@ interface UseCaptureSoundResult {
 }
 
 export function useCaptureSound(): UseCaptureSoundResult {
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
-
-  useEffect(() => {
-    chrome.storage.local.get([STORAGE_KEYS.captureSoundEnabled], (result) => {
-      const stored = result[STORAGE_KEYS.captureSoundEnabled] as boolean | undefined;
-      setSoundEnabled(stored === true);
-    });
-  }, []);
-
-  const toggleSound = useCallback(() => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    chrome.storage.local.set({ [STORAGE_KEYS.captureSoundEnabled]: next });
-  }, [soundEnabled]);
+  const { enabled, toggle } = useStorageToggle({
+    storageKey: STORAGE_KEYS.captureSoundEnabled,
+    defaultValue: false
+  });
 
   return {
-    soundEnabled,
-    toggleSound,
+    soundEnabled: enabled,
+    toggleSound: () => void toggle()
   };
 }
