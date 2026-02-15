@@ -533,7 +533,7 @@ export class UnifiedBadge {
 
     const copyBtn = document.createElement('button');
     copyBtn.type = 'button';
-    copyBtn.className = 'notis-unified-btn notis-unified-btn-ghost';
+    copyBtn.className = 'notis-unified-btn notis-unified-btn-icon';
     copyBtn.title = 'Copy screenshot';
     copyBtn.appendChild(createCopyIcon(14));
     copyBtn.addEventListener('click', () => this.callbacks.onCopyScreenshot());
@@ -1441,6 +1441,17 @@ export class UnifiedBadge {
     this.teamDropdownOpen = false;
     this.assigneeDropdownOpen = false;
     this.labelsDropdownOpen = false;
+  }
+
+  hasOpenDropdown(): boolean {
+    return this.teamDropdownOpen || this.assigneeDropdownOpen || this.labelsDropdownOpen || this.takeoverMode !== null;
+  }
+
+  closeDropdowns(): void {
+    if (!this.hasOpenDropdown()) return;
+    this.closeAllDropdowns();
+    this.takeoverMode = null;
+    this.renderSettings();
   }
 
 }

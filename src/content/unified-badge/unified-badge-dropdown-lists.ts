@@ -1,5 +1,18 @@
 import type { LinearLabel, LinearTeam, LinearUser } from '../../shared/types';
-import { appendSelectedCheckIcon } from './unified-badge-dropdown';
+import { appendSelectedCheckIcon, highlightFirstDropdownItem } from './unified-badge-dropdown';
+
+function clearHighlight(listEl: HTMLDivElement): void {
+  listEl.querySelectorAll('.notis-unified-dropdown-item.highlighted').forEach((el) => {
+    el.classList.remove('highlighted');
+  });
+}
+
+function addHighlightOnHover(item: HTMLButtonElement, listEl: HTMLDivElement): void {
+  item.addEventListener('mouseenter', () => {
+    clearHighlight(listEl);
+    item.classList.add('highlighted');
+  });
+}
 
 function renderEmptyState(listEl: HTMLDivElement, message: string): void {
   const empty = document.createElement('div');
@@ -50,6 +63,8 @@ export function renderTeamDropdownList(input: RenderTeamDropdownListInput): void
       appendSelectedCheckIcon(item);
     }
 
+    addHighlightOnHover(item, input.listEl);
+
     item.addEventListener('click', (event) => {
       event.stopPropagation();
       input.onSelect(team.id);
@@ -57,6 +72,8 @@ export function renderTeamDropdownList(input: RenderTeamDropdownListInput): void
 
     input.listEl.appendChild(item);
   });
+
+  highlightFirstDropdownItem(input.listEl);
 }
 
 export interface RenderAssigneeDropdownListInput {
@@ -106,6 +123,8 @@ export function renderAssigneeDropdownList(input: RenderAssigneeDropdownListInpu
       appendSelectedCheckIcon(item);
     }
 
+    addHighlightOnHover(item, input.listEl);
+
     item.addEventListener('click', (event) => {
       event.stopPropagation();
       input.onSelect(user.id);
@@ -113,6 +132,8 @@ export function renderAssigneeDropdownList(input: RenderAssigneeDropdownListInpu
 
     input.listEl.appendChild(item);
   });
+
+  highlightFirstDropdownItem(input.listEl);
 }
 
 export interface RenderLabelsDropdownListInput {
@@ -156,6 +177,8 @@ export function renderLabelsDropdownList(input: RenderLabelsDropdownListInput): 
       appendSelectedCheckIcon(item);
     }
 
+    addHighlightOnHover(item, input.listEl);
+
     item.addEventListener('click', (event) => {
       event.stopPropagation();
       input.onToggle(label.id);
@@ -163,4 +186,6 @@ export function renderLabelsDropdownList(input: RenderLabelsDropdownListInput): 
 
     input.listEl.appendChild(item);
   });
+
+  highlightFirstDropdownItem(input.listEl);
 }

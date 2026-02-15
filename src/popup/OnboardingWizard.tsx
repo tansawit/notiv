@@ -71,16 +71,25 @@ export function OnboardingWizard({
 
   return (
     <div className="onboarding-wizard">
-      <div className="onboarding-progress">
-        <div className="onboarding-steps">
-          <div className={`onboarding-step-dot ${stepNumber >= 1 ? 'active' : ''} ${step === 'success' ? 'completed' : ''}`} />
-          <div className="onboarding-step-line" />
-          <div className={`onboarding-step-dot ${stepNumber >= 2 ? 'active' : ''} ${step === 'success' ? 'completed' : ''}`} />
+      {step !== 'success' && (
+        <div className="onboarding-progress">
+          <div className="onboarding-steps">
+            <div className={`onboarding-step-pill ${stepNumber === 1 ? 'active' : 'done'}`}>
+              <span className="onboarding-step-number">1</span>
+              <span className="onboarding-step-name">Connect</span>
+            </div>
+            <div className="onboarding-step-connector">
+              <svg width="16" height="8" viewBox="0 0 16 8" fill="none">
+                <path d="M0 4h14M11 1l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className={`onboarding-step-pill ${stepNumber === 2 ? 'active' : ''}`}>
+              <span className="onboarding-step-number">2</span>
+              <span className="onboarding-step-name">Enable</span>
+            </div>
+          </div>
         </div>
-        <span className="onboarding-step-label">
-          {step === 'success' ? 'Setup complete' : `Step ${stepNumber} of 2`}
-        </span>
-      </div>
+      )}
 
       {step === 'connect' && (
         <div key="connect" className="onboarding-content step-enter">
@@ -104,9 +113,6 @@ export function OnboardingWizard({
           <p className="onboarding-description">
             Allow Notis to highlight elements on{' '}
             <strong>{currentSiteTarget?.label ?? 'this site'}</strong> so you can select them for feedback.
-          </p>
-          <p className="onboarding-privacy">
-            Your data only goes to Linear.
           </p>
           <button
             className="button primary large"

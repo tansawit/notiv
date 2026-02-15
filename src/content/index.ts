@@ -729,6 +729,10 @@ window.addEventListener('keydown', (event) => {
   }
 
   if (unifiedBadge.isQueueVisible()) {
+    if (unifiedBadge.hasOpenDropdown()) {
+      unifiedBadge.closeDropdowns();
+      return;
+    }
     unifiedBadge.closeQueue();
     return;
   }
