@@ -2240,25 +2240,25 @@
 }
 
 .notis-unified-header {
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-bottom: 1px solid var(--border-soft);
   background: var(--surface);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  min-height: 44px;
 }
 
 .notis-unified-header-left {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .notis-unified-header-left .notis-unified-btn-icon {
-  width: 24px;
-  height: 24px;
-  margin-left: 2px;
+  width: 26px;
+  height: 26px;
 }
 
 .notis-unified-title {
@@ -2266,6 +2266,7 @@
   font-size: 13px;
   font-weight: 560;
   color: var(--text);
+  line-height: 28px;
 }
 
 .notis-unified-actions {
