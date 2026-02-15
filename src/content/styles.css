@@ -2258,7 +2258,8 @@
 
 .notis-unified-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 2px;
 }
 
 .notis-unified-btn {
@@ -2279,19 +2280,6 @@
   cursor: not-allowed;
 }
 
-.notis-unified-btn-ghost {
-  background: transparent;
-  border-color: transparent;
-  padding: 0 10px;
-  color: var(--text-muted);
-}
-
-.notis-unified-btn-ghost:hover:not(:disabled) {
-  background: rgba(220, 80, 80, 0.1);
-  border-color: transparent;
-  color: #c94a4a;
-}
-
 .notis-unified-btn-icon {
   width: 28px;
   height: 28px;
@@ -2310,6 +2298,11 @@
   color: var(--text-muted);
 }
 
+.notis-unified-btn-danger:hover:not(:disabled) {
+  background: rgba(220, 80, 80, 0.1);
+  color: #c94a4a;
+}
+
 .notis-unified-btn-submit {
   width: 28px;
   height: 28px;
@@ -2322,6 +2315,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-left: 6px;
 }
 
 .notis-unified-btn-submit:hover:not(:disabled) {
@@ -3181,16 +3175,6 @@
   color: var(--dark-text);
 }
 
-:host([data-notis-theme="dark"]) .notis-unified-btn-ghost {
-  border-color: transparent;
-  color: var(--dark-text-muted);
-}
-
-:host([data-notis-theme="dark"]) .notis-unified-btn-ghost:hover:not(:disabled) {
-  background: rgba(240, 100, 100, 0.15);
-  color: #f07070;
-}
-
 :host([data-notis-theme="dark"]) .notis-unified-btn-icon {
   color: var(--dark-text-subtle);
 }
@@ -3198,6 +3182,11 @@
 :host([data-notis-theme="dark"]) .notis-unified-btn-icon:hover:not(:disabled) {
   background: var(--dark-btn-hover-bg);
   color: var(--dark-text-muted);
+}
+
+:host([data-notis-theme="dark"]) .notis-unified-btn-danger:hover:not(:disabled) {
+  background: rgba(240, 100, 100, 0.15);
+  color: #f07070;
 }
 
 :host([data-notis-theme="dark"]) .notis-unified-btn-submit:hover:not(:disabled) {

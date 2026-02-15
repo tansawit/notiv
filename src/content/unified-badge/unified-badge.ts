@@ -11,6 +11,7 @@ import {
   createArrowRightIcon,
   createCopyIcon,
   createSettingsIcon,
+  createTrashIcon,
   createEmptyStateIcon,
   createArcSpinnerIcon,
   createCheckIcon,
@@ -516,6 +517,14 @@ export class UnifiedBadge {
     const actions = document.createElement('div');
     actions.className = 'notis-unified-actions';
 
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'notis-unified-btn notis-unified-btn-icon';
+    copyBtn.title = 'Copy screenshot';
+    copyBtn.appendChild(createCopyIcon(14));
+    copyBtn.addEventListener('click', () => this.callbacks.onCopyScreenshot());
+    this.addButtonPressEffect(copyBtn);
+
     const settingsBtn = document.createElement('button');
     settingsBtn.type = 'button';
     settingsBtn.className = 'notis-unified-btn notis-unified-btn-icon';
@@ -526,18 +535,11 @@ export class UnifiedBadge {
 
     const clearBtn = document.createElement('button');
     clearBtn.type = 'button';
-    clearBtn.className = 'notis-unified-btn notis-unified-btn-ghost';
-    clearBtn.textContent = 'Clear';
+    clearBtn.className = 'notis-unified-btn notis-unified-btn-icon notis-unified-btn-danger';
+    clearBtn.title = 'Clear all';
+    clearBtn.appendChild(createTrashIcon(14));
     clearBtn.addEventListener('click', () => this.callbacks.onClear());
     this.addButtonPressEffect(clearBtn);
-
-    const copyBtn = document.createElement('button');
-    copyBtn.type = 'button';
-    copyBtn.className = 'notis-unified-btn notis-unified-btn-icon';
-    copyBtn.title = 'Copy screenshot';
-    copyBtn.appendChild(createCopyIcon(14));
-    copyBtn.addEventListener('click', () => this.callbacks.onCopyScreenshot());
-    this.addButtonPressEffect(copyBtn);
 
     const submitBtn = document.createElement('button');
     submitBtn.type = 'button';
@@ -547,9 +549,9 @@ export class UnifiedBadge {
     submitBtn.addEventListener('click', () => this.callbacks.onSubmit());
     this.addButtonPressEffect(submitBtn);
 
+    actions.appendChild(copyBtn);
     actions.appendChild(settingsBtn);
     actions.appendChild(clearBtn);
-    actions.appendChild(copyBtn);
     actions.appendChild(submitBtn);
     header.appendChild(title);
     header.appendChild(actions);
