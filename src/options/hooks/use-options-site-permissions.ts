@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getAllPermissions, removeOriginPermission, requestOriginPermission } from '../../shared/chrome-api';
-import { normalizeSiteOriginInput, stripOriginPatternSuffix } from '../../shared/site-origin';
-
-const REQUIRED_ORIGINS = new Set(['https://api.linear.app/*', 'https://linear.app/*']);
-
-function isConfigurableSiteOrigin(originPattern: string): boolean {
-  if (REQUIRED_ORIGINS.has(originPattern)) {
-    return false;
-  }
-  return originPattern.startsWith('https://') || originPattern.startsWith('http://');
-}
+import { stripOriginPatternSuffix } from '../../shared/site-origin';
+import {
+  grantSiteOriginFromInput,
+  listGrantedSiteOrigins,
+  revokeSiteOrigin
+} from '../../shared/site-permissions-client';
 
 interface UseOptionsSitePermissionsOptions {
   setFeedback: (notice: string | null, error: string | null) => void;
@@ -39,11 +34,7 @@ export function useOptionsSitePermissions(
   const refreshSitePermissions = useCallback(async (): Promise<void> => {
     setSitePermissionsLoading(true);
     try {
-      const allPermissions = await getAllPermissions();
-      const nextOrigins = (allPermissions.origins ?? [])
-        .filter(isConfigurableSiteOrigin)
-        .sort((left, right) => left.localeCompare(right));
-      setGrantedSiteOrigins(nextOrigins);
+      setGrantedSiteOrigins(await listGrantedSiteOrigins());
     } catch (permissionError) {
       setFeedback(
         null,
@@ -59,23 +50,21 @@ export function useOptionsSitePermissions(
   }, [refreshSitePermissions]);
 
   const grantSiteAccess = useCallback(async (): Promise<void> => {
-    const normalized = normalizeSiteOriginInput(siteAccessDraft);
-    if (!normalized) {
-      setFeedback(null, 'Enter a valid http/https origin, for example https://staging.example.com.');
-      return;
-    }
-
     setSitePermissionsBusy(true);
     setFeedback(null, null);
     try {
-      const granted = await requestOriginPermission(normalized.pattern);
+      const { target, granted } = await grantSiteOriginFromInput(siteAccessDraft);
+      if (!target) {
+        setFeedback(null, 'Enter a valid http/https origin, for example https://staging.example.com.');
+        return;
+      }
       if (!granted) {
-        setFeedback(null, `Permission request was denied for ${normalized.label}.`);
+        setFeedback(null, `Permission request was denied for ${target.label}.`);
         return;
       }
       setSiteAccessDraft('');
       await refreshSitePermissions();
-      setFeedback(`Site access granted for ${normalized.label}.`, null);
+      setFeedback(`Site access granted for ${target.label}.`, null);
     } catch (permissionError) {
       setFeedback(
         null,
@@ -90,7 +79,7 @@ export function useOptionsSitePermissions(
     setSitePermissionsBusy(true);
     setFeedback(null, null);
     try {
-      await removeOriginPermission(origin);
+      await revokeSiteOrigin(origin);
       await refreshSitePermissions();
       setFeedback(`Removed site access for ${stripOriginPatternSuffix(origin)}.`, null);
     } catch (permissionError) {

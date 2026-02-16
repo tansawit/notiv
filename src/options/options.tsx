@@ -1,6 +1,10 @@
 import React, { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { maskAccessToken } from '../shared/linear-settings-client';
+import {
+  getLinearConnectButtonLabel,
+  getLinearWorkspaceSummary
+} from '../shared/linear-connection-view-model';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
 import { useCaptureRedaction, useOptionsSitePermissions, useShowNoteText } from './hooks';
@@ -60,12 +64,11 @@ function SettingsApp(): React.JSX.Element {
   const oauthRedirectUrl = useMemo(() => chrome.identity.getRedirectURL('linear'), []);
 
   const workspaceSummary = useMemo(() => {
-    if (!connected) {
-      return 'Not connected';
-    }
-    const viewer = resources.viewerName ? ` as ${resources.viewerName}` : '';
-    const org = resources.organizationName ? ` to ${resources.organizationName}` : '';
-    return `Connected${viewer}${org}`;
+    return getLinearWorkspaceSummary({
+      connected,
+      viewerName: resources.viewerName,
+      organizationName: resources.organizationName
+    });
   }, [connected, resources.viewerName, resources.organizationName]);
 
   if (loading) {
@@ -122,7 +125,12 @@ function SettingsApp(): React.JSX.Element {
 
         <div className="actions">
           <button className={`button primary ${authBusy ? 'loading' : ''}`} disabled={authBusy} onClick={() => void connectWithOAuth()}>
-            {authBusy ? 'Connecting...' : connected ? 'Reconnect' : 'Connect with OAuth'}
+            {getLinearConnectButtonLabel({
+              authBusy,
+              connected,
+              busyText: 'Connecting...',
+              connectText: 'Connect with OAuth'
+            })}
           </button>
           {allowPatFallback && tokenEditing ? (
             <>

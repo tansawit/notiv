@@ -1,5 +1,5 @@
 import type { BackgroundResponse, BackgroundToContentMessage, ContentToBackgroundMessage } from '../shared/messages';
-import type { Annotation, BoundingBox, LinearSettings } from '../shared/types';
+import type { Annotation, LinearSettings } from '../shared/types';
 import { ALLOW_LINEAR_PAT_FALLBACK } from '../shared/feature-flags';
 import { STORAGE_KEYS } from '../shared/constants';
 import { getLocalStorageItems, getSessionStorageItems, setSessionStorageItems } from '../shared/chrome-storage';
@@ -7,6 +7,7 @@ import { EMPTY_LINEAR_RESOURCES } from '../shared/linear-resources';
 import { resolveSiteOriginPermission } from '../shared/site-origin';
 import { createLinearGroupedIssue, createLinearIssue, getLinearWorkspaceResources, runLinearOAuthFlow } from './linear';
 import { captureElementScreenshot, captureRegionScreenshot, captureVisibleScreenshot } from './screenshot';
+import { captureGroupedScreenshot } from './capture-grouped';
 import { clearLinearAuth, getLinearSettings, saveLinearSettings } from './storage';
 import { addToSubmissionHistory } from './submission-history';
 
@@ -318,59 +319,6 @@ async function captureAnnotationWithScreenshot(
   };
 }
 
-function computeGroupedCaptureBounds(
-  annotations: Array<Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'>>
-): BoundingBox | null {
-  if (annotations.length === 0) {
-    return null;
-  }
-
-  const fallbackBoxes = annotations.map((annotation) => {
-    if (annotation.boundingBox) {
-      return annotation.boundingBox;
-    }
-    return {
-      x: annotation.x - 60,
-      y: annotation.y - 40,
-      width: 120,
-      height: 80
-    } satisfies BoundingBox;
-  });
-
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-
-  for (const box of fallbackBoxes) {
-    minX = Math.min(minX, box.x);
-    minY = Math.min(minY, box.y);
-    maxX = Math.max(maxX, box.x + box.width);
-    maxY = Math.max(maxY, box.y + box.height);
-  }
-
-  if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
-    return null;
-  }
-
-  const pad = 120;
-  const firstViewport = annotations[0].viewport;
-  const viewportWidth = firstViewport?.width;
-  const viewportHeight = firstViewport?.height;
-
-  const clampedMinX = Math.max(0, minX - pad);
-  const clampedMinY = Math.max(0, minY - pad);
-  const clampedMaxX = viewportWidth ? Math.min(viewportWidth, maxX + pad) : maxX + pad;
-  const clampedMaxY = viewportHeight ? Math.min(viewportHeight, maxY + pad) : maxY + pad;
-
-  return {
-    x: clampedMinX,
-    y: clampedMinY,
-    width: Math.max(1, clampedMaxX - clampedMinX),
-    height: Math.max(1, clampedMaxY - clampedMinY)
-  };
-}
-
 void hydrateRuntimeState();
 
 async function isDirectActivationReady(): Promise<boolean> {
@@ -575,37 +523,14 @@ async function dispatchRuntimeMessage(
         throw new Error('No notes to submit.');
       }
 
-      const fullScreenshot = await withCapturePreparation(
+      const fullScreenshot = await captureGroupedScreenshot({
         tabId,
-        {
-          highlights: annotations
-            .map((annotation) =>
-              annotation.boundingBox ? { ...annotation.boundingBox, color: annotation.highlightColor } : null
-            )
-            .filter(
-              (box): box is { x: number; y: number; width: number; height: number; color: Annotation['highlightColor'] } =>
-                Boolean(box)
-            ),
-          markers: annotations.map((annotation, index) => ({
-            x: annotation.x,
-            y: annotation.y,
-            text: annotation.comment,
-            index: index + 1,
-            color: annotation.highlightColor
-          }))
-        },
-        async () => {
-          const groupedBounds = computeGroupedCaptureBounds(annotations);
-          if (groupedBounds) {
-            return captureRegionScreenshot({
-              windowId,
-              boundingBox: groupedBounds,
-              devicePixelRatio: annotations[0]?.viewport?.devicePixelRatio ?? 1
-            });
-          }
-          return captureVisibleScreenshot({ windowId });
-        }
-      );
+        windowId,
+        annotations,
+        withCapturePreparation,
+        captureRegionScreenshot,
+        captureVisibleScreenshot
+      });
 
       const settings = await getLinearSettings();
       const issue = await createLinearGroupedIssue(annotations, fullScreenshot, settings, message.payload.overrides);
@@ -635,37 +560,14 @@ async function dispatchRuntimeMessage(
         throw new Error('No notes to capture.');
       }
 
-      const fullScreenshot = await withCapturePreparation(
+      const fullScreenshot = await captureGroupedScreenshot({
         tabId,
-        {
-          highlights: annotations
-            .map((annotation) =>
-              annotation.boundingBox ? { ...annotation.boundingBox, color: annotation.highlightColor } : null
-            )
-            .filter(
-              (box): box is { x: number; y: number; width: number; height: number; color: Annotation['highlightColor'] } =>
-                Boolean(box)
-            ),
-          markers: annotations.map((annotation, index) => ({
-            x: annotation.x,
-            y: annotation.y,
-            text: annotation.comment,
-            index: index + 1,
-            color: annotation.highlightColor
-          }))
-        },
-        async () => {
-          const groupedBounds = computeGroupedCaptureBounds(annotations);
-          if (groupedBounds) {
-            return captureRegionScreenshot({
-              windowId,
-              boundingBox: groupedBounds,
-              devicePixelRatio: annotations[0]?.viewport?.devicePixelRatio ?? 1
-            });
-          }
-          return captureVisibleScreenshot({ windowId });
-        }
-      );
+        windowId,
+        annotations,
+        withCapturePreparation,
+        captureRegionScreenshot,
+        captureVisibleScreenshot
+      });
 
       const base64Data = fullScreenshot.replace(/^data:image\/\w+;base64,/, '');
       const byteCharacters = atob(base64Data);

@@ -172,86 +172,86 @@ const VISUAL_MODE_TOKENS: Record<VisualThemeMode, VisualModeTokens> = {
   },
   dark: {
     primaryAction: {
-      border: '#e0dfdd',
-      background: '#e0dfdd',
-      color: '#1c1c1c'
+      border: '#ffffff',
+      background: '#ffffff',
+      color: '#000000'
     },
     statusPill: {
       error: {
-        border: '#e0dfdd',
-        background: 'rgba(232, 90, 80, 0.15)',
-        color: '#f0c4c0'
+        border: 'rgba(255, 255, 255, 0.28)',
+        background: 'rgba(255, 107, 107, 0.15)',
+        color: '#ff6b6b'
       },
       connected: {
-        border: '#e0dfdd',
-        background: 'rgba(92, 184, 122, 0.12)',
-        color: '#a8d8b8'
+        border: 'rgba(255, 255, 255, 0.28)',
+        background: 'rgba(92, 184, 122, 0.15)',
+        color: '#7dcea0'
       },
       offline: {
-        border: '#e0dfdd',
-        background: 'rgba(240, 239, 237, 0.06)',
-        color: '#a8a6a2'
+        border: 'rgba(255, 255, 255, 0.28)',
+        background: 'rgba(255, 255, 255, 0.06)',
+        color: '#a0a0a0'
       }
     },
     message: {
       error: {
-        border: '#e0dfdd',
-        background: 'rgba(232, 90, 80, 0.12)',
-        color: '#f0c4c0'
+        border: 'rgba(255, 255, 255, 0.28)',
+        background: 'rgba(255, 107, 107, 0.15)',
+        color: '#ff6b6b'
       },
       notice: {
-        border: '#e0dfdd',
-        background: 'rgba(240, 239, 237, 0.06)',
-        color: '#f0efed'
+        border: 'rgba(255, 255, 255, 0.28)',
+        background: 'rgba(255, 255, 255, 0.06)',
+        color: '#ffffff'
       }
     },
-    inputFocusBorder: '#e0dfdd',
-    triageAccent: '#e85a50',
-    annotatorChipInactiveBorder: '#e0dfdd',
-    annotatorChipInactiveBackground: 'rgba(240, 239, 237, 0.04)',
+    inputFocusBorder: '#ffffff',
+    triageAccent: '#ff6b6b',
+    annotatorChipInactiveBorder: 'rgba(255, 255, 255, 0.28)',
+    annotatorChipInactiveBackground: 'rgba(255, 255, 255, 0.06)',
     toast: {
-      border: '#e0dfdd',
-      background: '#1c1c1c',
-      color: '#f0efed'
+      border: 'rgba(255, 255, 255, 0.28)',
+      background: '#000000',
+      color: '#ffffff'
     },
     floatingTooltip: {
-      border: '#e0dfdd',
-      background: 'rgba(28, 28, 28, 0.96)',
-      color: '#f0efed',
-      shadow: '0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.15)'
+      border: 'rgba(255, 255, 255, 0.28)',
+      background: '#000000',
+      color: '#ffffff',
+      shadow: '0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.25)'
     },
     markerBubble: {
-      background: 'rgba(28, 28, 28, 0.97)',
-      text: '#f0efed',
-      target: '#a8a6a2',
-      attachment: '#a8a6a2',
-      shadowBase: 'rgba(0, 0, 0, 0.35)',
-      shadowActive: 'rgba(0, 0, 0, 0.45)',
-      pinHoverShadow: 'rgba(0, 0, 0, 0.4)'
+      background: '#000000',
+      text: '#ffffff',
+      target: '#a0a0a0',
+      attachment: '#a0a0a0',
+      shadowBase: 'rgba(0, 0, 0, 0.5)',
+      shadowActive: 'rgba(0, 0, 0, 0.6)',
+      pinHoverShadow: 'rgba(0, 0, 0, 0.55)'
     },
     settingsConnectionBadge: {
-      ring: 'rgba(28, 28, 28, 0.94)',
-      border: '#e0dfdd',
-      idle: '#8a8884',
+      ring: 'rgba(0, 0, 0, 0.94)',
+      border: 'rgba(255, 255, 255, 0.28)',
+      idle: '#666666',
       error: {
-        background: '#e85a50',
-        shadow: '0 0 0 1px rgba(28, 28, 28, 0.94), 0 0 0 2px #e0dfdd'
+        background: '#ff6b6b',
+        shadow: '0 0 0 1px rgba(0, 0, 0, 0.94), 0 0 0 2px rgba(255, 255, 255, 0.28)'
       },
       connecting: {
-        background: '#e0dfdd',
-        shadow: '0 0 0 1px rgba(28, 28, 28, 0.94), 0 0 0 2px #e0dfdd'
+        background: '#ffffff',
+        shadow: '0 0 0 1px rgba(0, 0, 0, 0.94), 0 0 0 2px rgba(255, 255, 255, 0.28)'
       },
       connected: {
         background: '#5cb87a',
-        shadow: '0 0 0 1px rgba(28, 28, 28, 0.94), 0 0 0 2px #e0dfdd'
+        shadow: '0 0 0 1px rgba(0, 0, 0, 0.94), 0 0 0 2px rgba(255, 255, 255, 0.28)'
       }
     },
     badges: {
-      border: '#e0dfdd',
-      collapsedBackground: '#e0dfdd',
-      collapsedColor: '#1c1c1c',
-      queueBackground: '#e0dfdd',
-      queueColor: '#1c1c1c'
+      border: 'rgba(255, 255, 255, 0.28)',
+      collapsedBackground: '#ffffff',
+      collapsedColor: '#000000',
+      queueBackground: '#ffffff',
+      queueColor: '#000000'
     }
   }
 };

@@ -1,5 +1,5 @@
 import { InlineAnnotator, type InlineAnnotatorDraft } from './inline-annotator';
-import { UnifiedBadge, type QueueNoteSummary } from './unified-badge';
+import { UnifiedBadge } from './unified-badge';
 import {
   detectBrowser,
   detectOS,
@@ -11,6 +11,17 @@ import { prepareCaptureUi, restoreCaptureUi } from './capture-overlay';
 import { ElementDetector } from './detector';
 import { DraftMarkers } from './draft-markers';
 import { Highlighter } from './highlighter';
+import {
+  type DraftAnnotation,
+  type SettingsState,
+  getNoteCreationBlockedMessage,
+  toQueueItems
+} from './content-session-state';
+import {
+  copyScreenshot as copyDraftScreenshot,
+  submitDrafts as submitDraftAnnotations
+} from './content-submission';
+import { createContentRuntimeMessageHandler } from './content-runtime-router';
 import { resolveSelectionLabel } from './selection-label';
 import {
   resolveDraftLabel,
@@ -23,7 +34,6 @@ import { playCapturePop } from './capture-sound';
 import { createLinearAuthTooltipController } from './linear-auth-tooltip';
 import type { BackgroundResponse, BackgroundToContentMessage } from '../shared/messages';
 import type {
-  Annotation,
   BoundingBox,
   ElementSelection,
   LinearSettings,
@@ -35,21 +45,6 @@ import { normalizeLinearSettings } from '../shared/linear-settings-client';
 import { resolveHighlightColor } from '../shared/highlight-colors';
 import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
 import { sendRuntimeMessage } from '../shared/runtime';
-
-type DraftAnnotation = Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'> & {
-  anchorX: number;
-  anchorY: number;
-  fixed?: boolean;
-};
-
-interface SettingsState {
-  loading: boolean;
-  loadingResources: boolean;
-  accessToken: string;
-  resources: LinearWorkspaceResources;
-  markersVisible: boolean;
-  error?: string;
-}
 
 const EMPTY_RESOURCES: LinearWorkspaceResources = EMPTY_LINEAR_RESOURCES;
 const DEFAULT_HIGHLIGHT_Z_INDEX = {
@@ -246,50 +241,6 @@ function saveMarkersVisible(visible: boolean): Promise<void> {
   return setLocalStorageItems({ [STORAGE_KEYS.markersVisible]: visible });
 }
 
-function toQueueItems(notes: DraftAnnotation[]): QueueNoteSummary[] {
-  return notes.map((note) => {
-    const component = note.componentName ?? note.reactComponents?.[0];
-    return {
-      id: note.id,
-      comment: note.comment,
-      target: note.elementLabel ?? (component ? component : note.element),
-      attachmentsCount: note.attachments?.length ?? 0,
-      highlightColor: resolveHighlightColor(note.highlightColor)
-    };
-  });
-}
-
-const AUTH_ERROR_PATTERNS = ['401', '403', 'unauthorized', 'not connected'];
-const AUTH_TOKEN_ERROR_PAIRS = [['invalid', 'token'], ['expired', 'token']];
-
-function hasLinearAuthError(error?: string): boolean {
-  if (!error) return false;
-  const message = error.toLowerCase();
-  if (AUTH_ERROR_PATTERNS.some((pattern) => message.includes(pattern))) {
-    return true;
-  }
-  return AUTH_TOKEN_ERROR_PAIRS.some(([a, b]) => message.includes(a) && message.includes(b));
-}
-
-function getNoteCreationBlockedMessage(): string | null {
-  if (settingsState.loading || settingsState.loadingResources) {
-    return 'Checking Linear connection. Try creating the note again in a second.';
-  }
-
-  if (!settingsState.accessToken.trim()) {
-    return 'Connect Linear first. Open extension settings and complete OAuth, then refresh workspace data.';
-  }
-
-  if (settingsState.error) {
-    if (hasLinearAuthError(settingsState.error)) {
-      return 'Linear session is invalid or expired. Reconnect in extension settings, then refresh workspace data.';
-    }
-    return `Linear connection error: ${settingsState.error}`;
-  }
-
-  return null;
-}
-
 function applyWorkspaceResources(resources: LinearWorkspaceResources): void {
   settingsState.resources = resources;
   inlineAnnotator.setTeams(resources.teams);
@@ -434,97 +385,26 @@ function setToolbarVisible(visible: boolean): void {
   }
 }
 
-function toSubmissionAnnotation(note: DraftAnnotation): Omit<Annotation, 'screenshot' | 'screenshotViewport' | 'linearIssue'> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { anchorX, anchorY, fixed, ...annotation } = note;
-  return annotation;
+async function submitQueuedDrafts(): Promise<void> {
+  await submitDraftAnnotations({
+    draftAnnotations,
+    settingsState,
+    unifiedBadge,
+    getSubmissionSettings: () => unifiedBadge.getSettings(),
+    setDrafts,
+    sendRuntimeMessage,
+    showToast,
+    showTicketCreatedToast
+  });
 }
 
-async function loadStoredTeamId(): Promise<string | undefined> {
-  try {
-    const items = await getLocalStorageItems<Record<string, unknown>>([STORAGE_KEYS.submitTeamId]);
-    return items?.[STORAGE_KEYS.submitTeamId] as string | undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-async function submitDrafts(): Promise<void> {
-  if (draftAnnotations.length === 0) {
-    showToast('No notes to submit yet.', undefined, 'error');
-    return;
-  }
-
-  const noteCount = draftAnnotations.length;
-  unifiedBadge.setSubmitting(true);
-
-  try {
-    const storedTeamId = await loadStoredTeamId();
-
-    const selectedTeam = settingsState.resources.teams.find((t) => t.id === storedTeamId)
-      ?? settingsState.resources.teams[0];
-
-    if (!selectedTeam) {
-      throw new Error('No Linear team found for this workspace.');
-    }
-
-    const submissionSettings = unifiedBadge.getSettings();
-    const response = await sendRuntimeMessage<BackgroundResponse>({
-      type: 'captureAndCreateGroupedIssue',
-      payload: {
-        annotations: draftAnnotations.map((note) => toSubmissionAnnotation(note)),
-        overrides: {
-          teamId: selectedTeam.id,
-          triageStateId: selectedTeam?.triageStateId,
-          priority: submissionSettings.priority ?? undefined,
-          labelIds: submissionSettings.labelIds.length > 0 ? submissionSettings.labelIds : undefined,
-          assigneeId: submissionSettings.assigneeId ?? undefined
-        }
-      }
-    });
-    if (!response.ok) {
-      throw new Error(response.error);
-    }
-
-    const issue = (response.data as { identifier?: string; url?: string } | undefined) ?? {};
-
-    setDrafts([]);
-    unifiedBadge.resetPriority();
-    unifiedBadge.showSuccessPill({ ...issue, noteCount });
-    showTicketCreatedToast(issue);
-  } catch (error) {
-    unifiedBadge.showErrorPill(error instanceof Error ? error.message : 'Unexpected error');
-  } finally {
-    unifiedBadge.hideSubmitting();
-  }
-}
-
-async function copyScreenshot(): Promise<void> {
-  if (draftAnnotations.length === 0) {
-    showToast('No notes to capture yet.', undefined, 'error');
-    return;
-  }
-
-  unifiedBadge.setSubmitting(true);
-
-  try {
-    const response = await sendRuntimeMessage<BackgroundResponse>({
-      type: 'captureAndCopyScreenshot',
-      payload: {
-        annotations: draftAnnotations.map((note) => toSubmissionAnnotation(note))
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(response.error);
-    }
-
-    showToast('Screenshot copied to clipboard');
-  } catch (error) {
-    showToast(error instanceof Error ? error.message : 'Failed to copy screenshot', undefined, 'error');
-  } finally {
-    unifiedBadge.hideSubmitting();
-  }
+async function copyQueuedScreenshot(): Promise<void> {
+  await copyDraftScreenshot({
+    draftAnnotations,
+    unifiedBadge,
+    sendRuntimeMessage,
+    showToast
+  });
 }
 
 const detector = new ElementDetector({
@@ -532,7 +412,7 @@ const detector = new ElementDetector({
     return;
   },
   onSelect: (selection, element, pointer) => {
-    const blockedMessage = getNoteCreationBlockedMessage();
+    const blockedMessage = getNoteCreationBlockedMessage(settingsState);
     if (blockedMessage) {
       linearAuthTooltip.show(blockedMessage, pointer);
       return;
@@ -642,12 +522,12 @@ function handleAnnotatorSubmit(
   restartDetectorIfReady();
 
   if (immediate) {
-    const blockedMessage = getNoteCreationBlockedMessage();
+    const blockedMessage = getNoteCreationBlockedMessage(settingsState);
     if (blockedMessage) {
       showToast(blockedMessage, undefined, 'error');
       return;
     }
-    void submitDrafts();
+    void submitQueuedDrafts();
   }
 }
 
@@ -673,10 +553,10 @@ const unifiedBadge = new UnifiedBadge({
     }
   },
   onSubmit: () => {
-    void submitDrafts();
+    void submitQueuedDrafts();
   },
   onCopyScreenshot: () => {
-    void copyScreenshot();
+    void copyQueuedScreenshot();
   },
   onClear: () => {
     setDrafts([]);
@@ -743,73 +623,20 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((message: BackgroundToContentMessage, _sender, sendResponse) => {
-  switch (message.type) {
-    case 'notisPing': {
-      sendResponse({ ok: true });
-      return;
-    }
-    case 'capturePrepare': {
-      const fallbackBoundingBox = selectedElement
-        ? (() => {
-            const rect = selectedElement.getBoundingClientRect();
-            return {
-              x: rect.left,
-              y: rect.top,
-              width: rect.width,
-              height: rect.height
-            } satisfies BoundingBox;
-          })()
-        : undefined;
-      const fallbackMarker = selectedClickPoint
-        ? { ...selectedClickPoint }
-        : undefined;
-
-      void prepareCaptureUi({
-        boundingBox: message.payload.boundingBox,
-        marker: message.payload.marker,
-        highlights: message.payload.highlights,
-        markers: message.payload.markers,
-        fallbackBoundingBox,
-        fallbackMarker
-      }).then(() => {
-        sendResponse({ ok: true });
-      });
-      return true;
-    }
-    case 'captureRestore': {
-      restoreCaptureUi();
-      sendResponse({ ok: true });
-      return;
-    }
-    case 'toolbarVisibilityChanged': {
-      setToolbarVisible(message.payload.visible);
-      sendResponse({ ok: true });
-      return;
-    }
-    case 'pickerActivationChanged': {
-      setToolbarVisible(true);
-      setPickerActive(message.payload.active);
-      sendResponse({ ok: true });
-      return;
-    }
-    case 'issueCreated': {
-      unifiedBadge.setVisible(true);
-      unifiedBadge.showSuccessPill({
-        identifier: message.payload.identifier,
-        url: message.payload.url
-      });
-      sendResponse({ ok: true });
-      return;
-    }
-    case 'issueCreationFailed': {
-      unifiedBadge.setVisible(true);
-      unifiedBadge.showErrorPill(message.payload.message);
-      sendResponse({ ok: true });
-      return;
-    }
-    default: {
-      sendResponse({ ok: false });
-    }
-  }
+const handleRuntimeMessage = createContentRuntimeMessageHandler({
+  getSelectedElement: () => selectedElement,
+  getSelectedClickPoint: () => selectedClickPoint,
+  prepareCaptureUi,
+  restoreCaptureUi,
+  setToolbarVisible,
+  setPickerActive,
+  unifiedBadge
 });
+
+chrome.runtime.onMessage.addListener(
+  (
+    message: BackgroundToContentMessage,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response?: unknown) => void
+  ) => handleRuntimeMessage(message, sender, sendResponse)
+);

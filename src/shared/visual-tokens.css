@@ -1,7 +1,17 @@
 :root {
   /* Typography */
-  --notis-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --notis-font-mono: "JetBrains Mono", "SF Mono", monospace;
+  --notis-font-sans: "SF Pro Text", "SF Pro Icons", "AOS Icons", "Helvetica Neue", Helvetica, Arial, sans-serif, system-ui;
+  --notis-font-mono: "SF Mono", "JetBrains Mono", monospace;
+
+  /* Fluid typography system */
+  --font-size-min: 14;
+  --font-size-max: 16;
+  --font-ratio-min: 1.2;
+  --font-ratio-max: 1.25;
+  --font-width-min: 320;
+  --font-width-max: 560;
+
+  color-scheme: light dark;
 
   /* Core palette - warm neutrals */
   --notis-paper: #faf9f7;
@@ -58,52 +68,52 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --notis-paper: #1c1c1c;
-    --notis-surface: #2a2a2a;
-    --notis-ink: #f0efed;
-    --notis-ink-muted: #b0aea9;
-    --notis-ink-tertiary: #8a8884;
-    --notis-line: rgba(240, 239, 237, 0.24);
-    --notis-line-strong: #e0dfdd;
-    --notis-border-light: rgba(240, 239, 237, 0.10);
-    --notis-accent: #e0dfdd;
-    --notis-accent-ink: #1c1c1c;
-    --notis-accent-stamp: #e85a50;
+    --notis-paper: #000000;
+    --notis-surface: #000000;
+    --notis-ink: #ffffff;
+    --notis-ink-muted: #a0a0a0;
+    --notis-ink-tertiary: #666666;
+    --notis-line: rgba(255, 255, 255, 0.28);
+    --notis-line-strong: #ffffff;
+    --notis-border-light: rgba(255, 255, 255, 0.15);
+    --notis-accent: #ffffff;
+    --notis-accent-ink: #000000;
+    --notis-accent-stamp: #ff6b6b;
 
     --notis-ok: #5cb87a;
-    --notis-ok-border: #e0dfdd;
-    --notis-ok-bg: rgba(92, 184, 122, 0.08);
+    --notis-ok-border: rgba(255, 255, 255, 0.28);
+    --notis-ok-bg: rgba(92, 184, 122, 0.1);
     --notis-ok-bg-soft: rgba(92, 184, 122, 0.1);
-    --notis-ok-border-soft: #e0dfdd;
-    --notis-ok-border-connected: #e0dfdd;
+    --notis-ok-border-soft: rgba(255, 255, 255, 0.28);
+    --notis-ok-border-connected: rgba(255, 255, 255, 0.28);
     --notis-ok-bg-connected: rgba(92, 184, 122, 0.15);
     --notis-ok-text: #7dcea0;
 
-    --notis-danger: #e85a50;
-    --notis-danger-border: #e0dfdd;
-    --notis-danger-bg-soft: rgba(232, 90, 80, 0.15);
+    --notis-danger: #ff6b6b;
+    --notis-danger-border: rgba(255, 255, 255, 0.28);
+    --notis-danger-bg-soft: rgba(255, 107, 107, 0.15);
 
-    --notis-input-focus: #e0dfdd;
-    --notis-input-placeholder: #8a8884;
-    --notis-chip-hover-border: #e0dfdd;
-    --notis-chip-active-border: #e0dfdd;
-    --notis-chip-active-bg: rgba(240, 239, 237, 0.08);
-    --notis-chip-active-text: #f0efed;
-    --notis-token-border: #e0dfdd;
-    --notis-token-bg: #242424;
-    --notis-token-text: #a8a6a2;
-    --notis-icon-muted: #a8a6a2;
-    --notis-card-bg: #242424;
-    --notis-status-pill-bg: rgba(240, 239, 237, 0.06);
-    --notis-chip-bg: rgba(240, 239, 237, 0.06);
-    --notis-chip-text: #a8a6a2;
-    --notis-hover-bg: rgba(240, 239, 237, 0.08);
-    --notis-hover-border: #e0dfdd;
-    --notis-select-arrow: #e0dfdd;
+    --notis-input-focus: #ffffff;
+    --notis-input-placeholder: #666666;
+    --notis-chip-hover-border: rgba(255, 255, 255, 0.28);
+    --notis-chip-active-border: rgba(255, 255, 255, 0.28);
+    --notis-chip-active-bg: rgba(255, 255, 255, 0.08);
+    --notis-chip-active-text: #ffffff;
+    --notis-token-border: rgba(255, 255, 255, 0.28);
+    --notis-token-bg: #000000;
+    --notis-token-text: #a0a0a0;
+    --notis-icon-muted: #a0a0a0;
+    --notis-card-bg: #000000;
+    --notis-status-pill-bg: rgba(255, 255, 255, 0.06);
+    --notis-chip-bg: rgba(255, 255, 255, 0.06);
+    --notis-chip-text: #a0a0a0;
+    --notis-hover-bg: rgba(255, 255, 255, 0.06);
+    --notis-hover-border: rgba(255, 255, 255, 0.28);
+    --notis-select-arrow: #ffffff;
 
-    --notis-popup-texture-dot: rgba(240, 239, 237, 0.025);
-    --notis-popup-texture-top: rgba(36, 36, 36, 0.8);
-    --notis-popup-texture-bottom: rgba(28, 28, 28, 0.95);
+    --notis-popup-texture-dot: transparent;
+    --notis-popup-texture-top: transparent;
+    --notis-popup-texture-bottom: transparent;
   }
 }
 
@@ -158,50 +168,50 @@
 }
 
 :root[data-theme="dark"] {
-  --notis-paper: #1c1c1c;
-  --notis-surface: #2a2a2a;
-  --notis-ink: #f0efed;
-  --notis-ink-muted: #b0aea9;
-  --notis-ink-tertiary: #8a8884;
-  --notis-line: rgba(240, 239, 237, 0.24);
-  --notis-line-strong: #e0dfdd;
-  --notis-border-light: rgba(240, 239, 237, 0.10);
-  --notis-accent: #e0dfdd;
-  --notis-accent-ink: #1c1c1c;
-  --notis-accent-stamp: #e85a50;
+  --notis-paper: #000000;
+  --notis-surface: #000000;
+  --notis-ink: #ffffff;
+  --notis-ink-muted: #a0a0a0;
+  --notis-ink-tertiary: #666666;
+  --notis-line: rgba(255, 255, 255, 0.28);
+  --notis-line-strong: #ffffff;
+  --notis-border-light: rgba(255, 255, 255, 0.15);
+  --notis-accent: #ffffff;
+  --notis-accent-ink: #000000;
+  --notis-accent-stamp: #ff6b6b;
 
   --notis-ok: #5cb87a;
-  --notis-ok-border: #e0dfdd;
-  --notis-ok-bg: rgba(92, 184, 122, 0.08);
+  --notis-ok-border: rgba(255, 255, 255, 0.28);
+  --notis-ok-bg: rgba(92, 184, 122, 0.1);
   --notis-ok-bg-soft: rgba(92, 184, 122, 0.1);
-  --notis-ok-border-soft: #e0dfdd;
-  --notis-ok-border-connected: #e0dfdd;
+  --notis-ok-border-soft: rgba(255, 255, 255, 0.28);
+  --notis-ok-border-connected: rgba(255, 255, 255, 0.28);
   --notis-ok-bg-connected: rgba(92, 184, 122, 0.15);
   --notis-ok-text: #7dcea0;
 
-  --notis-danger: #e85a50;
-  --notis-danger-border: #e0dfdd;
-  --notis-danger-bg-soft: rgba(232, 90, 80, 0.15);
+  --notis-danger: #ff6b6b;
+  --notis-danger-border: rgba(255, 255, 255, 0.28);
+  --notis-danger-bg-soft: rgba(255, 107, 107, 0.15);
 
-  --notis-input-focus: #e0dfdd;
-  --notis-input-placeholder: #8a8884;
-  --notis-chip-hover-border: #e0dfdd;
-  --notis-chip-active-border: #e0dfdd;
-  --notis-chip-active-bg: rgba(240, 239, 237, 0.08);
-  --notis-chip-active-text: #f0efed;
-  --notis-token-border: #e0dfdd;
-  --notis-token-bg: #242424;
-  --notis-token-text: #a8a6a2;
-  --notis-icon-muted: #a8a6a2;
-  --notis-card-bg: #242424;
-  --notis-status-pill-bg: rgba(240, 239, 237, 0.06);
-  --notis-chip-bg: rgba(240, 239, 237, 0.06);
-  --notis-chip-text: #a8a6a2;
-  --notis-hover-bg: rgba(240, 239, 237, 0.08);
-  --notis-hover-border: #e0dfdd;
-  --notis-select-arrow: #e0dfdd;
+  --notis-input-focus: #ffffff;
+  --notis-input-placeholder: #666666;
+  --notis-chip-hover-border: rgba(255, 255, 255, 0.28);
+  --notis-chip-active-border: rgba(255, 255, 255, 0.28);
+  --notis-chip-active-bg: rgba(255, 255, 255, 0.08);
+  --notis-chip-active-text: #ffffff;
+  --notis-token-border: rgba(255, 255, 255, 0.28);
+  --notis-token-bg: #000000;
+  --notis-token-text: #a0a0a0;
+  --notis-icon-muted: #a0a0a0;
+  --notis-card-bg: #000000;
+  --notis-status-pill-bg: rgba(255, 255, 255, 0.06);
+  --notis-chip-bg: rgba(255, 255, 255, 0.06);
+  --notis-chip-text: #a0a0a0;
+  --notis-hover-bg: rgba(255, 255, 255, 0.06);
+  --notis-hover-border: rgba(255, 255, 255, 0.28);
+  --notis-select-arrow: #ffffff;
 
-  --notis-popup-texture-dot: rgba(240, 239, 237, 0.025);
-  --notis-popup-texture-top: rgba(36, 36, 36, 0.8);
-  --notis-popup-texture-bottom: rgba(28, 28, 28, 0.95);
+  --notis-popup-texture-dot: transparent;
+  --notis-popup-texture-top: transparent;
+  --notis-popup-texture-bottom: transparent;
 }

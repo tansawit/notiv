@@ -51,6 +51,20 @@ import {
   renderLabelsDropdownList,
   renderTeamDropdownList
 } from './unified-badge-dropdown-lists';
+import {
+  animateHeightTransition,
+  animateHeightTransitionFromCurrent,
+  animateQueueContentIn as runQueueContentInAnimation,
+  animateQueueContentOut as runQueueContentOutAnimation
+} from './unified-badge-animation-utils';
+import {
+  closeAllDropdowns as closeSettingsDropdownState,
+  hasAnyOpenDropdown,
+  toggleAssigneeDropdown,
+  toggleLabelsDropdown,
+  toggleTeamDropdown,
+  type UnifiedBadgeSettingsState
+} from './unified-badge-settings-state';
 
 export type {
   QueueNoteSummary,
@@ -94,7 +108,6 @@ export class UnifiedBadge {
   private resources: UnifiedBadgeResources = { teams: [], labels: [], users: [] };
   private settings: SubmissionSettings = { priority: null, labelIds: [], assigneeId: null };
   private selectedTeamId: string | null = null;
-  private settingsExpanded = false;
   private takeoverMode: 'priority' | null = null;
   private teamDropdownOpen = false;
   private assigneeDropdownOpen = false;
@@ -115,6 +128,28 @@ export class UnifiedBadge {
 
   constructor(private readonly callbacks: UnifiedBadgeCallbacks) {
     void this.loadSettings();
+  }
+
+  private getSettingsStateSnapshot(): UnifiedBadgeSettingsState {
+    return {
+      takeoverMode: this.takeoverMode,
+      teamDropdownOpen: this.teamDropdownOpen,
+      assigneeDropdownOpen: this.assigneeDropdownOpen,
+      labelsDropdownOpen: this.labelsDropdownOpen,
+      teamSearchQuery: this.teamSearchQuery,
+      assigneeSearchQuery: this.assigneeSearchQuery,
+      labelsSearchQuery: this.labelsSearchQuery
+    };
+  }
+
+  private applySettingsState(state: UnifiedBadgeSettingsState): void {
+    this.takeoverMode = state.takeoverMode;
+    this.teamDropdownOpen = state.teamDropdownOpen;
+    this.assigneeDropdownOpen = state.assigneeDropdownOpen;
+    this.labelsDropdownOpen = state.labelsDropdownOpen;
+    this.teamSearchQuery = state.teamSearchQuery;
+    this.assigneeSearchQuery = state.assigneeSearchQuery;
+    this.labelsSearchQuery = state.labelsSearchQuery;
   }
 
   private clearPillTimeouts(): void {
@@ -371,8 +406,7 @@ export class UnifiedBadge {
         STORAGE_KEYS.submitTeamId,
         STORAGE_KEYS.submitPriority,
         STORAGE_KEYS.submitLabelIds,
-        STORAGE_KEYS.submitAssigneeId,
-        STORAGE_KEYS.submitSettingsExpanded
+        STORAGE_KEYS.submitAssigneeId
       ]);
       if (items) {
         if (typeof items[STORAGE_KEYS.submitTeamId] === 'string') {
@@ -387,9 +421,6 @@ export class UnifiedBadge {
         if (typeof items[STORAGE_KEYS.submitAssigneeId] === 'string') {
           this.settings.assigneeId = items[STORAGE_KEYS.submitAssigneeId] as string;
         }
-        if (typeof items[STORAGE_KEYS.submitSettingsExpanded] === 'boolean') {
-          this.settingsExpanded = items[STORAGE_KEYS.submitSettingsExpanded] as boolean;
-        }
       }
     } catch {
       // Ignore
@@ -403,8 +434,7 @@ export class UnifiedBadge {
         [STORAGE_KEYS.submitTeamId]: this.selectedTeamId,
         [STORAGE_KEYS.submitPriority]: this.settings.priority,
         [STORAGE_KEYS.submitLabelIds]: this.settings.labelIds,
-        [STORAGE_KEYS.submitAssigneeId]: this.settings.assigneeId,
-        [STORAGE_KEYS.submitSettingsExpanded]: this.settingsExpanded
+        [STORAGE_KEYS.submitAssigneeId]: this.settings.assigneeId
       });
     } catch {
       // Ignore
@@ -826,53 +856,14 @@ export class UnifiedBadge {
 
   private animateQueueContentIn(): void {
     if (!this.queueContent || this.prefersReducedMotion) return;
-
-    const header = this.queueContent.querySelector('.notis-unified-header') as HTMLElement;
-    const settings = this.queueContent.querySelector('.notis-unified-settings') as HTMLElement;
-    const empty = this.emptyEl;
-    const rows = this.listEl?.querySelectorAll('.notis-unified-row');
-    const { enter } = TIMING;
-
-    if (header) {
-      header.style.opacity = '0';
-      header.style.transform = 'translateY(-8px)';
-      setTimeout(() => {
-        header.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
-        header.style.opacity = '1';
-        header.style.transform = 'translateY(0)';
-      }, enter.header);
-    }
-
-    if (this.items.length === 0 && empty) {
-      empty.style.opacity = '0';
-      empty.style.transform = 'scale(0.95)';
-      setTimeout(() => {
-        empty.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
-        empty.style.opacity = '1';
-        empty.style.transform = 'scale(1)';
-      }, enter.settings);
-    }
-
-    rows?.forEach((row, i) => {
-      const el = row as HTMLElement;
-      el.style.opacity = '0';
-      el.style.transform = 'translateX(-12px)';
-      setTimeout(() => {
-        el.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
-        el.style.opacity = '1';
-        el.style.transform = 'translateX(0)';
-      }, enter.rowsStart + i * enter.rowStagger);
+    runQueueContentInAnimation({
+      queueContent: this.queueContent,
+      emptyEl: this.emptyEl,
+      listEl: this.listEl,
+      hasItems: this.items.length > 0,
+      enter: TIMING.enter,
+      contentEasing: EASING.contentIn
     });
-
-    if (settings && this.items.length > 0) {
-      settings.style.opacity = '0';
-      settings.style.transform = 'translateY(6px)';
-      setTimeout(() => {
-        settings.style.transition = `opacity ${enter.duration}ms ${EASING.contentIn}, transform ${enter.duration}ms ${EASING.contentIn}`;
-        settings.style.opacity = '1';
-        settings.style.transform = 'translateY(0)';
-      }, enter.settings);
-    }
   }
 
   private animateQueueContentOut(onComplete: () => void): void {
@@ -880,48 +871,14 @@ export class UnifiedBadge {
       onComplete();
       return;
     }
-
-    const header = this.queueContent.querySelector('.notis-unified-header') as HTMLElement;
-    const settings = this.queueContent.querySelector('.notis-unified-settings') as HTMLElement;
-    const empty = this.emptyEl;
-    const rows = this.listEl?.querySelectorAll('.notis-unified-row');
-    const { exit } = TIMING;
-
-    const rowCount = rows?.length ?? 0;
-
-    rows?.forEach((row, i) => {
-      const el = row as HTMLElement;
-      const reverseIndex = rowCount - 1 - i;
-      setTimeout(() => {
-        el.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
-        el.style.opacity = '0';
-        el.style.transform = 'translateX(-8px) scale(0.97)';
-      }, reverseIndex * exit.rowStagger);
+    runQueueContentOutAnimation({
+      queueContent: this.queueContent,
+      emptyEl: this.emptyEl,
+      listEl: this.listEl,
+      hasItems: this.items.length > 0,
+      exit: TIMING.exit,
+      contentEasing: EASING.contentOut
     });
-
-    if (settings && this.items.length > 0) {
-      setTimeout(() => {
-        settings.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
-        settings.style.opacity = '0';
-        settings.style.transform = 'translateY(6px)';
-      }, exit.settings);
-    }
-
-    if (empty && this.items.length === 0) {
-      setTimeout(() => {
-        empty.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
-        empty.style.opacity = '0';
-        empty.style.transform = 'scale(0.95)';
-      }, exit.settings);
-    }
-
-    if (header) {
-      setTimeout(() => {
-        header.style.transition = `opacity ${exit.duration}ms ${EASING.contentOut}, transform ${exit.duration}ms ${EASING.contentOut}`;
-        header.style.opacity = '0';
-        header.style.transform = 'translateY(-6px)';
-      }, exit.header);
-    }
 
     setTimeout(onComplete, TIMING.collapseDelay);
   }
@@ -937,9 +894,6 @@ export class UnifiedBadge {
     const currentIds = this.items.map((item) => item.id);
     const previousIds = new Set(this.renderedItemIds);
     const newIds = new Set(currentIds.filter((id) => !previousIds.has(id)));
-
-    const existingRows = this.listEl.querySelectorAll('.notis-unified-row');
-    existingRows.forEach((row) => row.remove());
 
     this.renderedItemIds = currentIds;
 
@@ -1008,7 +962,7 @@ export class UnifiedBadge {
       row.style.transition = 'none';
       row.style.transform = '';
 
-      const indexChip = row.querySelector('div') as HTMLElement | null;
+      const indexChip = row.querySelector('[data-role="index"]') as HTMLElement | null;
       if (indexChip) {
         indexChip.textContent = String(index + 1);
       }
@@ -1055,12 +1009,12 @@ export class UnifiedBadge {
     const targetHeight = deletingToEmpty
       ? this.getEmptyStateHeight()
       : this.getQueueHeight() - ROW_HEIGHT;
-
-    const duration = 200;
-    const easing = 'cubic-bezier(0.32, 0.72, 0, 1)';
-
-    this.morphContainer.style.transition = `height ${duration}ms ${easing}`;
-    this.morphContainer.style.height = `${targetHeight}px`;
+    animateHeightTransition({
+      morphContainer: this.morphContainer,
+      targetHeight,
+      duration: 200,
+      easing: 'cubic-bezier(0.32, 0.72, 0, 1)'
+    });
   }
 
   private getEmptyStateHeight(): number {
@@ -1072,21 +1026,12 @@ export class UnifiedBadge {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private animateHeightForAddition(_addedCount: number): void {
     if (!this.morphContainer || this.stage !== 'queue') return;
-
-    const currentComputedHeight = this.morphContainer.offsetHeight;
     const targetHeight = this.getQueueHeight();
-
-    if (currentComputedHeight === targetHeight) return;
-
-    const duration = 200;
-    const easing = 'cubic-bezier(0.32, 0.72, 0, 1)';
-
-    this.morphContainer.style.height = `${currentComputedHeight}px`;
-
-    requestAnimationFrame(() => {
-      if (!this.morphContainer) return;
-      this.morphContainer.style.transition = `height ${duration}ms ${easing}`;
-      this.morphContainer.style.height = `${targetHeight}px`;
+    animateHeightTransitionFromCurrent({
+      morphContainer: this.morphContainer,
+      targetHeight,
+      duration: 200,
+      easing: 'cubic-bezier(0.32, 0.72, 0, 1)'
     });
   }
 
@@ -1264,29 +1209,17 @@ export class UnifiedBadge {
   }
 
   private toggleTeamDropdown(): void {
-    this.takeoverMode = null;
-    this.assigneeDropdownOpen = false;
-    this.labelsDropdownOpen = false;
-    this.teamDropdownOpen = !this.teamDropdownOpen;
-    this.teamSearchQuery = '';
+    this.applySettingsState(toggleTeamDropdown(this.getSettingsStateSnapshot()));
     this.renderSettings();
   }
 
   private toggleAssigneeDropdown(): void {
-    this.takeoverMode = null;
-    this.teamDropdownOpen = false;
-    this.labelsDropdownOpen = false;
-    this.assigneeDropdownOpen = !this.assigneeDropdownOpen;
-    this.assigneeSearchQuery = '';
+    this.applySettingsState(toggleAssigneeDropdown(this.getSettingsStateSnapshot()));
     this.renderSettings();
   }
 
   private toggleLabelsDropdown(): void {
-    this.takeoverMode = null;
-    this.teamDropdownOpen = false;
-    this.assigneeDropdownOpen = false;
-    this.labelsDropdownOpen = !this.labelsDropdownOpen;
-    this.labelsSearchQuery = '';
+    this.applySettingsState(toggleLabelsDropdown(this.getSettingsStateSnapshot()));
     this.renderSettings();
   }
 
@@ -1445,13 +1378,11 @@ export class UnifiedBadge {
   }
 
   private closeAllDropdowns(): void {
-    this.teamDropdownOpen = false;
-    this.assigneeDropdownOpen = false;
-    this.labelsDropdownOpen = false;
+    this.applySettingsState(closeSettingsDropdownState(this.getSettingsStateSnapshot()));
   }
 
   hasOpenDropdown(): boolean {
-    return this.teamDropdownOpen || this.assigneeDropdownOpen || this.labelsDropdownOpen || this.takeoverMode !== null;
+    return hasAnyOpenDropdown(this.getSettingsStateSnapshot());
   }
 
   closeDropdowns(): void {

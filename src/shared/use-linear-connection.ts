@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { LinearWorkspaceResources } from './types';
 import { ALLOW_LINEAR_PAT_FALLBACK } from './feature-flags';
 import {
@@ -37,6 +37,7 @@ export interface UseLinearConnectionResult {
 }
 
 export function useLinearConnection(): UseLinearConnectionResult {
+  const isMountedRef = useRef(true);
   const [loading, setLoading] = useState(true);
   const [authBusy, setAuthBusy] = useState(false);
   const [loadingResources, setLoadingResources] = useState(false);
@@ -53,25 +54,47 @@ export function useLinearConnection(): UseLinearConnectionResult {
 
   const connected = useMemo(() => Boolean(settings.accessToken.trim()), [settings.accessToken]);
 
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const setFeedback = useCallback((nextNotice: string | null, nextError: string | null): void => {
+    if (!isMountedRef.current) {
+      return;
+    }
     setNotice(nextNotice);
     setError(nextError);
   }, []);
 
   const loadResources = useCallback(async (accessToken: string): Promise<void> => {
     if (!accessToken.trim()) {
-      setResources(EMPTY_RESOURCES);
+      if (isMountedRef.current) {
+        setResources(EMPTY_RESOURCES);
+      }
       return;
     }
 
-    setLoadingResources(true);
+    if (isMountedRef.current) {
+      setLoadingResources(true);
+    }
     try {
-      setResources(await fetchLinearResources());
+      const nextResources = await fetchLinearResources();
+      if (!isMountedRef.current) {
+        return;
+      }
+      setResources(nextResources);
     } catch (resourceError) {
+      if (!isMountedRef.current) {
+        return;
+      }
       setResources(EMPTY_RESOURCES);
       setFeedback(null, resourceError instanceof Error ? resourceError.message : 'Could not load workspace data.');
     } finally {
-      setLoadingResources(false);
+      if (isMountedRef.current) {
+        setLoadingResources(false);
+      }
     }
   }, [setFeedback]);
 
@@ -79,6 +102,9 @@ export function useLinearConnection(): UseLinearConnectionResult {
     const loadInitialSettings = async (): Promise<void> => {
       try {
         const normalized = await fetchLinearSettings();
+        if (!isMountedRef.current) {
+          return;
+        }
         setSettings(normalized);
         setTokenDraft(normalized.accessToken);
         setTokenEditing(!normalized.accessToken.trim());
@@ -86,7 +112,9 @@ export function useLinearConnection(): UseLinearConnectionResult {
       } catch (loadError) {
         setFeedback(null, loadError instanceof Error ? loadError.message : 'Could not load settings.');
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
@@ -111,11 +139,16 @@ export function useLinearConnection(): UseLinearConnectionResult {
       return;
     }
 
-    setAuthBusy(true);
+    if (isMountedRef.current) {
+      setAuthBusy(true);
+    }
     setFeedback(null, null);
 
     try {
       const normalized = await saveLinearAccessToken(accessToken);
+      if (!isMountedRef.current) {
+        return;
+      }
       setSettings(normalized);
       setTokenDraft(normalized.accessToken);
       setTokenEditing(false);
@@ -123,16 +156,23 @@ export function useLinearConnection(): UseLinearConnectionResult {
     } catch (tokenError) {
       setFeedback(null, tokenError instanceof Error ? tokenError.message : 'Could not save token.');
     } finally {
-      setAuthBusy(false);
+      if (isMountedRef.current) {
+        setAuthBusy(false);
+      }
     }
   };
 
   const connectWithOAuth = async (): Promise<void> => {
-    setAuthBusy(true);
+    if (isMountedRef.current) {
+      setAuthBusy(true);
+    }
     setFeedback(null, null);
 
     try {
       const normalized = await startLinearOAuth();
+      if (!isMountedRef.current) {
+        return;
+      }
       setSettings(normalized);
       setTokenDraft(normalized.accessToken);
       setTokenEditing(false);
@@ -140,17 +180,24 @@ export function useLinearConnection(): UseLinearConnectionResult {
     } catch (connectError) {
       setFeedback(null, connectError instanceof Error ? connectError.message : 'Could not connect with OAuth.');
     } finally {
-      setAuthBusy(false);
+      if (isMountedRef.current) {
+        setAuthBusy(false);
+      }
     }
   };
 
   const saveOAuthClientId = async (value?: string): Promise<void> => {
-    setAuthBusy(true);
+    if (isMountedRef.current) {
+      setAuthBusy(true);
+    }
     setFeedback(null, null);
     const normalizedValue = value === undefined ? oauthClientIdDraft.trim() : value.trim();
 
     try {
       const normalized = await saveLinearOAuthClientId(normalizedValue);
+      if (!isMountedRef.current) {
+        return;
+      }
       setSettings(normalized);
       setOauthClientIdDraft(normalized.linearOAuthClientId);
       setFeedback(
@@ -165,16 +212,23 @@ export function useLinearConnection(): UseLinearConnectionResult {
         oauthError instanceof Error ? oauthError.message : 'Could not save OAuth client ID override.'
       );
     } finally {
-      setAuthBusy(false);
+      if (isMountedRef.current) {
+        setAuthBusy(false);
+      }
     }
   };
 
   const disconnect = async (): Promise<void> => {
-    setAuthBusy(true);
+    if (isMountedRef.current) {
+      setAuthBusy(true);
+    }
     setFeedback(null, null);
 
     try {
       const normalized = await disconnectLinearOAuth();
+      if (!isMountedRef.current) {
+        return;
+      }
       setSettings(normalized);
       setResources(EMPTY_RESOURCES);
       setTokenDraft('');
@@ -184,7 +238,9 @@ export function useLinearConnection(): UseLinearConnectionResult {
     } catch (disconnectError) {
       setFeedback(null, disconnectError instanceof Error ? disconnectError.message : 'Could not disconnect.');
     } finally {
-      setAuthBusy(false);
+      if (isMountedRef.current) {
+        setAuthBusy(false);
+      }
     }
   };
 

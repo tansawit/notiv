@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  containsOriginPermission,
-  getActiveTab,
-  removeOriginPermission,
-  requestOriginPermission
-} from '../../shared/chrome-api';
 import type { SiteOriginPermission } from '../../shared/site-origin';
-import { resolveSiteOriginPermission } from '../../shared/site-origin';
+import {
+  getCurrentTabSitePermission,
+  toggleSiteOrigin
+} from '../../shared/site-permissions-client';
 
 interface UsePopupSitePermissionOptions {
   setFeedback: (notice: string | null, error: string | null) => void;
@@ -33,14 +30,9 @@ export function usePopupSitePermission(
   const refreshCurrentSitePermission = useCallback(async (): Promise<void> => {
     setSitePermissionsLoading(true);
     try {
-      const tab = await getActiveTab();
-      const target = resolveSiteOriginPermission(tab?.url);
+      const { target, granted } = await getCurrentTabSitePermission();
       setCurrentSiteTarget(target);
-      if (!target) {
-        setCurrentSiteGranted(false);
-        return;
-      }
-      setCurrentSiteGranted(await containsOriginPermission(target.pattern));
+      setCurrentSiteGranted(granted);
     } catch (permissionError) {
       setFeedback(
         null,
@@ -66,14 +58,10 @@ export function usePopupSitePermission(
     setSitePermissionsBusy(true);
     setFeedback(null, null);
     try {
-      if (shouldRevoke) {
-        await removeOriginPermission(target.pattern);
-      } else {
-        const granted = await requestOriginPermission(target.pattern);
-        if (!granted) {
-          setFeedback(null, `Permission request was denied for ${target.label}.`);
-          return;
-        }
+      const { granted, revoked } = await toggleSiteOrigin(target, shouldRevoke);
+      if (!granted && !revoked) {
+        setFeedback(null, `Permission request was denied for ${target.label}.`);
+        return;
       }
       await refreshCurrentSitePermission();
       setFeedback(

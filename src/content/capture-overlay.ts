@@ -169,8 +169,8 @@ function renderCaptureRedactions(): void {
     mask.style.width = `${Math.max(1, Math.round(rect.width))}px`;
     mask.style.height = `${Math.max(1, Math.round(rect.height))}px`;
     mask.style.borderRadius = '4px';
-    mask.style.border = '1px solid rgba(26, 24, 22, 0.4)';
-    mask.style.background = 'rgba(26, 24, 22, 0.92)';
+    mask.style.border = '1px solid rgba(255, 255, 255, 0.28)';
+    mask.style.background = 'rgba(0, 0, 0, 0.92)';
     overlay.appendChild(mask);
   }
 

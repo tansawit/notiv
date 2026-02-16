@@ -4,6 +4,12 @@ import type { BackgroundResponse } from '../shared/messages';
 import { STORAGE_KEYS } from '../shared/constants';
 import { getLocalStorageItems } from '../shared/chrome-storage';
 import { maskAccessToken } from '../shared/linear-settings-client';
+import {
+  getLinearConnectButtonLabel,
+  getPopupStatusPrimaryText,
+  getPopupStatusSecondaryText,
+  getSiteAccessStatusText
+} from '../shared/linear-connection-view-model';
 import { sendRuntimeMessage } from '../shared/runtime';
 import { useLinearConnection } from '../shared/use-linear-connection';
 import { Icon } from '../shared/components/Icon';
@@ -12,39 +18,6 @@ import { usePopupSitePermission, usePopupTheme, useCaptureSound } from './hooks'
 
 type PopupView = 'home' | 'settings';
 type ThemePreference = 'system' | 'light' | 'dark';
-
-interface StatusDisplayParams {
-  ready: boolean;
-  connected: boolean;
-  currentSiteTarget: { label: string } | null;
-  viewerName?: string;
-  organizationName?: string;
-}
-
-function getStatusPrimaryText(params: StatusDisplayParams): string {
-  if (params.ready) return params.viewerName ?? 'Connected';
-  if (!params.connected) return 'Not connected';
-  if (!params.currentSiteTarget) return 'No webpage';
-  return 'Site access needed';
-}
-
-function getStatusSecondaryText(params: StatusDisplayParams): string {
-  if (params.ready) return params.organizationName ?? 'Ready to annotate';
-  if (!params.connected) return 'Connect Linear to start';
-  if (!params.currentSiteTarget) return 'Open a webpage to annotate';
-  return params.currentSiteTarget?.label ?? '';
-}
-
-function getSiteAccessStatusText(
-  loading: boolean,
-  hasTarget: boolean,
-  granted: boolean
-): string {
-  if (loading) return 'Checking...';
-  if (hasTarget && granted) return 'Access granted';
-  if (hasTarget) return 'Not granted';
-  return 'Unavailable';
-}
 
 function getThemeDisplayName(preference: ThemePreference): string {
   if (preference === 'system') return 'System';
@@ -189,7 +162,7 @@ function PopupApp(): React.JSX.Element {
             <span className={`status-dot ${unifiedStatus.ready ? 'ready' : !connected ? 'offline' : 'pending'}`} />
             <div className="status-identity">
               <span className="status-primary">
-                {getStatusPrimaryText({
+                {getPopupStatusPrimaryText({
                   ready: unifiedStatus.ready,
                   connected,
                   currentSiteTarget,
@@ -197,7 +170,7 @@ function PopupApp(): React.JSX.Element {
                 })}
               </span>
               <span className="status-secondary">
-                {getStatusSecondaryText({
+                {getPopupStatusSecondaryText({
                   ready: unifiedStatus.ready,
                   connected,
                   currentSiteTarget,
@@ -282,7 +255,11 @@ function PopupApp(): React.JSX.Element {
                 disabled={authBusy}
                 onClick={() => void connectWithOAuth()}
               >
-                {authBusy ? 'Working...' : connected ? 'Reconnect' : 'Connect'}
+                {getLinearConnectButtonLabel({
+                  authBusy,
+                  connected,
+                  busyText: 'Working...'
+                })}
               </button>
               {connected ? (
                 <>

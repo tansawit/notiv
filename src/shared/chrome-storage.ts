@@ -1,3 +1,5 @@
+import { fromChromeCallback, fromChromeCallbackVoid } from './chrome-callback';
+
 type StorageAreaName = 'local' | 'session';
 
 function getStorageArea(area: StorageAreaName): chrome.storage.StorageArea {
@@ -5,41 +7,20 @@ function getStorageArea(area: StorageAreaName): chrome.storage.StorageArea {
 }
 
 function getStorageItems<T>(area: StorageAreaName, keys: string[]): Promise<T> {
-  return new Promise((resolve, reject) => {
-    getStorageArea(area).get(keys, (items) => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve(items as T);
-    });
-  });
+  return fromChromeCallback<Record<string, unknown>>((callback) => {
+    getStorageArea(area).get(keys, callback);
+  }).then((items) => items as T);
 }
 
 function setStorageItems(area: StorageAreaName, items: Record<string, unknown>): Promise<void> {
-  return new Promise((resolve, reject) => {
-    getStorageArea(area).set(items, () => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve();
-    });
+  return fromChromeCallbackVoid((callback) => {
+    getStorageArea(area).set(items, callback);
   });
 }
 
 function removeStorageItems(area: StorageAreaName, keys: string[]): Promise<void> {
-  return new Promise((resolve, reject) => {
-    getStorageArea(area).remove(keys, () => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
-      resolve();
-    });
+  return fromChromeCallbackVoid((callback) => {
+    getStorageArea(area).remove(keys, callback);
   });
 }
 

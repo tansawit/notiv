@@ -25,12 +25,38 @@
   --space-lg: 16px;
   --space-xl: 24px;
 
+  /* Gap for grid layouts */
+  --gap: 8px;
+
   font-family: var(--notis-font-sans);
   color: var(--ink);
 }
 
-* {
+*,
+*:after,
+*:before {
   box-sizing: border-box;
+}
+
+.fluid {
+  --fluid-min: calc(
+    var(--font-size-min) * pow(var(--font-ratio-min), var(--font-level, 0))
+  );
+  --fluid-max: calc(
+    var(--font-size-max) * pow(var(--font-ratio-max), var(--font-level, 0))
+  );
+  --fluid-preferred: calc(
+    (var(--fluid-max) - var(--fluid-min)) /
+      (var(--font-width-max) - var(--font-width-min))
+  );
+  --fluid-type: clamp(
+    (var(--fluid-min) / 16) * 1rem,
+    ((var(--fluid-min) / 16) * 1rem) -
+      (((var(--fluid-preferred) * var(--font-width-min)) / 16) * 1rem) +
+      (var(--fluid-preferred) * 100cqi),
+    (var(--fluid-max) / 16) * 1rem
+  );
+  font-size: var(--fluid-type);
 }
 
 body {
@@ -82,7 +108,7 @@ body {
 
 .panel {
   background: var(--surface);
-  border: 1.25px solid var(--line);
+  border: 1px solid color-mix(in hsl, canvas, canvasText 50%);
   border-radius: 10px;
   padding: var(--space-lg);
   box-shadow:
@@ -446,24 +472,17 @@ body {
   }
 
   body {
-    background-image:
-      radial-gradient(var(--notis-popup-texture-dot) 1px, transparent 0),
-      linear-gradient(180deg, var(--notis-popup-texture-top), var(--notis-popup-texture-bottom));
+    background-image: none;
+    background-color: #000000;
   }
 
   .panel {
     border-color: var(--line);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 6px 16px rgba(0, 0, 0, 0.35),
-      0 1px 2px rgba(0, 0, 0, 0.12);
+    box-shadow: none;
   }
 
   .panel:hover {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 2px 4px rgba(0, 0, 0, 0.15),
-      0 10px 28px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
 
   .input {
@@ -473,7 +492,7 @@ body {
   }
 
   .input:focus {
-    box-shadow: 0 0 0 2px rgba(240, 239, 237, 0.08);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
   }
 
   .button {
