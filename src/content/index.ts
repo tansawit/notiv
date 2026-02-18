@@ -596,7 +596,7 @@ window.addEventListener('resize', handleFocusedHighlightViewportUpdate, true);
 window.addEventListener('keydown', (event) => {
   if (event.defaultPrevented) return;
 
-  if ((event.metaKey || event.ctrlKey) && event.altKey && event.key === 'x') {
+  if ((event.metaKey || event.ctrlKey) && event.altKey && event.code === 'KeyX') {
     event.preventDefault();
     void copyQueuedScreenshot();
     return;

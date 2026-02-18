@@ -570,8 +570,16 @@ async function dispatchRuntimeMessage(
         annotations,
         showNoteText: true,
         withCapturePreparation,
-        captureRegionScreenshot,
-        captureVisibleScreenshot
+        captureRegionScreenshot: (input) =>
+          captureRegionScreenshot({
+            ...input,
+            outputProfile: 'clipboard'
+          }),
+        captureVisibleScreenshot: (input) =>
+          captureVisibleScreenshot({
+            ...input,
+            outputProfile: 'clipboard'
+          })
       });
 
       return { ok: true, data: fullScreenshot };

@@ -119,6 +119,7 @@ export class UnifiedBadge {
   private successPillTimeout: ReturnType<typeof setTimeout> | null = null;
   private errorPillTimeout: ReturnType<typeof setTimeout> | null = null;
   private pendingIssueUrl: string | null = null;
+  private successPillWidth = SUCCESS_WIDTH;
   private submittingFromStage: Stage | null = null;
   private previousBadgeCount = 0;
   private badgeCountAnimationTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -264,22 +265,26 @@ export class UnifiedBadge {
 
     if (this.successContent) {
       const textEl = this.successContent.querySelector('.notis-unified-success-text');
+      let successText = 'Ticket created';
       if (textEl) {
         if (issue?.text) {
-          textEl.textContent = issue.text;
+          successText = issue.text;
         } else {
           const noteCount = issue?.noteCount ?? 0;
           const noteSuffix = noteCount > 1 ? ` with ${noteCount} notes` : '';
-          textEl.textContent = issue?.identifier
+          successText = issue?.identifier
             ? `${issue.identifier} created${noteSuffix}`
             : `Ticket created${noteSuffix}`;
         }
+        textEl.textContent = successText;
       }
 
       const arrowEl = this.successContent.querySelector('.notis-unified-success-arrow') as HTMLElement | null;
       if (arrowEl) {
         arrowEl.style.display = this.pendingIssueUrl ? 'block' : 'none';
       }
+
+      this.successPillWidth = this.measureSuccessPillWidth(successText, Boolean(this.pendingIssueUrl));
     }
 
     this.changeStage('success');
@@ -293,6 +298,7 @@ export class UnifiedBadge {
     if (this.stage !== 'success') return;
 
     this.pendingIssueUrl = null;
+    this.successPillWidth = SUCCESS_WIDTH;
 
     if (this.successPillTimeout) {
       clearTimeout(this.successPillTimeout);
@@ -785,7 +791,7 @@ export class UnifiedBadge {
         };
       case 'success':
         return {
-          width: SUCCESS_WIDTH,
+          width: this.successPillWidth,
           height: BADGE_SIZE,
           borderRadius: BADGE_SIZE / 2,
         };
@@ -812,6 +818,37 @@ export class UnifiedBadge {
     }
 
     return { duration: TIMING.collapse, easing: EASING.collapseMorph };
+  }
+
+  private measureSuccessPillWidth(text: string, hasIssueUrl: boolean): number {
+    if (!this.successContent) return SUCCESS_WIDTH;
+
+    const textEl = this.successContent.querySelector('.notis-unified-success-text') as HTMLElement | null;
+    if (!textEl) return SUCCESS_WIDTH;
+
+    const computed = window.getComputedStyle(textEl);
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      return SUCCESS_WIDTH;
+    }
+
+    context.font = `${computed.fontStyle} ${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`;
+
+    const checkWidth = 16;
+    const arrowWidth = hasIssueUrl ? 14 : 0;
+    const iconGap = 8;
+    const horizontalPadding = 28;
+    const breathingRoom = 14;
+    const iconGaps = hasIssueUrl ? iconGap * 2 : iconGap;
+    const textWidth = Math.ceil(context.measureText(text).width);
+
+    const measuredWidth = horizontalPadding + checkWidth + iconGaps + textWidth + arrowWidth + breathingRoom;
+    const minWidth = SUCCESS_WIDTH;
+    const maxWidth = Math.max(minWidth, window.innerWidth - 56);
+
+    return Math.min(Math.max(minWidth, measuredWidth), maxWidth);
   }
 
 

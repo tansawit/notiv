@@ -31,6 +31,52 @@ async function captureTabDataUrl(windowId?: number): Promise<string> {
     : chrome.tabs.captureVisibleTab(windowId, { format: 'png' });
 }
 
+type CaptureOutputProfile = 'default' | 'clipboard';
+
+interface EncodeOptions {
+  maxDimension: number;
+  format: 'image/jpeg' | 'image/png';
+  quality?: number;
+  maxLength?: number;
+  secondPassScale?: number;
+  secondPassQuality?: number;
+}
+
+const DEFAULT_FULL_ENCODE: EncodeOptions = {
+  maxDimension: 1900,
+  format: 'image/jpeg',
+  quality: 0.8,
+  maxLength: 420000,
+  secondPassScale: 0.82,
+  secondPassQuality: 0.7
+};
+
+const DEFAULT_CROP_ENCODE: EncodeOptions = {
+  maxDimension: 1100,
+  format: 'image/jpeg',
+  quality: 0.82,
+  maxLength: 260000,
+  secondPassScale: 0.8,
+  secondPassQuality: 0.72
+};
+
+const CLIPBOARD_FULL_ENCODE: EncodeOptions = {
+  maxDimension: 3200,
+  format: 'image/png'
+};
+
+const CLIPBOARD_CROP_ENCODE: EncodeOptions = {
+  maxDimension: 3200,
+  format: 'image/png'
+};
+
+function resolveEncodeOptions(profile: CaptureOutputProfile, kind: 'full' | 'crop'): EncodeOptions {
+  if (profile === 'clipboard') {
+    return kind === 'full' ? CLIPBOARD_FULL_ENCODE : CLIPBOARD_CROP_ENCODE;
+  }
+  return kind === 'full' ? DEFAULT_FULL_ENCODE : DEFAULT_CROP_ENCODE;
+}
+
 export interface CropGeometry {
   sx: number;
   sy: number;
@@ -71,10 +117,19 @@ export function resolveCropGeometry(input: {
   };
 }
 
-async function compressDataUrl(
-  dataUrl: string,
-  options: { maxDimension: number; quality: number; maxLength: number }
-): Promise<string> {
+async function encodeCanvas(canvas: OffscreenCanvas, options: EncodeOptions, qualityOverride?: number): Promise<string> {
+  const blob =
+    options.format === 'image/png'
+      ? await canvas.convertToBlob({ type: options.format })
+      : await canvas.convertToBlob({
+          type: options.format,
+          quality: qualityOverride ?? options.quality
+        });
+
+  return blobToDataUrl(blob);
+}
+
+async function compressDataUrl(dataUrl: string, options: EncodeOptions): Promise<string> {
   const bitmap = await dataUrlToBitmap(dataUrl);
   const scale = Math.min(1, options.maxDimension / Math.max(bitmap.width, bitmap.height));
   const width = Math.max(1, Math.round(bitmap.width * scale));
@@ -90,13 +145,12 @@ async function compressDataUrl(
   context.imageSmoothingQuality = 'high';
   context.drawImage(bitmap, 0, 0, width, height);
 
-  const initialBlob = await canvas.convertToBlob({ type: 'image/jpeg', quality: options.quality });
-  let encoded = await blobToDataUrl(initialBlob);
+  let encoded = await encodeCanvas(canvas, options);
 
-  if (encoded.length > options.maxLength) {
+  if (options.maxLength && encoded.length > options.maxLength) {
     const secondPass = new OffscreenCanvas(
-      Math.max(1, Math.round(width * 0.82)),
-      Math.max(1, Math.round(height * 0.82))
+      Math.max(1, Math.round(width * (options.secondPassScale ?? 0.82))),
+      Math.max(1, Math.round(height * (options.secondPassScale ?? 0.82)))
     );
     const secondContext = secondPass.getContext('2d');
     if (!secondContext) {
@@ -105,20 +159,25 @@ async function compressDataUrl(
     secondContext.imageSmoothingEnabled = true;
     secondContext.imageSmoothingQuality = 'high';
     secondContext.drawImage(canvas, 0, 0, width, height, 0, 0, secondPass.width, secondPass.height);
-    const secondBlob = await secondPass.convertToBlob({ type: 'image/jpeg', quality: 0.7 });
-    encoded = await blobToDataUrl(secondBlob);
+    encoded = await encodeCanvas(secondPass, options, options.secondPassQuality);
   }
 
   return encoded;
 }
 
-async function cropDataUrl(dataUrl: string, rect: BoundingBox, devicePixelRatio = 1): Promise<string> {
+async function cropDataUrl(
+  dataUrl: string,
+  rect: BoundingBox,
+  devicePixelRatio = 1,
+  options: EncodeOptions = DEFAULT_CROP_ENCODE
+): Promise<string> {
   const bitmap = await dataUrlToBitmap(dataUrl);
   const geometry = resolveCropGeometry({
     bitmapWidth: bitmap.width,
     bitmapHeight: bitmap.height,
     rect,
-    devicePixelRatio
+    devicePixelRatio,
+    maxDimension: options.maxDimension
   });
 
   const canvas = new OffscreenCanvas(geometry.outputWidth, geometry.outputHeight);
@@ -141,13 +200,12 @@ async function cropDataUrl(dataUrl: string, rect: BoundingBox, devicePixelRatio 
     geometry.outputHeight
   );
 
-  const initialBlob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.82 });
-  let encoded = await blobToDataUrl(initialBlob);
+  let encoded = await encodeCanvas(canvas, options);
 
-  if (encoded.length > 260000) {
+  if (options.maxLength && encoded.length > options.maxLength) {
     const secondPass = new OffscreenCanvas(
-      Math.max(1, Math.round(geometry.outputWidth * 0.8)),
-      Math.max(1, Math.round(geometry.outputHeight * 0.8))
+      Math.max(1, Math.round(geometry.outputWidth * (options.secondPassScale ?? 0.8))),
+      Math.max(1, Math.round(geometry.outputHeight * (options.secondPassScale ?? 0.8)))
     );
     const secondContext = secondPass.getContext('2d');
     if (!secondContext) {
@@ -166,8 +224,7 @@ async function cropDataUrl(dataUrl: string, rect: BoundingBox, devicePixelRatio 
       secondPass.width,
       secondPass.height
     );
-    const secondBlob = await secondPass.convertToBlob({ type: 'image/jpeg', quality: 0.72 });
-    encoded = await blobToDataUrl(secondBlob);
+    encoded = await encodeCanvas(secondPass, options, options.secondPassQuality);
   }
 
   return encoded;
@@ -181,32 +238,29 @@ export async function captureElementScreenshot(input: {
   const fullRaw = await captureTabDataUrl(input.windowId);
 
   const [full, cropped] = await Promise.all([
-    compressDataUrl(fullRaw, {
-      maxDimension: 1900,
-      quality: 0.8,
-      maxLength: 420000
-    }),
-    cropDataUrl(fullRaw, input.boundingBox, input.devicePixelRatio ?? 1)
+    compressDataUrl(fullRaw, DEFAULT_FULL_ENCODE),
+    cropDataUrl(fullRaw, input.boundingBox, input.devicePixelRatio ?? 1, DEFAULT_CROP_ENCODE)
   ]);
 
   return { full, cropped };
 }
 
-export async function captureVisibleScreenshot(input: { windowId?: number }): Promise<string> {
+export async function captureVisibleScreenshot(input: {
+  windowId?: number;
+  outputProfile?: CaptureOutputProfile;
+}): Promise<string> {
   const fullRaw = await captureTabDataUrl(input.windowId);
-
-  return compressDataUrl(fullRaw, {
-    maxDimension: 1900,
-    quality: 0.8,
-    maxLength: 420000
-  });
+  const options = resolveEncodeOptions(input.outputProfile ?? 'default', 'full');
+  return compressDataUrl(fullRaw, options);
 }
 
 export async function captureRegionScreenshot(input: {
   windowId?: number;
   boundingBox: BoundingBox;
   devicePixelRatio?: number;
+  outputProfile?: CaptureOutputProfile;
 }): Promise<string> {
   const fullRaw = await captureTabDataUrl(input.windowId);
-  return cropDataUrl(fullRaw, input.boundingBox, input.devicePixelRatio ?? 1);
+  const options = resolveEncodeOptions(input.outputProfile ?? 'default', 'crop');
+  return cropDataUrl(fullRaw, input.boundingBox, input.devicePixelRatio ?? 1, options);
 }
