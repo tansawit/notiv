@@ -37,8 +37,8 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(vite@7.3.1)
       dialkit:
-        specifier: ^0.2.0
-        version: 0.2.0(motion@12.34.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^0.2.1
+        version: 0.2.1(motion@12.34.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       eslint:
         specifier: ^9.22.0
         version: 9.39.2
@@ -913,8 +913,8 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  dialkit@0.2.0:
-    resolution: {integrity: sha512-63u6sP/NdRPxQksvehzIRDCR7VM2tRFBpOvw0mWxcqTDXdyileZiBCd7LXus67lbdQ8x/He+2f0JaLR9r9NbPg==}
+  dialkit@0.2.1:
+    resolution: {integrity: sha512-cS1UXYtyBiJy8uRO9ZESI+pwhmZft8812yJOc6giZF2HJeqaZ5cyJco0CQFz6B/R8hWv3MpFN7UloRzm/1gDIw==}
     peerDependencies:
       motion: '>=11.0.0'
       react: '>=18.0.0'
@@ -2507,7 +2507,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  dialkit@0.2.0(motion@12.34.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  dialkit@0.2.1(motion@12.34.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       dialkit: 0.1.2(motion@12.34.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       motion: 12.34.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

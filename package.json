@@ -21,7 +21,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "dialkit": "^0.2.0",
+    "dialkit": "^0.2.1",
     "framer-motion": "^12.34.0",
     "@crxjs/vite-plugin": "^2.0.0-beta.33",
     "@eslint/js": "^9.22.0",
