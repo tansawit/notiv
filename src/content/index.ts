@@ -551,6 +551,14 @@ const unifiedBadge = new UnifiedBadge({
       void ensureSettingsLoaded();
     }
   },
+  onDismiss: () => {
+    void sendRuntimeMessage<BackgroundResponse>({
+      type: 'setToolbarVisible',
+      payload: { visible: false }
+    }).catch(() => {
+      setToolbarVisible(false);
+    });
+  },
   onSubmit: () => {
     void submitQueuedDrafts();
   },

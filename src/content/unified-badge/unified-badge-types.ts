@@ -12,6 +12,7 @@ export interface QueueNoteSummary {
 
 export interface UnifiedBadgeCallbacks {
   onBadgeClick: () => void;
+  onDismiss: () => void;
   onSubmit: () => void;
   onCopyScreenshot: () => void;
   onClear: () => void;

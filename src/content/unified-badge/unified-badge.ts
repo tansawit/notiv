@@ -505,6 +505,9 @@ export class UnifiedBadge {
     shadow.appendChild(backdrop);
     this.backdrop = backdrop;
 
+    const badgeWrapper = document.createElement('div');
+    badgeWrapper.className = 'notis-unified-badge-wrapper';
+
     const morphContainer = document.createElement('div');
     morphContainer.className = 'notis-unified-morph';
     morphContainer.setAttribute('data-stage', 'badge');
@@ -521,6 +524,20 @@ export class UnifiedBadge {
     morphContainer.appendChild(tooltip);
     this.tooltip = tooltip;
 
+    const dismissBtn = document.createElement('button');
+    dismissBtn.type = 'button';
+    dismissBtn.className = 'notis-unified-badge-dismiss';
+    dismissBtn.title = 'Hide Notis';
+    dismissBtn.setAttribute('aria-label', 'Hide Notis');
+    dismissBtn.appendChild(createErrorIcon(12));
+    dismissBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      this.callbacks.onDismiss();
+    });
+
+    badgeWrapper.appendChild(morphContainer);
+    badgeWrapper.appendChild(dismissBtn);
+
     const introTooltip = document.createElement('div');
     introTooltip.className = 'notis-unified-intro-tooltip';
     introTooltip.innerHTML = `
@@ -530,7 +547,7 @@ export class UnifiedBadge {
     shadow.appendChild(introTooltip);
     this.introTooltip = introTooltip;
 
-    shadow.appendChild(morphContainer);
+    shadow.appendChild(badgeWrapper);
     this.morphContainer = morphContainer;
     this.shadowRoot = shadow;
 
