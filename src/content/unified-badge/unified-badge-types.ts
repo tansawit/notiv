@@ -52,10 +52,10 @@ export const ROW_HEIGHT = 52;
  *
  * EXPAND (badge → queue):
  *    0ms   morph container starts expanding
- *   60ms   header fades in, slides down
- *  100ms   settings bar fades in, slides up
- *  120ms   rows begin staggered entrance (slide from left)
- *  280ms   morph expansion completes
+ *   40ms   header fades in, slides down
+ *   60ms   rows begin staggered entrance (25ms apart)
+ *   80ms   settings bar fades in, slides up
+ *  320ms   morph expansion completes
  *
  * COLLAPSE (queue → badge):
  *    0ms   rows begin staggered exit (slide left, fade)
@@ -66,22 +66,22 @@ export const ROW_HEIGHT = 52;
  * ───────────────────────────────────────────────────────── */
 
 export const TIMING = {
-  expand: 280,
+  expand: 320,
   collapse: 160,
   successExpand: 300,
   pillVisible: 3500,
   collapseDelay: 120,
 
   enter: {
-    header: 60,
-    settings: 100,
-    rowsStart: 120,
-    rowStagger: 35,
-    duration: 180,
+    header: 40,
+    settings: 80,
+    rowsStart: 60,
+    rowStagger: 25,
+    duration: 220,
   },
 
   exit: {
-    rowStagger: 25,
+    rowStagger: 20,
     settings: 40,
     header: 80,
     duration: 120,
@@ -96,9 +96,9 @@ export const TIMING = {
 
 
 export const EASING = {
-  expandMorph: 'cubic-bezier(0.34, 1.2, 0.64, 1)',
+  expandMorph: 'cubic-bezier(0.32, 0.72, 0, 1)',
   collapseMorph: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  contentIn: 'cubic-bezier(0.0, 0.0, 0.2, 1)',
+  contentIn: 'cubic-bezier(0.22, 1, 0.36, 1)',
   contentOut: 'cubic-bezier(0.4, 0, 1, 1)',
   successSpring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
 };

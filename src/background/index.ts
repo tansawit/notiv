@@ -523,10 +523,14 @@ async function dispatchRuntimeMessage(
         throw new Error('No notes to submit.');
       }
 
+      const items = await chrome.storage.local.get(STORAGE_KEYS.showNoteTextInScreenshot);
+      const showNoteText = items[STORAGE_KEYS.showNoteTextInScreenshot] !== false;
+
       const fullScreenshot = await captureGroupedScreenshot({
         tabId,
         windowId,
         annotations,
+        showNoteText,
         withCapturePreparation,
         captureRegionScreenshot,
         captureVisibleScreenshot
@@ -564,25 +568,13 @@ async function dispatchRuntimeMessage(
         tabId,
         windowId,
         annotations,
+        showNoteText: true,
         withCapturePreparation,
         captureRegionScreenshot,
         captureVisibleScreenshot
       });
 
-      const base64Data = fullScreenshot.replace(/^data:image\/\w+;base64,/, '');
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'image/png' });
-
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]);
-
-      return { ok: true };
+      return { ok: true, data: fullScreenshot };
     }
     default:
       return { ok: false, error: 'Unsupported message type.' };

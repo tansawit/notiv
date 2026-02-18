@@ -110,6 +110,7 @@ export type BackgroundToContentMessage =
           index?: number;
           color?: HighlightColor;
         }>;
+        showNoteText?: boolean;
       };
     }
   | {

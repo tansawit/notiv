@@ -29,13 +29,14 @@ interface RuntimeRouterDependencies {
     }>;
     fallbackBoundingBox?: BoundingBox;
     fallbackMarker?: { x: number; y: number };
+    showNoteText?: boolean;
   }) => Promise<void>;
   restoreCaptureUi: () => void;
   setToolbarVisible: (visible: boolean) => void;
   setPickerActive: (active: boolean) => void;
   unifiedBadge: {
     setVisible: (visible: boolean) => void;
-    showSuccessPill: (issue?: { identifier?: string; url?: string; noteCount?: number }) => void;
+    showSuccessPill: (issue?: { identifier?: string; url?: string; noteCount?: number; text?: string }) => void;
     showErrorPill: (message: string) => void;
   };
 }
@@ -77,6 +78,7 @@ export function createContentRuntimeMessageHandler(
             marker: message.payload.marker,
             highlights: message.payload.highlights,
             markers: message.payload.markers,
+            showNoteText: message.payload.showNoteText,
             fallbackBoundingBox,
             fallbackMarker
           })

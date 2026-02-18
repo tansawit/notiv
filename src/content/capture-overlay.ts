@@ -6,7 +6,7 @@ import {
 } from '../shared/highlight-colors';
 import { getLocalStorageItems } from '../shared/chrome-storage';
 import { STORAGE_KEYS } from '../shared/constants';
-import { FONT_STACK_MONO } from '../shared/visual-tokens';
+import { FONT_STACK_MONO, FONT_STACK_SANS } from '../shared/visual-tokens';
 
 interface CaptureMarker {
   x: number;
@@ -185,6 +185,7 @@ export async function prepareCaptureUi(input: {
   fallbackBoundingBox?: BoundingBox;
   fallbackMarker?: CaptureMarker;
   redactSensitiveFields?: boolean;
+  showNoteText?: boolean;
 }): Promise<void> {
   hiddenUiNodes = [];
   const nodes = document.querySelectorAll<HTMLElement>('[data-notis-ui="true"]');
@@ -278,6 +279,27 @@ export async function prepareCaptureUi(input: {
       pinLabel.style.pointerEvents = 'none';
       pin.appendChild(pinLabel);
       markerLayer.appendChild(pin);
+
+      if (input.showNoteText && marker.text) {
+        const label = document.createElement('div');
+        label.style.position = 'absolute';
+        label.style.left = `${markerX + 16}px`;
+        label.style.top = `${markerY - 8}px`;
+        label.style.maxWidth = '220px';
+        label.style.padding = '4px 8px';
+        label.style.borderRadius = '6px';
+        label.style.background = 'rgba(26, 24, 22, 0.88)';
+        label.style.color = '#faf9f7';
+        label.style.fontFamily = FONT_STACK_SANS;
+        label.style.fontSize = '11px';
+        label.style.lineHeight = '1.4';
+        label.style.whiteSpace = 'pre-wrap';
+        label.style.wordBreak = 'break-word';
+        label.style.pointerEvents = 'none';
+        label.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.18)';
+        label.textContent = marker.text;
+        markerLayer.appendChild(label);
+      }
     });
     markerLayer.style.display = 'block';
     markerLayer.getBoundingClientRect();

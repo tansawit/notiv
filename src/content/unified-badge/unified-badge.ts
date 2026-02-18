@@ -119,6 +119,10 @@ export class UnifiedBadge {
   private successPillTimeout: ReturnType<typeof setTimeout> | null = null;
   private errorPillTimeout: ReturnType<typeof setTimeout> | null = null;
   private pendingIssueUrl: string | null = null;
+  private submittingFromStage: Stage | null = null;
+  private previousBadgeCount = 0;
+  private badgeCountAnimationTimeout: ReturnType<typeof setTimeout> | null = null;
+  private badgeCountAnimations: Animation[] = [];
 
   private readonly prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private readonly systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -165,6 +169,12 @@ export class UnifiedBadge {
       clearTimeout(this.introTooltipTimeout);
       this.introTooltipTimeout = null;
     }
+    if (this.badgeCountAnimationTimeout) {
+      clearTimeout(this.badgeCountAnimationTimeout);
+      this.badgeCountAnimationTimeout = null;
+    }
+    this.badgeCountAnimations.forEach((animation) => animation.cancel());
+    this.badgeCountAnimations = [];
   }
 
   private changeStage(newStage: Stage): void {
@@ -207,6 +217,7 @@ export class UnifiedBadge {
     this.submitting = value;
     if (value) {
       this.container?.setAttribute('data-notis-capture-preserve', 'true');
+      this.submittingFromStage = this.stage;
       this.changeStage('loading');
     }
   }
@@ -243,7 +254,7 @@ export class UnifiedBadge {
     this.renderSettings();
   }
 
-  showSuccessPill(issue?: { identifier?: string; url?: string; noteCount?: number }): void {
+  showSuccessPill(issue?: { identifier?: string; url?: string; noteCount?: number; text?: string }): void {
     if (this.successPillTimeout) {
       clearTimeout(this.successPillTimeout);
       this.successPillTimeout = null;
@@ -254,11 +265,20 @@ export class UnifiedBadge {
     if (this.successContent) {
       const textEl = this.successContent.querySelector('.notis-unified-success-text');
       if (textEl) {
-        const noteCount = issue?.noteCount ?? 0;
-        const noteSuffix = noteCount > 1 ? ` with ${noteCount} notes` : '';
-        textEl.textContent = issue?.identifier
-          ? `${issue.identifier} created${noteSuffix}`
-          : `Ticket created${noteSuffix}`;
+        if (issue?.text) {
+          textEl.textContent = issue.text;
+        } else {
+          const noteCount = issue?.noteCount ?? 0;
+          const noteSuffix = noteCount > 1 ? ` with ${noteCount} notes` : '';
+          textEl.textContent = issue?.identifier
+            ? `${issue.identifier} created${noteSuffix}`
+            : `Ticket created${noteSuffix}`;
+        }
+      }
+
+      const arrowEl = this.successContent.querySelector('.notis-unified-success-arrow') as HTMLElement | null;
+      if (arrowEl) {
+        arrowEl.style.display = this.pendingIssueUrl ? 'block' : 'none';
       }
     }
 
@@ -318,6 +338,16 @@ export class UnifiedBadge {
   hideSubmitting(): void {
     this.submitting = false;
     this.container?.removeAttribute('data-notis-capture-preserve');
+
+    if (this.stage === 'loading') {
+      const nextStage =
+        this.submittingFromStage === 'queue' || this.submittingFromStage === 'badge'
+          ? this.submittingFromStage
+          : 'badge';
+      this.changeStage(nextStage);
+    }
+
+    this.submittingFromStage = null;
   }
 
   getPosition(): { x: number; y: number; width: number; height: number } | null {
@@ -843,15 +873,135 @@ export class UnifiedBadge {
 
     const countEl = this.badgeContent.querySelector('.notis-unified-badge-count') as HTMLElement;
     const iconEl = this.badgeContent.querySelector('.notis-unified-badge-icon') as HTMLElement;
+    const newCount = this.items.length;
+    const prevCount = this.previousBadgeCount;
 
-    if (this.items.length > 0) {
-      countEl.textContent = String(this.items.length);
-      countEl.style.display = 'block';
+    if (newCount > 0) {
       iconEl.style.display = 'none';
+      countEl.style.display = 'block';
+
+      if (prevCount !== newCount && prevCount >= 0 && !this.prefersReducedMotion) {
+        const direction = newCount > prevCount ? 'up' : 'down';
+        this.animateBadgeCountChange(countEl, String(prevCount), String(newCount), direction);
+      } else {
+        this.resetBadgeCountAnimation(countEl);
+        countEl.textContent = String(newCount);
+      }
     } else {
+      this.resetBadgeCountAnimation(countEl);
       countEl.style.display = 'none';
       iconEl.style.display = 'block';
     }
+
+    this.previousBadgeCount = newCount;
+  }
+
+  private animateBadgeCountChange(
+    countEl: HTMLElement,
+    prevValue: string,
+    newValue: string,
+    direction: 'up' | 'down'
+  ): void {
+    const easing = 'cubic-bezier(0.22, 1, 0.36, 1)';
+    const duration = 180;
+    const stagger = 24;
+    const exitY = direction === 'up' ? '-100%' : '100%';
+    const enterY = direction === 'up' ? '100%' : '-100%';
+
+    this.resetBadgeCountAnimation(countEl);
+
+    const maxLen = Math.max(prevValue.length, newValue.length);
+    const fromChars = prevValue.padStart(maxLen, ' ').split('');
+    const toChars = newValue.padStart(maxLen, ' ').split('');
+    const changedIndexes: number[] = [];
+    const fragment = document.createDocumentFragment();
+
+    countEl.textContent = '';
+    countEl.classList.add('is-rolling');
+
+    for (let index = 0; index < maxLen; index += 1) {
+      const fromChar = fromChars[index];
+      const toChar = toChars[index];
+      const isStatic = fromChar === toChar;
+      const column = document.createElement('span');
+      column.className = 'notis-unified-badge-digit';
+
+      if (isStatic) {
+        column.classList.add('static');
+        column.textContent = toChar === ' ' ? '\u00A0' : toChar;
+      } else {
+        const oldDigit = document.createElement('span');
+        oldDigit.className = 'notis-unified-badge-digit-face old';
+        oldDigit.textContent = fromChar === ' ' ? '\u00A0' : fromChar;
+
+        const newDigit = document.createElement('span');
+        newDigit.className = 'notis-unified-badge-digit-face new';
+        newDigit.textContent = toChar === ' ' ? '\u00A0' : toChar;
+        newDigit.style.transform = `translateY(${enterY})`;
+        newDigit.style.opacity = '0';
+
+        column.appendChild(oldDigit);
+        column.appendChild(newDigit);
+        changedIndexes.push(index);
+      }
+
+      fragment.appendChild(column);
+    }
+
+    countEl.appendChild(fragment);
+
+    changedIndexes.forEach((index, order) => {
+      const column = countEl.children[index] as HTMLElement | undefined;
+      const oldDigit = column?.querySelector('.notis-unified-badge-digit-face.old') as HTMLElement | null;
+      const newDigit = column?.querySelector('.notis-unified-badge-digit-face.new') as HTMLElement | null;
+      if (!column || !oldDigit || !newDigit) return;
+
+      const delay = stagger * (changedIndexes.length - order - 1);
+      const oldAnimation = oldDigit.animate(
+        [
+          { transform: 'translateY(0)', opacity: 1 },
+          { transform: `translateY(${exitY})`, opacity: 0 }
+        ],
+        { duration, delay, easing, fill: 'forwards' }
+      );
+      const newAnimation = newDigit.animate(
+        [
+          { transform: `translateY(${enterY})`, opacity: 0 },
+          { transform: 'translateY(0)', opacity: 1 }
+        ],
+        { duration, delay, easing, fill: 'forwards' }
+      );
+      this.badgeCountAnimations.push(oldAnimation, newAnimation);
+    });
+
+    if (this.morphContainer && this.stage === 'badge') {
+      const peakScale = direction === 'up' ? 1.04 : 0.98;
+      const pulseAnimation = this.morphContainer.animate(
+        [
+          { transform: 'scale(1)' },
+          { transform: `scale(${peakScale})`, offset: 0.4 },
+          { transform: 'scale(1)' }
+        ],
+        { duration: 220, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }
+      );
+      this.badgeCountAnimations.push(pulseAnimation);
+    }
+
+    const maxDelay = changedIndexes.length > 0 ? stagger * (changedIndexes.length - 1) : 0;
+    this.badgeCountAnimationTimeout = setTimeout(() => {
+      this.resetBadgeCountAnimation(countEl);
+      countEl.textContent = newValue;
+    }, duration + maxDelay + 24);
+  }
+
+  private resetBadgeCountAnimation(countEl: HTMLElement): void {
+    if (this.badgeCountAnimationTimeout) {
+      clearTimeout(this.badgeCountAnimationTimeout);
+      this.badgeCountAnimationTimeout = null;
+    }
+    this.badgeCountAnimations.forEach((animation) => animation.cancel());
+    this.badgeCountAnimations = [];
+    countEl.classList.remove('is-rolling');
   }
 
   private animateQueueContentIn(): void {
@@ -893,7 +1043,9 @@ export class UnifiedBadge {
 
     const currentIds = this.items.map((item) => item.id);
     const previousIds = new Set(this.renderedItemIds);
+    const currentIdSet = new Set(currentIds);
     const newIds = new Set(currentIds.filter((id) => !previousIds.has(id)));
+    const removedIds = this.renderedItemIds.filter((id) => !currentIdSet.has(id));
 
     this.renderedItemIds = currentIds;
 
@@ -909,11 +1061,15 @@ export class UnifiedBadge {
       onEdit: this.callbacks.onEdit
     });
 
-    if (newIds.size > 0 && this.stage === 'queue' && !this.prefersReducedMotion) {
-      this.animateHeightForAddition(newIds.size);
-      requestAnimationFrame(() => {
-        this.listEl?.scrollTo({ top: this.listEl.scrollHeight, behavior: 'smooth' });
-      });
+    if (this.stage === 'queue' && !this.prefersReducedMotion) {
+      if (newIds.size > 0) {
+        this.animateHeightForAddition(newIds.size);
+        requestAnimationFrame(() => {
+          this.listEl?.scrollTo({ top: this.listEl.scrollHeight, behavior: 'smooth' });
+        });
+      } else if (removedIds.length > 0) {
+        this.animateHeightForRemoval();
+      }
     }
 
     this.renderSettings();
@@ -1010,6 +1166,21 @@ export class UnifiedBadge {
       ? this.getEmptyStateHeight()
       : this.getQueueHeight() - ROW_HEIGHT;
     animateHeightTransition({
+      morphContainer: this.morphContainer,
+      targetHeight,
+      duration: 200,
+      easing: 'cubic-bezier(0.32, 0.72, 0, 1)'
+    });
+  }
+
+  private animateHeightForRemoval(): void {
+    if (!this.morphContainer || this.stage !== 'queue') return;
+
+    const targetHeight = this.items.length === 0
+      ? this.getEmptyStateHeight()
+      : this.getQueueHeight();
+
+    animateHeightTransitionFromCurrent({
       morphContainer: this.morphContainer,
       targetHeight,
       duration: 200,

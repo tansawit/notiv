@@ -2224,7 +2224,40 @@
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
+
+.notis-unified-badge-count.is-rolling {
+  white-space: nowrap;
+}
+
+.notis-unified-badge-digit {
+  position: relative;
+  width: 0.62em;
+  height: 1em;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.notis-unified-badge-digit.static {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notis-unified-badge-digit-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+}
+
 
 .notis-unified-badge-icon {
   width: 18px;

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Notis",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqUN1kHCJu+u5rfJn9k85z9//DNZTuxpUQBENQEoIY0RICa6AeDp+AVhFAfXFs5vCkjXqLkEE0Fj+bEuXy8yKBYiwSjLFjSNlLMYoajmka6de4Qo9sxndpj+oRSFpSqwTcf/TXTdPFQZmq3wZA5jP6qy6GGxRTtb66qW4c/55tbG4x0qXLS83mQlCHqV4N3RQk9i9umtfU+m3+dVXJoHvdx1GLogHRUnrJU/+sZ72fFimggYoxI5evkFfw7z5x28dDI7usgOSNfd+Z+YnKP3UyO/WUZlvBcPiHukArB71zb0KTx3HONCJSkVsOdgkvFqTSmz4v+CjORFlV3m1ACD2NQIDAQAB",
   "description": "Visual feedback for staging review to Linear",
   "icons": {
@@ -11,7 +11,7 @@
     "256": "assets/icons/256.png",
     "512": "assets/icons/512.png"
   },
-  "permissions": ["activeTab", "storage", "identity", "scripting"],
+  "permissions": ["activeTab", "storage", "identity", "scripting", "clipboardWrite"],
   "host_permissions": ["https://api.linear.app/*", "https://linear.app/*"],
   "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
   "background": {

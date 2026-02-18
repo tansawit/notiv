@@ -22,6 +22,7 @@ interface CaptureGroupedScreenshotArgs {
   tabId: number;
   windowId: number | undefined;
   annotations: GroupedCaptureAnnotation[];
+  showNoteText?: boolean;
   withCapturePreparation: <T>(
     tabId: number,
     payload: CapturePreparePayload | undefined,
@@ -32,9 +33,11 @@ interface CaptureGroupedScreenshotArgs {
 }
 
 export function buildCapturePreparePayload(
-  annotations: GroupedCaptureAnnotation[]
+  annotations: GroupedCaptureAnnotation[],
+  showNoteText = true
 ): CapturePreparePayload {
   return {
+    showNoteText,
     highlights: annotations
       .map((annotation) =>
         annotation.boundingBox ? { ...annotation.boundingBox, color: annotation.highlightColor } : null
@@ -111,12 +114,12 @@ export function computeGroupedCaptureBounds(
 export async function captureGroupedScreenshot(
   args: CaptureGroupedScreenshotArgs
 ): Promise<string> {
-  const { tabId, windowId, annotations, withCapturePreparation, captureRegionScreenshot, captureVisibleScreenshot } =
+  const { tabId, windowId, annotations, showNoteText, withCapturePreparation, captureRegionScreenshot, captureVisibleScreenshot } =
     args;
 
   return withCapturePreparation(
     tabId,
-    buildCapturePreparePayload(annotations),
+    buildCapturePreparePayload(annotations, showNoteText),
     async () => {
       const groupedBounds = computeGroupedCaptureBounds(annotations);
       if (groupedBounds) {

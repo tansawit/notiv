@@ -402,8 +402,7 @@ async function copyQueuedScreenshot(): Promise<void> {
   await copyDraftScreenshot({
     draftAnnotations,
     unifiedBadge,
-    sendRuntimeMessage,
-    showToast
+    sendRuntimeMessage
   });
 }
 
@@ -596,6 +595,12 @@ window.addEventListener('resize', handleFocusedHighlightViewportUpdate, true);
 
 window.addEventListener('keydown', (event) => {
   if (event.defaultPrevented) return;
+
+  if ((event.metaKey || event.ctrlKey) && event.altKey && event.key === 'x') {
+    event.preventDefault();
+    void copyQueuedScreenshot();
+    return;
+  }
 
   if (event.key !== 'Escape') return;
 

@@ -9,7 +9,7 @@ import { toSubmissionAnnotation } from './content-session-state';
 interface UnifiedBadgeSubmissionApi {
   setSubmitting: (value: boolean) => void;
   resetPriority: () => void;
-  showSuccessPill: (issue?: { identifier?: string; url?: string; noteCount?: number }) => void;
+  showSuccessPill: (issue?: { identifier?: string; url?: string; noteCount?: number; text?: string }) => void;
   showErrorPill: (message: string) => void;
   hideSubmitting: () => void;
 }
@@ -54,11 +54,6 @@ interface CopyScreenshotOptions {
       };
     }
   ) => Promise<T>;
-  showToast: (
-    message: string,
-    link?: { href: string; label: string },
-    variant?: 'success' | 'error'
-  ) => void;
 }
 
 async function loadStoredTeamId(): Promise<string | undefined> {
@@ -135,10 +130,10 @@ export async function submitDrafts(options: SubmitDraftsOptions): Promise<void> 
 }
 
 export async function copyScreenshot(options: CopyScreenshotOptions): Promise<void> {
-  const { draftAnnotations, unifiedBadge, sendRuntimeMessage, showToast } = options;
+  const { draftAnnotations, unifiedBadge, sendRuntimeMessage } = options;
 
   if (draftAnnotations.length === 0) {
-    showToast('No notes to capture yet.', undefined, 'error');
+    unifiedBadge.showErrorPill('No notes yet');
     return;
   }
 
@@ -155,9 +150,24 @@ export async function copyScreenshot(options: CopyScreenshotOptions): Promise<vo
       throw new Error(response.error);
     }
 
-    showToast('Screenshot copied to clipboard');
+    const dataUrl = response.data as string;
+    const base64 = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: 'image/png' });
+    const clipboardWrite = navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Clipboard write timed out')), 5000)
+    );
+    await Promise.race([clipboardWrite, timeout]);
+
+    unifiedBadge.showSuccessPill({ text: 'Copied screenshot to clipboard' });
   } catch (error) {
-    showToast(error instanceof Error ? error.message : 'Failed to copy screenshot', undefined, 'error');
+    const msg = error instanceof Error ? error.message : 'Failed to copy screenshot';
+    unifiedBadge.showErrorPill(msg);
   } finally {
     unifiedBadge.hideSubmitting();
   }

@@ -14,7 +14,7 @@ interface UseShowNoteTextResult {
 export function useShowNoteText(options: UseShowNoteTextOptions): UseShowNoteTextResult {
   const { enabled, busy, toggle } = useStorageToggle({
     storageKey: STORAGE_KEYS.showNoteTextInScreenshot,
-    defaultValue: false,
+    defaultValue: true,
     setFeedback: options.setFeedback,
     messages: {
       enabledNotice: 'Note text will appear in screenshots.',
