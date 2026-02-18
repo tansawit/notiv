@@ -5,8 +5,14 @@ import type { AnnotationAttachment, ElementSelection, HighlightColor, LinearTeam
 import { UI_IDS, STORAGE_KEYS } from '../shared/constants';
 import {
   DEFAULT_HIGHLIGHT_COLOR,
-  HIGHLIGHT_COLOR_PRESETS
+  HIGHLIGHT_COLOR_PRESETS,
+  type HighlightColorPreset
 } from '../shared/highlight-colors';
+
+const PRIMARY_COLOR_IDS: HighlightColor[] = ['red', 'orange', 'yellow', 'green', 'blue', 'pink', 'white'];
+const PRIMARY_COLORS: HighlightColorPreset[] = HIGHLIGHT_COLOR_PRESETS.filter(
+  (preset) => PRIMARY_COLOR_IDS.includes(preset.id)
+);
 import { getNotisThemeMode } from './theme-mode';
 import { loadLastHighlightColor, saveLastHighlightColor } from './color-persistence';
 import { getLocalStorageItems, setLocalStorageItems } from '../shared/chrome-storage';
@@ -89,6 +95,7 @@ function InlineAnnotatorPanel({
   const [highlightColor, setHighlightColor] = useState<HighlightColor>(initialColor);
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false);
   const [teamSearch, setTeamSearch] = useState('');
+  const [colorsExpanded, setColorsExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const teamPickerRef = useRef<HTMLDivElement | null>(null);
@@ -264,101 +271,152 @@ function InlineAnnotatorPanel({
       </div>
 
       <div className="notis-inline-footer">
-        <div className="notis-inline-picker-row">
-          {HIGHLIGHT_COLOR_PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              className={`notis-inline-picker-dot${preset.id === highlightColor ? ' active' : ''}`}
-              style={{ background: preset.pinFill }}
-              onClick={() => setHighlightColor(preset.id)}
-              title={preset.label}
-              aria-label={preset.label}
-            >
-              <svg className="notis-inline-picker-check" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          ))}
-        </div>
-
-        {selectedTeam && (
-          <div className="notis-inline-team-picker" ref={teamPickerRef}>
+        {colorsExpanded ? (
+          <div className="notis-inline-picker-expanded">
             <button
               type="button"
-              className={`notis-inline-team-btn${teamDropdownOpen ? ' active' : ''}`}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}
-              title={`Submitting to ${selectedTeam.name}`}
+              className="notis-inline-picker-collapse"
+              onClick={() => setColorsExpanded(false)}
+              title="Collapse colors"
+              aria-label="Collapse colors"
             >
-              <span className="notis-inline-team-arrow">→</span>
-              <span className="notis-inline-team-key">{selectedTeam.key}</span>
-              <svg className="notis-inline-team-chevron" width="8" height="8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M2 5h6" />
               </svg>
             </button>
+            <div className="notis-inline-picker-grid">
+              {HIGHLIGHT_COLOR_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={`notis-inline-picker-dot${preset.id === highlightColor ? ' active' : ''}`}
+                  style={{ background: preset.pinFill }}
+                  onClick={() => {
+                    setHighlightColor(preset.id);
+                    setColorsExpanded(false);
+                  }}
+                  title={preset.label}
+                  aria-label={preset.label}
+                >
+                  <svg className="notis-inline-picker-check" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="notis-inline-picker-row">
+              {PRIMARY_COLORS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={`notis-inline-picker-dot${preset.id === highlightColor ? ' active' : ''}`}
+                  style={{ background: preset.pinFill }}
+                  onClick={() => setHighlightColor(preset.id)}
+                  title={preset.label}
+                  aria-label={preset.label}
+                >
+                  <svg className="notis-inline-picker-check" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              ))}
+              <button
+                type="button"
+                className="notis-inline-picker-expand"
+                onClick={() => setColorsExpanded(true)}
+                title="More colors"
+                aria-label="More colors"
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                  <circle cx="2" cy="5" r="1.2" />
+                  <circle cx="5" cy="5" r="1.2" />
+                  <circle cx="8" cy="5" r="1.2" />
+                </svg>
+              </button>
+            </div>
 
-            {teamDropdownOpen && (
-              <div className="notis-inline-team-dropdown">
-                {teams.length > 5 && (
-                  <div className="notis-inline-team-dropdown-search">
-                    <svg className="notis-inline-team-dropdown-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <input
-                      ref={teamSearchRef}
-                      type="text"
-                      className="notis-inline-team-dropdown-search-input"
-                      placeholder="Search teams..."
-                      value={teamSearch}
-                      onChange={(e) => setTeamSearch(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                          e.stopPropagation();
-                          setTeamDropdownOpen(false);
-                        }
-                      }}
-                    />
+            {selectedTeam && (
+              <div className="notis-inline-team-picker" ref={teamPickerRef}>
+                <button
+                  type="button"
+                  className={`notis-inline-team-btn${teamDropdownOpen ? ' active' : ''}`}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}
+                  title={`Submitting to ${selectedTeam.name}`}
+                >
+                  <span className="notis-inline-team-arrow">→</span>
+                  <span className="notis-inline-team-key">{selectedTeam.key}</span>
+                  <svg className="notis-inline-team-chevron" width="8" height="8" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+
+                {teamDropdownOpen && (
+                  <div className="notis-inline-team-dropdown">
+                    {teams.length > 5 && (
+                      <div className="notis-inline-team-dropdown-search">
+                        <svg className="notis-inline-team-dropdown-search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <input
+                          ref={teamSearchRef}
+                          type="text"
+                          className="notis-inline-team-dropdown-search-input"
+                          placeholder="Search teams..."
+                          value={teamSearch}
+                          onChange={(e) => setTeamSearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              e.stopPropagation();
+                              setTeamDropdownOpen(false);
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="notis-inline-team-dropdown-list">
+                      {filteredTeams.length === 0 ? (
+                        <div className="notis-inline-team-dropdown-empty">No teams found</div>
+                      ) : (
+                        filteredTeams.map((team) => (
+                          <button
+                            key={team.id}
+                            type="button"
+                            className={`notis-inline-team-dropdown-item${team.id === selectedTeam.id ? ' selected' : ''}`}
+                            onClick={() => {
+                              onTeamChange(team.id);
+                              setTeamDropdownOpen(false);
+                            }}
+                          >
+                            <span className="notis-inline-team-dropdown-prefix">{team.key}</span>
+                            <span className="notis-inline-team-dropdown-name">{team.name}</span>
+                            {team.id === selectedTeam.id && (
+                              <svg className="notis-inline-team-dropdown-check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
                   </div>
                 )}
-                <div className="notis-inline-team-dropdown-list">
-                  {filteredTeams.length === 0 ? (
-                    <div className="notis-inline-team-dropdown-empty">No teams found</div>
-                  ) : (
-                    filteredTeams.map((team) => (
-                      <button
-                        key={team.id}
-                        type="button"
-                        className={`notis-inline-team-dropdown-item${team.id === selectedTeam.id ? ' selected' : ''}`}
-                        onClick={() => {
-                          onTeamChange(team.id);
-                          setTeamDropdownOpen(false);
-                        }}
-                      >
-                        <span className="notis-inline-team-dropdown-prefix">{team.key}</span>
-                        <span className="notis-inline-team-dropdown-name">{team.name}</span>
-                        {team.id === selectedTeam.id && (
-                          <svg className="notis-inline-team-dropdown-check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M5 12l5 5L20 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                      </button>
-                    ))
-                  )}
-                </div>
-                              </div>
+              </div>
             )}
-          </div>
-        )}
 
-        <div className="notis-inline-hint">
-          <span className="notis-inline-hint-key">↵</span>
-          <span className="notis-inline-hint-label">Save</span>
-          <span className="notis-inline-hint-sep">·</span>
-          <span className="notis-inline-hint-key">⌘</span>
-          <span className="notis-inline-hint-key">↵</span>
-          <span className="notis-inline-hint-label">Submit</span>
-        </div>
+            <div className="notis-inline-hint">
+              <span className="notis-inline-hint-key">↵</span>
+              <span className="notis-inline-hint-label">Save</span>
+              <span className="notis-inline-hint-sep">·</span>
+              <span className="notis-inline-hint-key">⌘</span>
+              <span className="notis-inline-hint-key">↵</span>
+              <span className="notis-inline-hint-label">Submit</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

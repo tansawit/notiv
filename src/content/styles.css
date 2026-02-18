@@ -927,13 +927,14 @@
 .notis-inline-picker-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  animation: notis-picker-row-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .notis-inline-picker-dot {
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border: none;
   border-radius: 999px;
   cursor: pointer;
@@ -963,8 +964,8 @@
 
 .notis-inline-picker-check {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   opacity: 0;
   transform: scale(0.3);
   transition: opacity 120ms ease, transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -990,6 +991,125 @@
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+.notis-inline-picker-expand {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 0;
+  background: var(--hover-bg);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms ease-out;
+}
+
+.notis-inline-picker-expand svg {
+  position: absolute;
+}
+
+.notis-inline-picker-expand:hover {
+  transform: scale(1.08);
+  background: var(--border-soft);
+}
+
+.notis-inline-picker-expand:active {
+  transform: scale(0.95);
+  transition: transform 80ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.notis-inline-picker-expanded {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  animation: notis-picker-expand-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes notis-picker-expand-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notis-inline-picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  flex: 1;
+}
+
+.notis-inline-picker-grid .notis-inline-picker-dot {
+  animation: notis-dot-pop-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(1) { animation-delay: 0ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(2) { animation-delay: 15ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(3) { animation-delay: 30ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(4) { animation-delay: 45ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(5) { animation-delay: 60ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(6) { animation-delay: 75ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(7) { animation-delay: 90ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(8) { animation-delay: 105ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(9) { animation-delay: 120ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(10) { animation-delay: 135ms; }
+.notis-inline-picker-grid .notis-inline-picker-dot:nth-child(11) { animation-delay: 150ms; }
+
+@keyframes notis-dot-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.notis-inline-picker-collapse {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  background: var(--hover-bg);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms ease-out, color 150ms ease-out;
+}
+
+.notis-inline-picker-collapse:hover {
+  background: var(--border-soft);
+  color: var(--text);
+}
+
+.notis-inline-picker-collapse:active {
+  transform: scale(0.92);
+  transition: transform 80ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes notis-picker-row-in {
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -2080,6 +2200,11 @@
   pointer-events: auto;
 }
 
+.notis-unified-badge-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .notis-unified-morph {
   position: relative;
   width: 36px;
@@ -2259,6 +2384,67 @@
 .notis-unified-badge-icon {
   width: 18px;
   height: 18px;
+  display: none;
+}
+
+.notis-unified-badge-dismiss {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 0;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px var(--shadow);
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition:
+    opacity 150ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 150ms cubic-bezier(0.32, 0.72, 0, 1),
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+  z-index: 10;
+}
+
+.notis-unified-badge-wrapper:hover .notis-unified-badge-dismiss,
+.notis-unified-badge-dismiss:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.notis-unified-badge-dismiss svg {
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+
+.notis-unified-badge-dismiss:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: scale(1.1);
+}
+
+.notis-unified-badge-dismiss:active {
+  transform: scale(0.95);
+}
+
+.notis-unified-badge-dismiss:focus-visible {
+  outline: 2px solid rgba(53, 127, 255, 0.45);
+  outline-offset: 1px;
+}
+
+.notis-unified-morph:not([data-stage="badge"]) ~ .notis-unified-badge-dismiss {
   display: none;
 }
 
@@ -3207,6 +3393,18 @@
   color: var(--dark-text);
 }
 
+:host([data-notis-theme="dark"]) .notis-unified-badge-dismiss {
+  background: var(--dark-bg);
+  border-color: var(--dark-border);
+  color: var(--dark-text-subtle);
+  box-shadow: 0 2px 8px var(--dark-shadow);
+}
+
+:host([data-notis-theme="dark"]) .notis-unified-badge-dismiss:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
 :host([data-notis-theme="dark"]) .notis-unified-header {
   border-bottom-color: var(--dark-border-soft);
   background: var(--dark-surface);
@@ -3341,6 +3539,12 @@
 
   .notis-unified-success-arrow {
     opacity: 0.7 !important;
+    animation: none !important;
+  }
+
+  .notis-inline-picker-expanded,
+  .notis-inline-picker-row,
+  .notis-inline-picker-grid .notis-inline-picker-dot {
     animation: none !important;
   }
 }

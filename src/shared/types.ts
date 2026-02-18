@@ -16,7 +16,7 @@ export interface AnnotationAttachment {
   dataUrl: string;
 }
 
-export type HighlightColor = 'blue' | 'yellow' | 'green' | 'red' | 'purple' | 'orange' | 'light-blue';
+export type HighlightColor = 'blue' | 'yellow' | 'green' | 'red' | 'purple' | 'orange' | 'light-blue' | 'pink' | 'teal' | 'gray' | 'white';
 
 export interface Annotation {
   id: string;
